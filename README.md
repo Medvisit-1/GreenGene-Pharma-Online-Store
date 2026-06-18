@@ -1,36 +1,57 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# GreenGene Pharma — Online Store
 
-## Getting Started
+A fully custom e-commerce store + admin panel for GreenGene Pharma (South Africa).
+Built with **Next.js 16, TypeScript, Tailwind CSS, Prisma**.
 
-First, run the development server:
+## Getting started
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npx prisma generate      # generate the database client
+npx prisma db push       # create the SQLite database
+node prisma/seed.mjs     # load sample categories + products
+npm run dev              # start the dev server → http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Tech stack
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Next.js 16** (App Router) — storefront, admin & API in one codebase, server-rendered for SEO
+- **TypeScript** + **Tailwind CSS v4** + **shadcn-style UI** components
+- **Prisma** ORM — SQLite for development (`prisma/dev.db`). For production, change
+  `provider` in `prisma/schema.prisma` to `postgresql` and update `DATABASE_URL`.
+- **Zustand** — cart state (persisted to `localStorage`)
+- Prices are stored in **cents** (ZAR). Use `formatPrice()` from `src/lib/utils.ts`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Project structure
 
-## Learn More
+```
+src/
+  app/
+    page.tsx              Home page
+    products/             Product listing + [slug] detail
+    cart/                 Shopping cart
+    checkout/             Checkout (placeholder — Phase 3)
+    promotions/           Deals & discount codes
+    contact/              Contact form
+    api/                  Route handlers
+  components/             UI + storefront components
+  lib/                    prisma client, cart store, utils
+prisma/
+  schema.prisma           Database models
+  seed.mjs                Sample data
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Build roadmap
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. ✅ **Foundation + Catalog** — schema, theme, storefront, products
+2. **Cart + Basket** — (cart store + cart page already in place)
+3. **Checkout + Invoices**
+4. **Payment gateways** — PayFast / Yoco / Peach (APIs pending)
+5. **Admin panel** — product/order/inventory/promotion management
+6. **Extras** — accounts, notifications, polish
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Notes
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Replace the placeholder logo in `src/components/logo.tsx` with your real logo
+  (drop the file in `/public` and swap the `<svg>` for an `<Image>`).
+- Sample product images use `picsum.photos` placeholders — replace via the admin panel (Phase 5).

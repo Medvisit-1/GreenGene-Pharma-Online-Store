@@ -1,0 +1,139 @@
+// GreenGene Pharma — database schema
+// Using SQLite for development. Swap `provider` to "postgresql" for production.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  description String?
+  image       String?
+  sortOrder   Int       @default(0)
+  products    Product[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Product {
+  id               String      @id @default(cuid())
+  name             String
+  slug             String      @unique
+  description      String?
+  shortDescription String?
+  // Price in cents (ZAR). Avoids float rounding issues.
+  price            Int
+  compareAtPrice   Int?
+  sku              String?
+  stock            Int         @default(0)
+  // JSON-encoded array of image URLs
+  images           String      @default("[]")
+  brand            String?
+  featured         Boolean     @default(false)
+  active           Boolean     @default(true)
+  category         Category?   @relation(fields: [categoryId], references: [id])
+  categoryId       String?
+  orderItems       OrderItem[]
+  reviews          Review[]
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String
+  author    String
+  email     String?
+  rating    Int // 1-5
+  title     String?
+  body      String
+  // Status: pending | approved | rejected
+  status    String   @default("pending")
+  createdAt DateTime @default(now())
+
+  @@index([productId, status])
+}
+
+model Setting {
+  key   String @id
+  value String
+}
+
+model Customer {
+  id        String    @id @default(cuid())
+  email     String    @unique
+  name      String?
+  phone     String?
+  orders    Order[]
+  createdAt DateTime  @default(now())
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  orderNumber     String      @unique
+  customer        Customer?   @relation(fields: [customerId], references: [id])
+  customerId      String?
+  email           String
+  phone           String?
+  // Status: pending | paid | processing | shipped | delivered | cancelled
+  status          String      @default("pending")
+  // Payment: unpaid | paid | refunded | failed
+  paymentStatus   String      @default("unpaid")
+  paymentMethod   String?
+  paymentRef      String?
+  // Amounts in cents (ZAR)
+  subtotal        Int
+  shipping        Int         @default(0)
+  discount        Int         @default(0)
+  total           Int
+  discountCode    String?
+  // JSON-encoded shipping address object
+  shippingAddress String      @default("{}")
+  notes           String?
+  items           OrderItem[]
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+}
+
+model OrderItem {
+  id        String   @id @default(cuid())
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId   String
+  product   Product? @relation(fields: [productId], references: [id])
+  productId String?
+  name      String
+  image     String?
+  price     Int
+  quantity  Int
+}
+
+model Promotion {
+  id         String    @id @default(cuid())
+  code       String    @unique
+  // Type: percent | fixed
+  type       String    @default("percent")
+  value      Int // percent (0-100) or fixed amount in cents
+  active     Boolean   @default(true)
+  minSpend   Int       @default(0)
+  startsAt   DateTime?
+  endsAt     DateTime?
+  usageLimit Int?
+  usageCount Int       @default(0)
+  createdAt  DateTime  @default(now())
+}
+
+model AdminUser {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String?
+  createdAt    DateTime @default(now())
+}
