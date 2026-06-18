@@ -11,6 +11,11 @@ import { Button } from "@/components/ui/button";
 
 type Discount = { valid: boolean; code?: string; amount: number; message?: string };
 
+const PAYMENT_LOGOS: Record<string, string> = {
+  yoco: "/payment/yoco.svg",
+  bobpay: "/payment/bobpay.svg",
+};
+
 export default function CheckoutPage() {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
@@ -212,10 +217,18 @@ export default function CheckoutPage() {
                     onChange={() => setPayMethod(m.id)}
                     className="mt-1 h-4 w-4 accent-brand-600"
                   />
-                  <span>
+                  <span className="flex-1">
                     <span className="block text-sm font-semibold">{m.label}</span>
                     <span className="block text-xs text-muted-foreground">{m.description}</span>
                   </span>
+                  {PAYMENT_LOGOS[m.id] && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={PAYMENT_LOGOS[m.id]}
+                      alt={m.label}
+                      className="ml-2 h-6 w-auto shrink-0 self-center"
+                    />
+                  )}
                 </label>
               ))}
             </div>
