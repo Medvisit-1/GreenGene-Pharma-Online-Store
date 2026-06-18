@@ -83,12 +83,12 @@ async function initiateYoco(order: Order): Promise<InitiateResult> {
 }
 
 /* ---------------- Bob Pay (Payment Links API) ---------------- */
-function bobpayHost() {
+export function bobpayHost() {
   return process.env.BOBPAY_API_HOST || "https://api.sandbox.bobpay.co.za";
 }
 
 /** Get a bearer token: use BOBPAY_API_KEY directly, or log in with email/password. */
-async function bobpayToken(): Promise<string | null> {
+export async function bobpayToken(): Promise<string | null> {
   if (process.env.BOBPAY_API_KEY) return process.env.BOBPAY_API_KEY;
   const email = process.env.BOBPAY_EMAIL;
   const password = process.env.BOBPAY_PASSWORD;
@@ -113,6 +113,7 @@ async function initiateBobPay(order: Order): Promise<InitiateResult> {
   const body: Record<string, unknown> = {
     custom_payment_id: order.orderNumber,
     email: order.email,
+    phone_number: order.phone || "",
     mobile_number: order.phone || "",
     amount: Number((order.total / 100).toFixed(2)), // ZAR (rands), not cents
     item_name: `Order ${order.orderNumber}`,

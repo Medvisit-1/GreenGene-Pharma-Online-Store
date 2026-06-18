@@ -4,6 +4,7 @@ import { CheckCircle2, FileText, Package, Clock, XCircle } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatPrice } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { PaymentPoller } from "@/components/payment-poller";
 
 export const dynamic = "force-dynamic";
 
@@ -52,6 +53,7 @@ export default async function OrderPage({
         </div>
       ) : paid ? (
         <div className="mb-8 flex flex-col items-center text-center">
+          <PaymentPoller />
           <Clock className="h-16 w-16 text-amber-500" />
           <h1 className="mt-4 text-3xl font-semibold tracking-tight">Confirming your payment…</h1>
           <p className="mt-2 text-muted-foreground">

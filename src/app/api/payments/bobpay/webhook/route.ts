@@ -1,19 +1,14 @@
 import { NextResponse } from "next/server";
 import crypto from "node:crypto";
 import { prisma } from "@/lib/prisma";
+import { bobpayHost, bobpayToken } from "@/lib/payments";
 
 export const runtime = "nodejs";
 
-/**
- * Bob Pay posts payment status here (notify_url). We verify the MD5 signature
- * using the account passphrase, then mark the order paid.
- * Docs: signature = md5( key=value&… joined + "&passphrase=<passphrase>" ).
- */
-function verifySignature(d: Record<string, unknown>): boolean {
+/** MD5 signature check (per Bob Pay docs). One accepted verification path. */
+function md5Ok(d: Record<string, unknown>): boolean {
   const passphrase = process.env.BOBPAY_PASSPHRASE;
-  if (!passphrase) return true; // not configured (dev) — accept
-  if (!d.signature) return false;
-
+  if (!passphrase || !d.signature) return false;
   const enc = (v: unknown) => encodeURIComponent(String(v ?? ""));
   const amount = typeof d.amount === "number" ? d.amount.toFixed(2) : String(d.amount);
   const pairs = [
@@ -29,31 +24,56 @@ function verifySignature(d: Record<string, unknown>): boolean {
     `pending_url=${enc(d.pending_url)}`,
     `cancel_url=${enc(d.cancel_url)}`,
   ];
-  const signatureString = `${pairs.join("&")}&passphrase=${passphrase}`;
-  const calc = crypto.createHash("md5").update(signatureString).digest("hex");
+  const calc = crypto
+    .createHash("md5")
+    .update(`${pairs.join("&")}&passphrase=${passphrase}`)
+    .digest("hex");
   return calc === d.signature;
 }
 
+/** Confirm authenticity directly with Bob Pay (their recommended validation step). */
+async function validatedByBobPay(raw: string): Promise<boolean> {
+  const token = await bobpayToken();
+  if (!token) return false;
+  try {
+    const res = await fetch(`${bobpayHost()}/payments/intents/validate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: raw,
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
 export async function POST(req: Request) {
+  const raw = await req.text();
   let data: Record<string, unknown>;
   try {
-    data = await req.json();
+    data = JSON.parse(raw);
   } catch {
     return NextResponse.json({ error: "Bad payload" }, { status: 400 });
   }
 
-  if (!verifySignature(data)) {
-    return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
-  }
-
   const orderNumber = String(data.custom_payment_id ?? "");
   const status = String(data.status ?? "").toLowerCase();
-  const paymentStatus =
+  const payStatus =
     typeof data.payment === "object" && data.payment
       ? String((data.payment as Record<string, unknown>).status ?? "").toLowerCase()
       : "";
+  const isPaid = status === "paid" || payStatus === "complete";
 
-  const isPaid = status === "paid" || paymentStatus === "complete";
+  const signatureOk = md5Ok(data);
+  const verified = signatureOk || (await validatedByBobPay(raw));
+
+  console.log(
+    `[bobpay webhook] order=${orderNumber} status=${status}/${payStatus} md5Ok=${signatureOk} verified=${verified}`
+  );
+
+  if (!verified) {
+    return NextResponse.json({ error: "Unverified" }, { status: 401 });
+  }
 
   if (orderNumber && isPaid) {
     await prisma.order.updateMany({
