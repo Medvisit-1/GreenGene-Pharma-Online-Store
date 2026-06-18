@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
+import { sendContactMessage } from "@/lib/email";
 
-// Receives contact-form submissions. For now this logs to the server;
-// later it can email the team or persist to a ContactMessage table.
+export const runtime = "nodejs";
+
+// Receives contact-form submissions and emails them to the store inbox.
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    console.log("[contact] new message:", body);
+    await sendContactMessage(body);
     return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json({ ok: false }, { status: 400 });

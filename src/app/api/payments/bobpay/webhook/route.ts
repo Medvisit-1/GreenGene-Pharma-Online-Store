@@ -76,13 +76,19 @@ export async function POST(req: Request) {
   }
 
   if (orderNumber && isPaid) {
-    await prisma.order.updateMany({
-      where: { orderNumber },
-      data: {
-        paymentStatus: "paid",
-        paymentRef: String(data.short_reference ?? data.uuid ?? data.id ?? ""),
-      },
-    });
+    const order = await prisma.order.findUnique({ where: { orderNumber } });
+    // Only act on the first paid transition (webhook may retry)
+    if (order && order.paymentStatus !== "paid") {
+      await prisma.order.update({
+        where: { id: order.id },
+        data: {
+          paymentStatus: "paid",
+          paymentRef: String(data.short_reference ?? data.uuid ?? data.id ?? ""),
+        },
+      });
+      const { sendOrderConfirmation } = await import("@/lib/email");
+      await sendOrderConfirmation(order.id);
+    }
   }
 
   return NextResponse.json({ received: true });

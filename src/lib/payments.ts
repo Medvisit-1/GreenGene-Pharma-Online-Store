@@ -112,6 +112,9 @@ export async function confirmYocoPayment(order: Order): Promise<boolean> {
         where: { id: order.id },
         data: { paymentStatus: "paid", paymentRef: data.paymentId ?? order.paymentRef },
       });
+      // Send confirmation + admin alert (this only runs on the paid transition)
+      const { sendOrderConfirmation } = await import("@/lib/email");
+      await sendOrderConfirmation(order.id);
       return true;
     }
     return false;

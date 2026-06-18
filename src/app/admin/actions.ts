@@ -100,7 +100,13 @@ export async function updateOrder(formData: FormData) {
 export async function setFulfillment(formData: FormData) {
   const id = String(formData.get("id"));
   const status = String(formData.get("status")) === "fulfilled" ? "fulfilled" : "unfulfilled";
+  const existing = await prisma.order.findUnique({ where: { id } });
   await prisma.order.update({ where: { id }, data: { status } });
+  // Email the customer when newly fulfilled
+  if (status === "fulfilled" && existing?.status !== "fulfilled") {
+    const { sendOrderShipped } = await import("@/lib/email");
+    await sendOrderShipped(id);
+  }
   revalidatePath(`/admin/orders/${id}`);
   revalidatePath("/admin/orders");
 }
@@ -118,6 +124,11 @@ export async function saveTracking(formData: FormData) {
       ...(trackingNumber ? { status: "fulfilled" } : {}),
     },
   });
+  // Notify the customer with their tracking details
+  if (trackingNumber) {
+    const { sendOrderShipped } = await import("@/lib/email");
+    await sendOrderShipped(id);
+  }
   revalidatePath(`/admin/orders/${id}`);
   redirect(`/admin/orders/${id}?saved=1`);
 }
