@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { formatPrice, parseImages } from "@/lib/utils";
 import { deleteProduct } from "@/app/admin/actions";
 import { Button } from "@/components/ui/button";
+import { ConfirmSubmit } from "@/components/admin/confirm-submit";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Products" };
@@ -73,7 +74,9 @@ export default async function AdminProducts() {
                       </Link>
                       <form action={deleteProduct}>
                         <input type="hidden" name="id" value={p.id} />
-                        <button className="rounded-lg px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-50">Delete</button>
+                        <ConfirmSubmit message={`Delete "${p.name}"? This cannot be undone.`} className="rounded-lg px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-50">
+                          Delete
+                        </ConfirmSubmit>
                       </form>
                     </div>
                   </td>

@@ -3,6 +3,7 @@ import { Check, X, Trash2 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { Stars } from "@/components/stars";
 import { setReviewStatus, deleteReview } from "@/app/admin/actions";
+import { ConfirmSubmit } from "@/components/admin/confirm-submit";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Reviews" };
@@ -56,9 +57,9 @@ function ReviewCard({ r }: { r: ReviewWithProduct }) {
         )}
         <form action={deleteReview} className="ml-auto">
           <input type="hidden" name="id" value={r.id} />
-          <button className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50">
+          <ConfirmSubmit message="Delete this review?" className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50">
             <Trash2 className="h-3.5 w-3.5" /> Delete
-          </button>
+          </ConfirmSubmit>
         </form>
       </div>
     </div>

@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { formatPrice, parseImages } from "@/lib/utils";
+import { QuickAddButton } from "@/components/quick-add-button";
 
 export type ProductCardData = {
+  id: string;
   slug: string;
   name: string;
   shortDescription?: string | null;
@@ -20,9 +22,9 @@ export function ProductCard({ product }: { product: ProductCardData }) {
   const outOfStock = product.stock <= 0;
 
   return (
-    <Link href={`/products/${product.slug}`} className="group flex flex-col">
+    <div className="animate-fade-in-up group flex flex-col">
       {/* Transparent image — sits directly on the page background */}
-      <div className="relative aspect-square">
+      <Link href={`/products/${product.slug}`} className="relative block aspect-square">
         {cover ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -49,7 +51,7 @@ export function ProductCard({ product }: { product: ProductCardData }) {
             </span>
           )}
         </div>
-      </div>
+      </Link>
 
       <div className="flex flex-1 flex-col px-1 pt-3 text-center">
         {product.brand && (
@@ -57,9 +59,11 @@ export function ProductCard({ product }: { product: ProductCardData }) {
             {product.brand}
           </span>
         )}
-        <h3 className="text-sm font-semibold leading-snug text-brand-800 group-hover:text-brand-600">
-          {product.name}
-        </h3>
+        <Link href={`/products/${product.slug}`}>
+          <h3 className="text-sm font-semibold leading-snug text-brand-800 group-hover:text-brand-600">
+            {product.name}
+          </h3>
+        </Link>
         <div className="mt-2 flex items-baseline justify-center gap-2">
           <span className="text-base font-bold text-brand-700">
             {formatPrice(product.price)}
@@ -70,7 +74,19 @@ export function ProductCard({ product }: { product: ProductCardData }) {
             </span>
           )}
         </div>
+        <div className="mt-3">
+          <QuickAddButton
+            product={{
+              id: product.id,
+              slug: product.slug,
+              name: product.name,
+              price: product.price,
+              image: cover,
+              stock: product.stock,
+            }}
+          />
+        </div>
       </div>
-    </Link>
+    </div>
   );
 }

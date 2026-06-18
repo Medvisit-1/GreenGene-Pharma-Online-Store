@@ -73,7 +73,7 @@ export async function saveProduct(formData: FormData) {
   }
   revalidatePath("/admin/products");
   revalidatePath("/products");
-  redirect("/admin/products");
+  redirect("/admin/products?saved=1");
 }
 
 export async function deleteProduct(formData: FormData) {
@@ -118,7 +118,7 @@ export async function savePromotion(formData: FormData) {
   }
   revalidatePath("/admin/promotions");
   revalidatePath("/promotions");
-  redirect("/admin/promotions");
+  redirect("/admin/promotions?saved=1");
 }
 
 export async function deletePromotion(formData: FormData) {

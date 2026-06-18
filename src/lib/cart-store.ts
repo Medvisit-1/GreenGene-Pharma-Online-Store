@@ -15,6 +15,9 @@ export type CartItem = {
 
 type CartState = {
   items: CartItem[];
+  isOpen: boolean;
+  open: () => void;
+  close: () => void;
   addItem: (item: Omit<CartItem, "quantity">, qty?: number) => void;
   removeItem: (productId: string) => void;
   setQuantity: (productId: string, qty: number) => void;
@@ -27,6 +30,9 @@ export const useCart = create<CartState>()(
   persist(
     (set, get) => ({
       items: [],
+      isOpen: false,
+      open: () => set({ isOpen: true }),
+      close: () => set({ isOpen: false }),
       addItem: (item, qty = 1) =>
         set((state) => {
           const existing = state.items.find((i) => i.productId === item.productId);
@@ -61,6 +67,9 @@ export const useCart = create<CartState>()(
       totalItems: () => get().items.reduce((n, i) => n + i.quantity, 0),
       subtotal: () => get().items.reduce((n, i) => n + i.price * i.quantity, 0),
     }),
-    { name: "greengene-cart" }
+    {
+      name: "greengene-cart",
+      partialize: (state) => ({ items: state.items }),
+    }
   )
 );

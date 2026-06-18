@@ -1,8 +1,11 @@
+import { Suspense } from "react";
 import Image from "next/image";
+import { Toaster } from "sonner";
 import { LogOut } from "lucide-react";
 import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { AdminNav } from "@/components/admin-nav";
+import { AdminToast } from "@/components/admin/admin-toast";
 import { logoutAction } from "@/app/admin/actions";
 
 export const dynamic = "force-dynamic";
@@ -54,6 +57,11 @@ export default async function AdminLayout({
 
         <main className="flex-1 p-4 md:p-8">{children}</main>
       </div>
+
+      <Toaster position="bottom-right" richColors closeButton />
+      <Suspense>
+        <AdminToast />
+      </Suspense>
     </div>
   );
 }

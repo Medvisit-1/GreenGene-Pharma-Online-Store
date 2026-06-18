@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { formatPrice } from "@/lib/utils";
 import { savePromotion, deletePromotion } from "@/app/admin/actions";
 import { Button } from "@/components/ui/button";
+import { ConfirmSubmit } from "@/components/admin/confirm-submit";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Promotions" };
@@ -48,7 +49,9 @@ export default async function AdminPromotions() {
                   <td className="px-4 py-3 text-right">
                     <form action={deletePromotion}>
                       <input type="hidden" name="id" value={p.id} />
-                      <button className="text-xs font-medium text-red-600 hover:underline">Delete</button>
+                      <ConfirmSubmit message={`Delete promo code "${p.code}"?`} className="text-xs font-medium text-red-600 hover:underline">
+                        Delete
+                      </ConfirmSubmit>
                     </form>
                   </td>
                 </tr>

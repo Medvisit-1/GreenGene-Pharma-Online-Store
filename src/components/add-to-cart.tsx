@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { Check, Minus, Plus, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/lib/cart-store";
@@ -18,6 +19,7 @@ type Props = {
 
 export function AddToCart({ product }: Props) {
   const addItem = useCart((s) => s.addItem);
+  const openCart = useCart((s) => s.open);
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
   const outOfStock = product.stock <= 0;
@@ -35,6 +37,8 @@ export function AddToCart({ product }: Props) {
       qty
     );
     setAdded(true);
+    toast.success(`Added to cart`, { description: product.name });
+    openCart();
     setTimeout(() => setAdded(false), 1800);
   };
 

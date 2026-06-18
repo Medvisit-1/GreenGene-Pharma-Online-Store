@@ -1,5 +1,7 @@
+import { Toaster } from "sonner";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import { CartDrawer } from "@/components/cart-drawer";
 import { getSettings } from "@/lib/settings";
 
 // Storefront reads live settings from the DB, so render at request time
@@ -17,6 +19,8 @@ export default async function StorefrontLayout({
       <SiteHeader announcement={settings.announcement} />
       <main className="flex-1">{children}</main>
       <SiteFooter />
+      <CartDrawer />
+      <Toaster position="bottom-right" richColors closeButton />
     </div>
   );
 }

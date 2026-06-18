@@ -6,6 +6,7 @@ import { Menu, Search, ShoppingBag, User, X } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/lib/cart-store";
+import { SearchOverlay } from "@/components/search-overlay";
 
 const NAV = [
   { href: "/", label: "Home" },
@@ -16,8 +17,10 @@ const NAV = [
 
 export function SiteHeader({ announcement }: { announcement?: string }) {
   const [open, setOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const count = useCart((s) => s.items.reduce((n, i) => n + i.quantity, 0));
+  const openCart = useCart((s) => s.open);
   useEffect(() => setMounted(true), []);
 
   const iconBtn =
@@ -64,20 +67,20 @@ export function SiteHeader({ announcement }: { announcement?: string }) {
 
           {/* Right: icons */}
           <div className="flex items-center justify-end gap-1">
-            <Link href="/products" aria-label="Search products" className={cn(iconBtn, "hidden sm:inline-flex")}>
+            <button type="button" onClick={() => setSearchOpen(true)} aria-label="Search products" className={cn(iconBtn, "hidden sm:inline-flex")}>
               <Search className="h-5 w-5" />
-            </Link>
+            </button>
             <Link href="/account" aria-label="My account" className={cn(iconBtn, "hidden sm:inline-flex")}>
               <User className="h-5 w-5" />
             </Link>
-            <Link href="/cart" aria-label="View cart" className={iconBtn}>
+            <button type="button" onClick={openCart} aria-label="View cart" className={iconBtn}>
               <ShoppingBag className="h-5 w-5" />
               {mounted && count > 0 && (
                 <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1 text-[11px] font-bold text-brand-900">
                   {count}
                 </span>
               )}
-            </Link>
+            </button>
           </div>
         </div>
 
@@ -110,6 +113,8 @@ export function SiteHeader({ announcement }: { announcement?: string }) {
           </nav>
         </div>
       </div>
+
+      <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />
     </header>
   );
 }
