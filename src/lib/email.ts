@@ -23,10 +23,58 @@ function transport() {
 
 type MailArgs = { to: string; subject: string; html: string; replyTo?: string };
 
+/** Parse "Name <email>" into sender parts for the Brevo API. */
+function senderFrom(): { name: string; email: string } {
+  const raw = process.env.SMTP_FROM || "GreenGene Pharma <info@greengenepharma.co.za>";
+  const m = raw.match(/^(.*)<(.+)>$/);
+  if (m) return { name: m[1].trim().replace(/"/g, "") || "GreenGene Pharma", email: m[2].trim() };
+  return { name: "GreenGene Pharma", email: raw.trim() };
+}
+
+/**
+ * Preferred path: Brevo HTTP API over HTTPS (works from hosts that block SMTP ports).
+ * Returns true/false if attempted, or null if not configured (so we can fall back).
+ */
+async function sendViaBrevoApi({ to, subject, html, replyTo }: MailArgs): Promise<boolean | null> {
+  const key = process.env.BREVO_API_KEY;
+  if (!key) return null;
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 12000);
+  try {
+    const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
+      headers: { "api-key": key, "content-type": "application/json", accept: "application/json" },
+      body: JSON.stringify({
+        sender: senderFrom(),
+        to: [{ email: to }],
+        subject,
+        htmlContent: html,
+        ...(replyTo ? { replyTo: { email: replyTo } } : {}),
+      }),
+      signal: ctrl.signal,
+    });
+    if (!res.ok) {
+      console.error(`[email] Brevo API failed (${res.status}):`, (await res.text()).slice(0, 200));
+      return false;
+    }
+    return true;
+  } catch (e) {
+    console.error("[email] Brevo API error:", (e as Error).message);
+    return false;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 export async function sendMail({ to, subject, html, replyTo }: MailArgs): Promise<boolean> {
+  // 1) Brevo HTTP API (HTTPS) — used when BREVO_API_KEY is set.
+  const viaApi = await sendViaBrevoApi({ to, subject, html, replyTo });
+  if (viaApi !== null) return viaApi;
+
+  // 2) Fallback: SMTP (only works if the host allows outbound SMTP ports).
   const t = transport();
   if (!t) {
-    console.log(`[email] SMTP not configured — skipped "${subject}" to ${to}`);
+    console.log(`[email] not configured — skipped "${subject}" to ${to}`);
     return false;
   }
   const from = process.env.SMTP_FROM || process.env.SMTP_USER || "no-reply@greengenepharma.co.za";
@@ -34,7 +82,7 @@ export async function sendMail({ to, subject, html, replyTo }: MailArgs): Promis
     await t.sendMail({ from, to, subject, html, replyTo });
     return true;
   } catch (e) {
-    console.error("[email] send failed:", (e as Error).message);
+    console.error("[email] SMTP send failed:", (e as Error).message);
     return false;
   }
 }
