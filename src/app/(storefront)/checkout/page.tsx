@@ -33,9 +33,19 @@ export default function CheckoutPage() {
   const [methods, setMethods] = useState<PayMethod[]>([]);
   const [payMethod, setPayMethod] = useState<string>("");
 
+  // Saved customer details (browser, no login needed)
+  const [saved, setSaved] = useState<Record<string, string>>({});
+  const [saveDetails, setSaveDetails] = useState(true);
+
   const [ship, setShip] = useState({ flat: FLAT_SHIPPING, threshold: FREE_SHIPPING_THRESHOLD });
   useEffect(() => {
     setMounted(true);
+    try {
+      const s = localStorage.getItem("greengene-customer");
+      if (s) setSaved(JSON.parse(s));
+    } catch {
+      /* ignore */
+    }
     fetch("/api/shipping").then((r) => r.json()).then(setShip).catch(() => {});
     fetch("/api/payments/methods")
       .then((r) => r.json())
@@ -91,6 +101,20 @@ export default function CheckoutPage() {
       paymentMethod: payMethod,
       items: items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
     };
+
+    // Save (or clear) the customer's details on this device
+    try {
+      if (saveDetails) {
+        localStorage.setItem(
+          "greengene-customer",
+          JSON.stringify({ name: payload.name, email: payload.email, phone: payload.phone, ...payload.address })
+        );
+      } else {
+        localStorage.removeItem("greengene-customer");
+      }
+    } catch {
+      /* ignore */
+    }
 
     try {
       // 1. Create the order
@@ -149,9 +173,9 @@ export default function CheckoutPage() {
           <section className="rounded-2xl border border-border bg-card p-6">
             <h2 className="mb-4 text-lg font-bold">Contact details</h2>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Full name" name="name" required />
-              <Field label="Email" name="email" type="email" required />
-              <Field label="Phone" name="phone" type="tel" required />
+              <Field label="Full name" name="name" required defaultValue={saved.name} />
+              <Field label="Email" name="email" type="email" required defaultValue={saved.email} />
+              <Field label="Phone" name="phone" type="tel" required defaultValue={saved.phone} />
             </div>
           </section>
 
@@ -159,13 +183,13 @@ export default function CheckoutPage() {
             <h2 className="mb-4 text-lg font-bold">Delivery address</h2>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="sm:col-span-2">
-                <Field label="Street address" name="line1" required />
+                <Field label="Street address" name="line1" required defaultValue={saved.line1} />
               </div>
               <div className="sm:col-span-2">
-                <Field label="Apartment, suite, etc. (optional)" name="line2" />
+                <Field label="Apartment, suite, etc. (optional)" name="line2" defaultValue={saved.line2} />
               </div>
-              <Field label="Suburb" name="suburb" required />
-              <Field label="City / Town" name="city" required />
+              <Field label="Suburb" name="suburb" required defaultValue={saved.suburb} />
+              <Field label="City / Town" name="city" required defaultValue={saved.city} />
               <div>
                 <label className="mb-1.5 block text-sm font-medium">
                   Province <span className="text-brand-600">*</span>
@@ -173,7 +197,7 @@ export default function CheckoutPage() {
                 <select
                   name="province"
                   required
-                  defaultValue=""
+                  defaultValue={saved.province ?? ""}
                   className="w-full rounded-xl border border-border bg-white px-4 py-2.5 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
                 >
                   <option value="" disabled>Select province</option>
@@ -182,8 +206,18 @@ export default function CheckoutPage() {
                   ))}
                 </select>
               </div>
-              <Field label="Postal code" name="postalCode" required />
+              <Field label="Postal code" name="postalCode" required defaultValue={saved.postalCode} />
             </div>
+
+            <label className="mt-4 flex cursor-pointer items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={saveDetails}
+                onChange={(e) => setSaveDetails(e.target.checked)}
+                className="h-4 w-4 accent-brand-600"
+              />
+              Save my details on this device for faster checkout next time
+            </label>
           </section>
 
           <section className="rounded-2xl border border-border bg-card p-6">
@@ -349,11 +383,13 @@ function Field({
   name,
   type = "text",
   required,
+  defaultValue,
 }: {
   label: string;
   name: string;
   type?: string;
   required?: boolean;
+  defaultValue?: string;
 }) {
   return (
     <div>
@@ -364,6 +400,7 @@ function Field({
         name={name}
         type={type}
         required={required}
+        defaultValue={defaultValue}
         className="w-full rounded-xl border border-border bg-white px-4 py-2.5 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
       />
     </div>
