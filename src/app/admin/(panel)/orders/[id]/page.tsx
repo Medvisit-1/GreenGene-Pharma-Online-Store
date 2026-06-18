@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, FileText } from "lucide-react";
+import { ArrowLeft, FileText, Truck, CheckCircle2, ExternalLink } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatPrice } from "@/lib/utils";
-import { updateOrder } from "@/app/admin/actions";
+import { updateOrder, shipOrder } from "@/app/admin/actions";
 import { Button } from "@/components/ui/button";
 
 export const dynamic = "force-dynamic";
@@ -15,13 +15,17 @@ const sel = "rounded-xl border border-border bg-white px-4 py-2.5 text-sm outlin
 
 export default async function AdminOrderDetail({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ shipped?: string; shiperror?: string }>;
 }) {
   const { id } = await params;
+  const { shipped, shiperror } = await searchParams;
   const order = await prisma.order.findUnique({ where: { id }, include: { items: true } });
   if (!order) notFound();
   const address = JSON.parse(order.shippingAddress || "{}");
+  const isPaid = order.paymentStatus === "paid";
 
   return (
     <div className="space-y-6">
@@ -76,26 +80,78 @@ export default async function AdminOrderDetail({
           </section>
         </div>
 
-        {/* Status update */}
-        <aside className="h-fit rounded-2xl border border-border bg-surface p-5">
-          <h2 className="mb-4 font-bold">Update order</h2>
-          <form action={updateOrder} className="space-y-4">
-            <input type="hidden" name="id" value={order.id} />
-            <div>
-              <label className="mb-1.5 block text-sm font-medium">Order status</label>
-              <select name="status" defaultValue={order.status} className={`${sel} w-full capitalize`}>
-                {ORDER_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="mb-1.5 block text-sm font-medium">Payment status</label>
-              <select name="paymentStatus" defaultValue={order.paymentStatus} className={`${sel} w-full capitalize`}>
-                {PAYMENT_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
-              </select>
-            </div>
-            <Button type="submit" className="w-full">Save</Button>
-          </form>
-        </aside>
+        {/* Right column */}
+        <div className="space-y-6">
+          {/* Fulfilment / Bob Go */}
+          <aside className="h-fit rounded-2xl border border-border bg-surface p-5">
+            <h2 className="mb-3 flex items-center gap-2 font-bold">
+              <Truck className="h-4 w-4 text-brand-600" /> Shipping
+            </h2>
+
+            {shipped && (
+              <p className="mb-3 flex items-center gap-2 rounded-lg bg-brand-50 px-3 py-2 text-sm text-brand-700">
+                <CheckCircle2 className="h-4 w-4" /> Sent to Bob Go.
+              </p>
+            )}
+            {shiperror && (
+              <p className="mb-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{shiperror}</p>
+            )}
+
+            {order.bobgoOrderId || order.trackingNumber ? (
+              <div className="space-y-2 text-sm">
+                <p className="font-medium text-brand-700">✓ Sent to Bob Go</p>
+                {order.bobgoOrderId && (
+                  <p className="text-muted-foreground">Bob Go ID: {order.bobgoOrderId}</p>
+                )}
+                {order.trackingNumber && (
+                  <p className="text-muted-foreground">Tracking: {order.trackingNumber}</p>
+                )}
+                {order.trackingUrl && (
+                  <a href={order.trackingUrl} target="_blank" className="inline-flex items-center gap-1 font-medium text-brand-700 hover:underline">
+                    Track shipment <ExternalLink className="h-3.5 w-3.5" />
+                  </a>
+                )}
+                <form action={shipOrder} className="pt-2">
+                  <input type="hidden" name="id" value={order.id} />
+                  <Button type="submit" variant="outline" size="sm" className="w-full">Re-send to Bob Go</Button>
+                </form>
+              </div>
+            ) : isPaid ? (
+              <form action={shipOrder}>
+                <input type="hidden" name="id" value={order.id} />
+                <p className="mb-3 text-sm text-muted-foreground">
+                  This order is paid and ready to ship.
+                </p>
+                <Button type="submit" className="w-full"><Truck className="h-4 w-4" /> Send to Bob Go</Button>
+              </form>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                The order must be <strong>paid</strong> before it can be sent to Bob Go.
+              </p>
+            )}
+          </aside>
+
+          {/* Status update */}
+          <aside className="h-fit rounded-2xl border border-border bg-surface p-5">
+            <h2 className="mb-4 font-bold">Update order</h2>
+            <form action={updateOrder} className="space-y-4">
+              <input type="hidden" name="id" value={order.id} />
+              <div>
+                <label className="mb-1.5 block text-sm font-medium">Order status</label>
+                <select name="status" defaultValue={order.status} className={`${sel} w-full capitalize`}>
+                  {ORDER_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="mb-1.5 block text-sm font-medium">Payment status</label>
+                <select name="paymentStatus" defaultValue={order.paymentStatus} className={`${sel} w-full capitalize`}>
+                  {PAYMENT_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+              <Button type="submit" className="w-full">Save</Button>
+            </form>
+          </aside>
+        </div>
       </div>
     </div>
   );

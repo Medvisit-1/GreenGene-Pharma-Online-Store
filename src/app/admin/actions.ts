@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/utils";
 import { updateSettings } from "@/lib/settings";
+import { sendToBobGo } from "@/lib/shipping";
 import {
   checkCredentials,
   setSession,
@@ -96,6 +97,17 @@ export async function updateOrder(formData: FormData) {
   });
   revalidatePath(`/admin/orders/${id}`);
   revalidatePath("/admin/orders");
+}
+
+export async function shipOrder(formData: FormData) {
+  const id = String(formData.get("id"));
+  const order = await prisma.order.findUnique({ where: { id } });
+  if (!order) redirect("/admin/orders");
+  const result = await sendToBobGo(order!);
+  revalidatePath(`/admin/orders/${id}`);
+  redirect(
+    `/admin/orders/${id}?${result.ok ? "shipped=1" : `shiperror=${encodeURIComponent(result.message)}`}`
+  );
 }
 
 /* ---------------- Promotions ---------------- */
