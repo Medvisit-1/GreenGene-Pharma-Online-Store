@@ -85,15 +85,22 @@ export async function deleteProduct(formData: FormData) {
 
 /* ---------------- Orders ---------------- */
 
+/** Update payment status only (fulfilment is handled separately). */
 export async function updateOrder(formData: FormData) {
   const id = String(formData.get("id"));
   await prisma.order.update({
     where: { id },
-    data: {
-      status: String(formData.get("status") ?? "pending"),
-      paymentStatus: String(formData.get("paymentStatus") ?? "unpaid"),
-    },
+    data: { paymentStatus: String(formData.get("paymentStatus") ?? "unpaid") },
   });
+  revalidatePath(`/admin/orders/${id}`);
+  revalidatePath("/admin/orders");
+}
+
+/** Mark an order fulfilled / unfulfilled. */
+export async function setFulfillment(formData: FormData) {
+  const id = String(formData.get("id"));
+  const status = String(formData.get("status")) === "fulfilled" ? "fulfilled" : "unfulfilled";
+  await prisma.order.update({ where: { id }, data: { status } });
   revalidatePath(`/admin/orders/${id}`);
   revalidatePath("/admin/orders");
 }
@@ -107,8 +114,8 @@ export async function saveTracking(formData: FormData) {
     data: {
       trackingNumber: trackingNumber || null,
       trackingUrl: trackingUrl || null,
-      // Marking tracking = shipped
-      ...(trackingNumber ? { status: "shipped" } : {}),
+      // Adding tracking fulfils the order
+      ...(trackingNumber ? { status: "fulfilled" } : {}),
     },
   });
   revalidatePath(`/admin/orders/${id}`);

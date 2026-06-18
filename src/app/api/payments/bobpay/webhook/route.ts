@@ -80,7 +80,6 @@ export async function POST(req: Request) {
       where: { orderNumber },
       data: {
         paymentStatus: "paid",
-        status: "processing",
         paymentRef: String(data.short_reference ?? data.uuid ?? data.id ?? ""),
       },
     });

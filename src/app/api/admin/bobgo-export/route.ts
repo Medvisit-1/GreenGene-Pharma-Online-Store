@@ -44,7 +44,7 @@ export async function GET(req: Request) {
   const orders = await prisma.order.findMany({
     where: id
       ? { id }
-      : { paymentStatus: "paid", status: { notIn: ["shipped", "delivered", "cancelled"] } },
+      : { paymentStatus: "paid", status: "unfulfilled" },
     include: { items: true, customer: true },
     orderBy: { createdAt: "desc" },
   });

@@ -67,7 +67,7 @@ export async function POST(req: Request) {
       customerId: customer.id,
       email: body.email.toLowerCase(),
       phone: body.phone,
-      status: "pending",
+      status: "unfulfilled",
       paymentStatus: "unpaid",
       paymentMethod: body.paymentMethod ?? "pending",
       subtotal,

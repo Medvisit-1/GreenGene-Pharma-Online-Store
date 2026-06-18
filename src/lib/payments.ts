@@ -110,7 +110,7 @@ export async function confirmYocoPayment(order: Order): Promise<boolean> {
     if (completed && amountOk && currencyOk) {
       await prisma.order.update({
         where: { id: order.id },
-        data: { paymentStatus: "paid", status: "processing", paymentRef: data.paymentId ?? order.paymentRef },
+        data: { paymentStatus: "paid", paymentRef: data.paymentId ?? order.paymentRef },
       });
       return true;
     }

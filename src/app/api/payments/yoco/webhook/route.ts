@@ -72,7 +72,7 @@ export async function POST(req: Request) {
     if (orderNumber && status === "approved") {
       await prisma.order.updateMany({
         where: { orderNumber: String(orderNumber) },
-        data: { paymentStatus: "paid", status: "processing", paymentRef: paymentId },
+        data: { paymentStatus: "paid", paymentRef: paymentId },
       });
     }
   }

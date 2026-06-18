@@ -83,8 +83,8 @@ model Order {
   customerId      String?
   email           String
   phone           String?
-  // Status: pending | paid | processing | shipped | delivered | cancelled
-  status          String      @default("pending")
+  // Fulfilment status: unfulfilled | fulfilled
+  status          String      @default("unfulfilled")
   // Payment: unpaid | paid | refunded | failed
   paymentStatus   String      @default("unpaid")
   paymentMethod   String?

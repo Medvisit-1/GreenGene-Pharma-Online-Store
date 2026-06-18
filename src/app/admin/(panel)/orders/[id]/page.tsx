@@ -3,13 +3,12 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, FileText, Truck, Download, ExternalLink } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatPrice } from "@/lib/utils";
-import { updateOrder, saveTracking } from "@/app/admin/actions";
+import { updateOrder, saveTracking, setFulfillment } from "@/app/admin/actions";
 import { Button } from "@/components/ui/button";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Order" };
 
-const ORDER_STATUSES = ["pending", "processing", "shipped", "delivered", "cancelled"];
 const PAYMENT_STATUSES = ["unpaid", "paid", "refunded", "failed"];
 const BOBGO_PORTAL = "https://my.bobgo.co.za/orders";
 const sel = "rounded-xl border border-border bg-white px-4 py-2.5 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100";
@@ -133,17 +132,35 @@ export default async function AdminOrderDetail({
             )}
           </aside>
 
-          {/* Status update */}
+          {/* Fulfilment status */}
           <aside className="h-fit rounded-2xl border border-border bg-surface p-5">
-            <h2 className="mb-4 font-bold">Update order</h2>
+            <h2 className="mb-3 font-bold">Fulfilment</h2>
+            <div className="mb-4 flex items-center gap-2 text-sm">
+              <span className="text-muted-foreground">Status:</span>
+              <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ${order.status === "fulfilled" ? "bg-brand-100 text-brand-700" : "bg-amber-100 text-amber-700"}`}>
+                {order.status}
+              </span>
+            </div>
+            {order.status === "fulfilled" ? (
+              <form action={setFulfillment}>
+                <input type="hidden" name="id" value={order.id} />
+                <input type="hidden" name="status" value="unfulfilled" />
+                <Button type="submit" variant="outline" className="w-full">Mark as unfulfilled</Button>
+              </form>
+            ) : (
+              <form action={setFulfillment}>
+                <input type="hidden" name="id" value={order.id} />
+                <input type="hidden" name="status" value="fulfilled" />
+                <Button type="submit" className="w-full">Fulfill order</Button>
+              </form>
+            )}
+          </aside>
+
+          {/* Payment status */}
+          <aside className="h-fit rounded-2xl border border-border bg-surface p-5">
+            <h2 className="mb-4 font-bold">Payment</h2>
             <form action={updateOrder} className="space-y-4">
               <input type="hidden" name="id" value={order.id} />
-              <div>
-                <label className="mb-1.5 block text-sm font-medium">Order status</label>
-                <select name="status" defaultValue={order.status} className={`${sel} w-full capitalize`}>
-                  {ORDER_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
-                </select>
-              </div>
               <div>
                 <label className="mb-1.5 block text-sm font-medium">Payment status</label>
                 <select name="paymentStatus" defaultValue={order.paymentStatus} className={`${sel} w-full capitalize`}>

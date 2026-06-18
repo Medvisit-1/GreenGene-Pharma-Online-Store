@@ -8,12 +8,8 @@ export const dynamic = "force-dynamic";
 export const metadata = { title: "Orders" };
 
 const statusColor: Record<string, string> = {
-  pending: "bg-amber-100 text-amber-700",
-  paid: "bg-brand-100 text-brand-700",
-  processing: "bg-blue-100 text-blue-700",
-  shipped: "bg-indigo-100 text-indigo-700",
-  delivered: "bg-brand-100 text-brand-700",
-  cancelled: "bg-gray-200 text-gray-600",
+  unfulfilled: "bg-amber-100 text-amber-700",
+  fulfilled: "bg-brand-100 text-brand-700",
 };
 
 export default async function AdminOrders() {
@@ -23,7 +19,7 @@ export default async function AdminOrders() {
   });
 
   const paidToShip = orders.filter(
-    (o) => o.paymentStatus === "paid" && !["shipped", "delivered", "cancelled"].includes(o.status)
+    (o) => o.paymentStatus === "paid" && o.status === "unfulfilled"
   ).length;
 
   return (

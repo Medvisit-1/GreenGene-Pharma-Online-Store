@@ -33,7 +33,6 @@ export default async function OrderPage({
     const confirmed = await confirmYocoPayment(order);
     if (confirmed) {
       order.paymentStatus = "paid";
-      order.status = "processing";
     }
   }
 
@@ -205,13 +204,10 @@ function Row({ label, value, accent }: { label: string; value: string; accent?: 
 
 function StatusBadge({ label, payment }: { label: string; payment?: boolean }) {
   const colors: Record<string, string> = {
-    pending: "bg-amber-100 text-amber-700",
+    unfulfilled: "bg-amber-100 text-amber-700",
+    fulfilled: "bg-brand-100 text-brand-700",
     paid: "bg-brand-100 text-brand-700",
     unpaid: "bg-red-100 text-red-700",
-    processing: "bg-blue-100 text-blue-700",
-    shipped: "bg-indigo-100 text-indigo-700",
-    delivered: "bg-brand-100 text-brand-700",
-    cancelled: "bg-gray-200 text-gray-600",
     refunded: "bg-gray-200 text-gray-600",
     failed: "bg-red-100 text-red-700",
   };
