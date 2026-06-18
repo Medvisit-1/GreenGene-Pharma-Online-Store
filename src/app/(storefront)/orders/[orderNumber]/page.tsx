@@ -84,6 +84,26 @@ export default async function OrderPage({
         </div>
       ) : null}
 
+      {order.trackingNumber && (
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-brand-200 bg-brand-50 px-5 py-4">
+          <p className="text-sm">
+            <span className="font-semibold text-brand-800">📦 Your order has shipped!</span>{" "}
+            Tracking number:{" "}
+            <span className="font-semibold text-brand-700">{order.trackingNumber}</span>
+          </p>
+          {order.trackingUrl && (
+            <a
+              href={order.trackingUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm font-semibold text-brand-700 hover:underline"
+            >
+              Track your parcel →
+            </a>
+          )}
+        </div>
+      )}
+
       <div className="overflow-hidden rounded-2xl border border-border">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-brand-50/50 px-6 py-4">
           <div>
@@ -106,6 +126,7 @@ export default async function OrderPage({
               {address.line1}
               {address.line2 ? `, ${address.line2}` : ""}
               <br />
+              {address.suburb ? <>{address.suburb}<br /></> : null}
               {address.city}, {address.province} {address.postalCode}
               <br />
               {address.country}

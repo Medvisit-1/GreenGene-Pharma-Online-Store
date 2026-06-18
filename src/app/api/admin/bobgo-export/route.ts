@@ -62,7 +62,7 @@ export async function GET(req: Request) {
     const [firstName, ...rest] = fullName.split(/\s+/);
     const lastName = rest.join(" ");
     const street = [addr.line1, addr.line2].filter(Boolean).join(", ");
-    const suburb = (addr.line2 && addr.line2.trim()) || addr.city || "";
+    const suburb = addr.suburb?.trim() || addr.city || "";
 
     const items = o.items.length ? o.items : [{ name: "", price: 0, quantity: 1 }];
     items.forEach((it, idx) => {

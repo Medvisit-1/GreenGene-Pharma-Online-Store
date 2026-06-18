@@ -81,6 +81,7 @@ export default function CheckoutPage() {
       address: {
         line1: String(fd.get("line1")),
         line2: String(fd.get("line2")),
+        suburb: String(fd.get("suburb")),
         city: String(fd.get("city")),
         province: String(fd.get("province")),
         postalCode: String(fd.get("postalCode")),
@@ -163,6 +164,7 @@ export default function CheckoutPage() {
               <div className="sm:col-span-2">
                 <Field label="Apartment, suite, etc. (optional)" name="line2" />
               </div>
+              <Field label="Suburb" name="suburb" required />
               <Field label="City / Town" name="city" required />
               <div>
                 <label className="mb-1.5 block text-sm font-medium">

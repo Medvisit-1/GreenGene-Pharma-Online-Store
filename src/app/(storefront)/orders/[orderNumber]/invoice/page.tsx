@@ -66,6 +66,7 @@ export default async function InvoicePage({ params }: { params: Params }) {
               {address.line1}
               {address.line2 ? `, ${address.line2}` : ""}
               <br />
+              {address.suburb ? <>{address.suburb}<br /></> : null}
               {address.city}, {address.province} {address.postalCode}
               <br />
               {address.country}

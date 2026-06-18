@@ -98,6 +98,23 @@ export async function updateOrder(formData: FormData) {
   revalidatePath("/admin/orders");
 }
 
+export async function saveTracking(formData: FormData) {
+  const id = String(formData.get("id"));
+  const trackingNumber = String(formData.get("trackingNumber") ?? "").trim();
+  const trackingUrl = String(formData.get("trackingUrl") ?? "").trim();
+  await prisma.order.update({
+    where: { id },
+    data: {
+      trackingNumber: trackingNumber || null,
+      trackingUrl: trackingUrl || null,
+      // Marking tracking = shipped
+      ...(trackingNumber ? { status: "shipped" } : {}),
+    },
+  });
+  revalidatePath(`/admin/orders/${id}`);
+  redirect(`/admin/orders/${id}?saved=1`);
+}
+
 /* ---------------- Promotions ---------------- */
 
 export async function savePromotion(formData: FormData) {

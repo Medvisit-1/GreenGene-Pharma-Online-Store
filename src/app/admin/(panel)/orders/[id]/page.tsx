@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, FileText, Truck, Download, ExternalLink } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatPrice } from "@/lib/utils";
-import { updateOrder } from "@/app/admin/actions";
+import { updateOrder, saveTracking } from "@/app/admin/actions";
 import { Button } from "@/components/ui/button";
 
 export const dynamic = "force-dynamic";
@@ -71,6 +71,7 @@ export default async function AdminOrderDetail({
             <p className="text-muted-foreground">
               {order.email}{order.phone ? ` · ${order.phone}` : ""}<br />
               {address.line1}{address.line2 ? `, ${address.line2}` : ""}<br />
+              {address.suburb ? <>{address.suburb}<br /></> : null}
               {address.city}, {address.province} {address.postalCode}<br />
               {address.country}
             </p>
@@ -100,11 +101,30 @@ export default async function AdminOrderDetail({
                     <ExternalLink className="h-4 w-4" /> Open Bob Go dashboard
                   </Button>
                 </a>
-                {order.trackingNumber && (
-                  <p className="pt-1 text-sm text-muted-foreground">
-                    Tracking: <span className="font-medium text-brand-700">{order.trackingNumber}</span>
+
+                {/* Tracking paste-back */}
+                <form action={saveTracking} className="space-y-2 border-t border-border pt-3">
+                  <input type="hidden" name="id" value={order.id} />
+                  <label className="block text-sm font-medium">Bob Go tracking number</label>
+                  <input
+                    name="trackingNumber"
+                    defaultValue={order.trackingNumber ?? ""}
+                    placeholder="e.g. UAMG9LLZB"
+                    className={`${sel} w-full`}
+                  />
+                  <input
+                    name="trackingUrl"
+                    defaultValue={order.trackingUrl ?? ""}
+                    placeholder="Tracking link (optional)"
+                    className={`${sel} w-full`}
+                  />
+                  <Button type="submit" variant="secondary" size="sm" className="w-full">
+                    Save tracking &amp; mark shipped
+                  </Button>
+                  <p className="text-xs text-muted-foreground">
+                    Paste the tracking number from Bob Go — the customer will see it on their order.
                   </p>
-                )}
+                </form>
               </div>
             ) : (
               <p className="text-sm text-muted-foreground">
