@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatPrice } from "@/lib/utils";
+import { getSettings } from "@/lib/settings";
 import { PrintButton } from "@/components/print-button";
 
 export const dynamic = "force-dynamic";
@@ -11,10 +12,10 @@ type Params = Promise<{ orderNumber: string }>;
 
 export default async function InvoicePage({ params }: { params: Params }) {
   const { orderNumber } = await params;
-  const order = await prisma.order.findUnique({
-    where: { orderNumber },
-    include: { items: true },
-  });
+  const [order, settings] = await Promise.all([
+    prisma.order.findUnique({ where: { orderNumber }, include: { items: true } }),
+    getSettings(),
+  ]);
   if (!order) notFound();
 
   const address = JSON.parse(order.shippingAddress || "{}");
@@ -39,9 +40,9 @@ export default async function InvoicePage({ params }: { params: Params }) {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo.png" alt="GreenGene Pharma" className="h-14 w-auto" />
             <p className="mt-3 text-xs text-muted-foreground">
-              Johannesburg, South Africa
+              {settings.contactAddress}
               <br />
-              info@greengenepharma.co.za · +27 (0)11 000 0000
+              {settings.contactEmail} · {settings.contactPhone}
             </p>
           </div>
           <div className="text-right">
