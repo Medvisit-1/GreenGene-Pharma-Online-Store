@@ -97,7 +97,11 @@ export async function GET(req: Request) {
 
   const csv = rows.join("\n");
   const date = new Date().toISOString().slice(0, 10);
-  const filename = id ? `bobgo-order.csv` : `bobgo-orders-${date}.csv`;
+  const safe = (s: string) => s.replace(/[^a-zA-Z0-9-_]/g, "");
+  const filename =
+    id && orders[0]
+      ? `bobgo-${safe(orders[0].orderNumber)}.csv`
+      : `bobgo-orders-${date}.csv`;
 
   return new Response(csv, {
     headers: {
