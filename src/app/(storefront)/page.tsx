@@ -163,9 +163,9 @@ export default async function HomePage() {
       {/* CTA banner */}
       <section className="mx-auto max-w-7xl px-4 pb-16">
         <div className="overflow-hidden rounded-3xl bg-brand-700 px-8 py-12 text-center text-white md:py-16">
-          <h2 className="text-2xl font-semibold md:text-3xl">Get 10% off your first order</h2>
+          <h2 className="text-2xl font-semibold md:text-3xl">Free shipping on orders R1000 and above</h2>
           <p className="mx-auto mt-2 max-w-md text-white/80">
-            Use code <span className="font-bold text-accent">WELCOME10</span> at checkout.
+            Stock up and we&apos;ll cover the delivery.
           </p>
           <Link href="/products" className="mt-6 inline-block">
             <Button variant="accent" size="lg">Start shopping</Button>
