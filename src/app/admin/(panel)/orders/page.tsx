@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { Download } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatPrice } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Orders" };
@@ -20,9 +22,26 @@ export default async function AdminOrders() {
     include: { _count: { select: { items: true } } },
   });
 
+  const paidToShip = orders.filter(
+    (o) => o.paymentStatus === "paid" && !["shipped", "delivered", "cancelled"].includes(o.status)
+  ).length;
+
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold tracking-tight">Orders ({orders.length})</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-bold tracking-tight">Orders ({orders.length})</h1>
+        {paidToShip > 0 ? (
+          <a href="/api/admin/bobgo-export">
+            <Button variant="outline">
+              <Download className="h-4 w-4" /> Export paid orders → Bob Go CSV ({paidToShip})
+            </Button>
+          </a>
+        ) : (
+          <Button variant="outline" disabled>
+            <Download className="h-4 w-4" /> Export paid orders → Bob Go CSV
+          </Button>
+        )}
+      </div>
 
       {orders.length === 0 ? (
         <p className="rounded-2xl border border-dashed border-border p-10 text-center text-muted-foreground">
