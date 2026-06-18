@@ -22,7 +22,7 @@ export function ProductCard({ product }: { product: ProductCardData }) {
   const outOfStock = product.stock <= 0;
 
   return (
-    <div className="animate-fade-in-up group flex flex-col">
+    <div className="animate-fade-in-up group flex h-full flex-col">
       {/* Transparent image — sits directly on the page background */}
       <Link href={`/products/${product.slug}`} className="relative block aspect-square">
         {cover ? (
@@ -60,31 +60,34 @@ export function ProductCard({ product }: { product: ProductCardData }) {
           </span>
         )}
         <Link href={`/products/${product.slug}`}>
-          <h3 className="text-sm font-semibold leading-snug text-brand-800 group-hover:text-brand-600">
+          <h3 className="line-clamp-2 min-h-[2.5rem] text-sm font-semibold leading-snug text-brand-800 group-hover:text-brand-600">
             {product.name}
           </h3>
         </Link>
-        <div className="mt-2 flex items-baseline justify-center gap-2">
-          <span className="text-base font-bold text-brand-700">
-            {formatPrice(product.price)}
-          </span>
-          {onSale && (
-            <span className="text-xs text-muted-foreground line-through">
-              {formatPrice(product.compareAtPrice!)}
+        {/* Price + button anchored to the bottom so they align across all cards */}
+        <div className="mt-auto pt-3">
+          <div className="flex items-baseline justify-center gap-2">
+            <span className="text-base font-bold text-brand-700">
+              {formatPrice(product.price)}
             </span>
-          )}
-        </div>
-        <div className="mt-3">
-          <QuickAddButton
-            product={{
-              id: product.id,
-              slug: product.slug,
-              name: product.name,
-              price: product.price,
-              image: cover,
-              stock: product.stock,
-            }}
-          />
+            {onSale && (
+              <span className="text-xs text-muted-foreground line-through">
+                {formatPrice(product.compareAtPrice!)}
+              </span>
+            )}
+          </div>
+          <div className="mt-3">
+            <QuickAddButton
+              product={{
+                id: product.id,
+                slug: product.slug,
+                name: product.name,
+                price: product.price,
+                image: cover,
+                stock: product.stock,
+              }}
+            />
+          </div>
         </div>
       </div>
     </div>
