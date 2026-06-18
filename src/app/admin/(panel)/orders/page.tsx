@@ -1,16 +1,10 @@
-import Link from "next/link";
 import { Download } from "lucide-react";
 import { prisma } from "@/lib/prisma";
-import { formatPrice } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { OrderRow } from "@/components/admin/order-row";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Orders" };
-
-const statusColor: Record<string, string> = {
-  unfulfilled: "bg-amber-100 text-amber-700",
-  fulfilled: "bg-brand-100 text-brand-700",
-};
 
 export default async function AdminOrders() {
   const orders = await prisma.order.findMany({
@@ -59,27 +53,19 @@ export default async function AdminOrders() {
             </thead>
             <tbody className="divide-y divide-border">
               {orders.map((o) => (
-                <tr key={o.id} className="cursor-pointer hover:bg-brand-50/40">
-                  <td className="px-4 py-3 font-semibold">
-                    <Link href={`/admin/orders/${o.id}`} className="hover:text-brand-700">{o.orderNumber}</Link>
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">{o.email}</td>
-                  <td className="px-4 py-3 text-muted-foreground">
-                    {new Date(o.createdAt).toLocaleString("en-ZA", {
-                      dateStyle: "medium",
-                      timeStyle: "short",
-                      timeZone: "Africa/Johannesburg",
-                    })}
-                  </td>
-                  <td className="px-4 py-3">{o._count.items}</td>
-                  <td className="px-4 py-3">
-                    <span className={`rounded-full px-2 py-0.5 text-xs font-semibold capitalize ${statusColor[o.status] ?? "bg-gray-100"}`}>{o.status}</span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={`rounded-full px-2 py-0.5 text-xs font-semibold capitalize ${o.paymentStatus === "paid" ? "bg-brand-100 text-brand-700" : "bg-red-100 text-red-700"}`}>{o.paymentStatus}</span>
-                  </td>
-                  <td className="px-4 py-3 text-right font-medium">{formatPrice(o.total)}</td>
-                </tr>
+                <OrderRow
+                  key={o.id}
+                  order={{
+                    id: o.id,
+                    orderNumber: o.orderNumber,
+                    email: o.email,
+                    createdAt: o.createdAt.toISOString(),
+                    itemCount: o._count.items,
+                    status: o.status,
+                    paymentStatus: o.paymentStatus,
+                    total: o.total,
+                  }}
+                />
               ))}
             </tbody>
           </table>
