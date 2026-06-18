@@ -1,5 +1,6 @@
 import "server-only";
 import type { Order } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 
 export type PaymentMethodInfo = {
   id: string;
@@ -78,9 +79,44 @@ async function initiateYoco(order: Order): Promise<InitiateResult> {
     if (!res.ok || !data.redirectUrl) {
       return { kind: "error", message: data?.message ?? "Could not start Yoco payment." };
     }
+    // Store the Yoco checkout id so we can confirm payment status later.
+    if (data.id) {
+      await prisma.order.update({ where: { id: order.id }, data: { paymentRef: data.id } }).catch(() => {});
+    }
     return { kind: "redirect", url: data.redirectUrl };
   } catch {
     return { kind: "error", message: "Could not reach Yoco. Please try again." };
+  }
+}
+
+/**
+ * Confirm a Yoco payment by polling the checkout status with the secret key
+ * (works without webhooks/OAuth). Marks the order paid if completed.
+ */
+export async function confirmYocoPayment(order: Order): Promise<boolean> {
+  const key = process.env.YOCO_SECRET_KEY;
+  if (!key || !order.paymentRef) return false;
+  try {
+    const res = await fetch(`https://payments.yoco.com/api/checkouts/${order.paymentRef}`, {
+      headers: { Authorization: `Bearer ${key}` },
+    });
+    if (!res.ok) return false;
+    const data = await res.json();
+    // Only mark paid when Yoco confirms BOTH a completed status AND the exact
+    // amount + currency for this order — never based on the redirect alone.
+    const completed = String(data.status).toLowerCase() === "completed";
+    const amountOk = Number(data.amount) === order.total;
+    const currencyOk = String(data.currency).toUpperCase() === "ZAR";
+    if (completed && amountOk && currencyOk) {
+      await prisma.order.update({
+        where: { id: order.id },
+        data: { paymentStatus: "paid", status: "processing", paymentRef: data.paymentId ?? order.paymentRef },
+      });
+      return true;
+    }
+    return false;
+  } catch {
+    return false;
   }
 }
 

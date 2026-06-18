@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { formatPrice } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { PaymentPoller } from "@/components/payment-poller";
+import { confirmYocoPayment } from "@/lib/payments";
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +27,15 @@ export default async function OrderPage({
     include: { items: true },
   });
   if (!order) notFound();
+
+  // For Yoco orders awaiting payment, confirm status server-side with Yoco.
+  if (order.paymentStatus !== "paid" && order.paymentMethod === "yoco" && order.paymentRef) {
+    const confirmed = await confirmYocoPayment(order);
+    if (confirmed) {
+      order.paymentStatus = "paid";
+      order.status = "processing";
+    }
+  }
 
   const address = JSON.parse(order.shippingAddress || "{}");
 
