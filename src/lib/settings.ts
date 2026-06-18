@@ -31,9 +31,14 @@ export async function getShippingConfig(): Promise<{ flat: number; threshold: nu
 }
 
 export async function getSettings(): Promise<SiteSettings> {
-  const rows = await prisma.setting.findMany();
-  const map = Object.fromEntries(rows.map((r) => [r.key, r.value]));
-  return { ...DEFAULT_SETTINGS, ...map } as SiteSettings;
+  try {
+    const rows = await prisma.setting.findMany();
+    const map = Object.fromEntries(rows.map((r) => [r.key, r.value]));
+    return { ...DEFAULT_SETTINGS, ...map } as SiteSettings;
+  } catch {
+    // DB unavailable (e.g. during build prerender) — fall back to defaults
+    return DEFAULT_SETTINGS;
+  }
 }
 
 export async function updateSettings(values: Partial<SiteSettings>): Promise<void> {

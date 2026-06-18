@@ -2,6 +2,10 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { getSettings } from "@/lib/settings";
 
+// Storefront reads live settings from the DB, so render at request time
+// (not at build, where the database isn't reachable).
+export const dynamic = "force-dynamic";
+
 export default async function StorefrontLayout({
   children,
 }: {
