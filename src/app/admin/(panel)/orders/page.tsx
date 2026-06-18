@@ -50,7 +50,7 @@ export default async function AdminOrders() {
               <tr>
                 <th className="px-4 py-3">Order</th>
                 <th className="px-4 py-3">Customer</th>
-                <th className="px-4 py-3">Date</th>
+                <th className="px-4 py-3">Date &amp; time</th>
                 <th className="px-4 py-3">Items</th>
                 <th className="px-4 py-3">Status</th>
                 <th className="px-4 py-3">Payment</th>
@@ -64,7 +64,13 @@ export default async function AdminOrders() {
                     <Link href={`/admin/orders/${o.id}`} className="hover:text-brand-700">{o.orderNumber}</Link>
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">{o.email}</td>
-                  <td className="px-4 py-3 text-muted-foreground">{new Date(o.createdAt).toLocaleDateString("en-ZA")}</td>
+                  <td className="px-4 py-3 text-muted-foreground">
+                    {new Date(o.createdAt).toLocaleString("en-ZA", {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                      timeZone: "Africa/Johannesburg",
+                    })}
+                  </td>
                   <td className="px-4 py-3">{o._count.items}</td>
                   <td className="px-4 py-3">
                     <span className={`rounded-full px-2 py-0.5 text-xs font-semibold capitalize ${statusColor[o.status] ?? "bg-gray-100"}`}>{o.status}</span>
