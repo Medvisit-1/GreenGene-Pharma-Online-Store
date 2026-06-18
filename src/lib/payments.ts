@@ -69,6 +69,8 @@ async function initiateYoco(order: Order): Promise<InitiateResult> {
         successUrl: `${appUrl()}/orders/${order.orderNumber}?paid=1`,
         cancelUrl: `${appUrl()}/checkout?cancelled=1`,
         failureUrl: `${appUrl()}/orders/${order.orderNumber}?failed=1`,
+        // externalId + metadata let us map the webhook/payment back to this order
+        externalId: order.orderNumber,
         metadata: { orderNumber: order.orderNumber },
       }),
     });
