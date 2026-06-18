@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Mail, MapPin, Phone, Clock } from "lucide-react";
+import { Mail, MapPin, Clock } from "lucide-react";
 import { getSettings } from "@/lib/settings";
 import { ContactForm } from "@/components/contact-form";
 
@@ -13,7 +13,6 @@ export const metadata: Metadata = {
 export default async function ContactPage() {
   const s = await getSettings();
   const cards = [
-    { icon: Phone, title: "Call us", lines: [s.contactPhone] },
     { icon: Mail, title: "Email us", lines: [s.contactEmail] },
     { icon: MapPin, title: "Visit us", lines: [s.contactAddress] },
     { icon: Clock, title: "Hours", lines: s.contactHours.split(" · ") },
