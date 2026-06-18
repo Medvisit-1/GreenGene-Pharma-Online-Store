@@ -11,9 +11,10 @@ import { Button } from "@/components/ui/button";
 
 type Discount = { valid: boolean; code?: string; amount: number; message?: string };
 
-const PAYMENT_LOGOS: Record<string, string> = {
-  yoco: "/payment/yoco.svg",
-  bobpay: "/payment/bobpay.svg",
+const PAYMENT_LOGOS: Record<string, { src: string; dark?: boolean }> = {
+  yoco: { src: "/payment/yoco.svg" },
+  // Bob Pay's wordmark is white, so show it on a dark chip
+  bobpay: { src: "/payment/bobpay.svg", dark: true },
 };
 
 export default function CheckoutPage() {
@@ -222,12 +223,18 @@ export default function CheckoutPage() {
                     <span className="block text-xs text-muted-foreground">{m.description}</span>
                   </span>
                   {PAYMENT_LOGOS[m.id] && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={PAYMENT_LOGOS[m.id]}
-                      alt={m.label}
-                      className="ml-2 h-6 w-auto shrink-0 self-center"
-                    />
+                    <span
+                      className={`ml-2 flex shrink-0 items-center self-center rounded-lg ${
+                        PAYMENT_LOGOS[m.id].dark ? "bg-brand-900 px-2.5 py-1.5" : ""
+                      }`}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={PAYMENT_LOGOS[m.id].src}
+                        alt={m.label}
+                        className="h-5 w-auto"
+                      />
+                    </span>
                   )}
                 </label>
               ))}
