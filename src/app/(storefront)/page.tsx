@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Truck, ShieldCheck, FlaskConical, Leaf, ArrowRight } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { ProductCard } from "@/components/product-card";
+import { getRatingMap } from "@/lib/reviews";
 import { Button } from "@/components/ui/button";
 
 export const dynamic = "force-dynamic";
@@ -15,6 +16,13 @@ export default async function HomePage() {
     }),
     prisma.category.findMany({ orderBy: { sortOrder: "asc" } }),
   ]);
+
+  const ratings = await getRatingMap(featured.map((p) => p.id));
+  const featuredWithRatings = featured.map((p) => ({
+    ...p,
+    rating: ratings.get(p.id)?.avg,
+    reviewCount: ratings.get(p.id)?.count,
+  }));
 
   return (
     <>
@@ -154,7 +162,7 @@ export default async function HomePage() {
           </Link>
         </div>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-          {featured.map((p) => (
+          {featuredWithRatings.map((p) => (
             <ProductCard key={p.id} product={p} />
           ))}
         </div>

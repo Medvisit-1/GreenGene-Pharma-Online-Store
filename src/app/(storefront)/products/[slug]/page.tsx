@@ -9,6 +9,7 @@ import { AddToCart } from "@/components/add-to-cart";
 import { ProductCard } from "@/components/product-card";
 import { Stars } from "@/components/stars";
 import { ReviewForm } from "@/components/review-form";
+import { getRatingMap } from "@/lib/reviews";
 
 export const dynamic = "force-dynamic";
 
@@ -49,6 +50,13 @@ export default async function ProductPage({ params }: { params: Params }) {
     },
     take: 4,
   });
+
+  const relatedRatings = await getRatingMap(related.map((p) => p.id));
+  const relatedWithRatings = related.map((p) => ({
+    ...p,
+    rating: relatedRatings.get(p.id)?.avg,
+    reviewCount: relatedRatings.get(p.id)?.count,
+  }));
 
   const reviews = await prisma.review.findMany({
     where: { productId: product.id, status: "approved" },
@@ -223,7 +231,7 @@ export default async function ProductPage({ params }: { params: Params }) {
         <section className="mt-16">
           <h2 className="mb-6 text-2xl font-semibold tracking-tight">You may also like</h2>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-            {related.map((p) => (
+            {relatedWithRatings.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
           </div>

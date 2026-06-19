@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { formatPrice, parseImages } from "@/lib/utils";
 import { QuickAddButton } from "@/components/quick-add-button";
+import { Stars } from "@/components/stars";
 
 export type ProductCardData = {
   id: string;
@@ -12,6 +13,8 @@ export type ProductCardData = {
   images: string;
   stock: number;
   brand?: string | null;
+  rating?: number;
+  reviewCount?: number;
 };
 
 export function ProductCard({ product }: { product: ProductCardData }) {
@@ -64,6 +67,14 @@ export function ProductCard({ product }: { product: ProductCardData }) {
             {product.name}
           </h3>
         </Link>
+        {product.reviewCount ? (
+          <div className="mt-1.5 flex items-center justify-center gap-1.5">
+            <Stars rating={product.rating ?? 0} size={14} />
+            <span className="text-[11px] text-muted-foreground">
+              ({product.reviewCount})
+            </span>
+          </div>
+        ) : null}
         {/* Price + button anchored to the bottom so they align across all cards */}
         <div className="mt-auto pt-3">
           <div className="flex items-baseline justify-center gap-2">

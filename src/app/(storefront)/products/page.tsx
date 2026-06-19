@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { ProductCard } from "@/components/product-card";
+import { getRatingMap } from "@/lib/reviews";
 import type { Prisma } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
@@ -51,6 +52,13 @@ export default async function ProductsPage({
       ? prisma.category.findUnique({ where: { slug: category } })
       : Promise.resolve(null),
   ]);
+
+  const ratings = await getRatingMap(products.map((p) => p.id));
+  const productsWithRatings = products.map((p) => ({
+    ...p,
+    rating: ratings.get(p.id)?.avg,
+    reviewCount: ratings.get(p.id)?.count,
+  }));
 
   const buildQuery = (overrides: Record<string, string | undefined>) => {
     const params = new URLSearchParams();
@@ -161,7 +169,7 @@ export default async function ProductsPage({
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
-              {products.map((p) => (
+              {productsWithRatings.map((p) => (
                 <ProductCard key={p.id} product={p} />
               ))}
             </div>
