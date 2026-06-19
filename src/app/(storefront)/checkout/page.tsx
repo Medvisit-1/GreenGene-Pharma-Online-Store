@@ -15,6 +15,7 @@ const PAYMENT_LOGOS: Record<string, { src: string; dark?: boolean }> = {
   yoco: { src: "/payment/yoco.svg" },
   // Bob Pay's wordmark is white, so show it on a dark chip
   bobpay: { src: "/payment/bobpay.svg", dark: true },
+  paystack: { src: "/payment/paystack.svg" },
 };
 
 export default function CheckoutPage() {

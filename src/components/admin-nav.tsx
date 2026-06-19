@@ -8,6 +8,7 @@ import {
   ShoppingCart,
   Tag,
   Star,
+  CreditCard,
   Settings,
   ExternalLink,
 } from "lucide-react";
@@ -19,6 +20,7 @@ const LINKS = [
   { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
   { href: "/admin/promotions", label: "Promotions", icon: Tag },
   { href: "/admin/reviews", label: "Reviews", icon: Star },
+  { href: "/admin/payments", label: "Payment Gateways", icon: CreditCard },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 

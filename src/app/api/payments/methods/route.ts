@@ -3,5 +3,5 @@ import { getEnabledMethods } from "@/lib/payments";
 
 // Public: lets the checkout UI render the available payment options.
 export async function GET() {
-  return NextResponse.json({ methods: getEnabledMethods() });
+  return NextResponse.json({ methods: await getEnabledMethods() });
 }

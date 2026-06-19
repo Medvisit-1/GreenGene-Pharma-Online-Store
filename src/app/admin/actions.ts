@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/utils";
 import { updateSettings } from "@/lib/settings";
+import { GATEWAYS, saveGatewayStates } from "@/lib/payments";
 import {
   checkCredentials,
   setSession,
@@ -192,4 +193,14 @@ export async function saveSettings(formData: FormData) {
   });
   revalidatePath("/", "layout");
   redirect("/admin/settings?saved=1");
+}
+
+export async function saveGateways(formData: FormData) {
+  const active: Record<string, boolean> = {};
+  for (const g of GATEWAYS) {
+    active[g.id] = formData.get(`gateway_${g.id}`) === "on";
+  }
+  await saveGatewayStates(active);
+  revalidatePath("/", "layout");
+  redirect("/admin/payments?saved=1");
 }

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { initiatePayment } from "@/lib/payments";
+import { initiatePayment, getEnabledMethods } from "@/lib/payments";
 
 // POST { orderNumber, method } -> starts payment for an existing order.
 export async function POST(req: Request) {
@@ -13,6 +13,12 @@ export async function POST(req: Request) {
   const { orderNumber, method } = body ?? {};
   if (!orderNumber || !method) {
     return NextResponse.json({ error: "Missing order or method" }, { status: 400 });
+  }
+
+  // Only allow gateways the admin has activated (and that are configured).
+  const enabled = await getEnabledMethods();
+  if (!enabled.some((m) => m.id === method)) {
+    return NextResponse.json({ error: "This payment method is unavailable." }, { status: 400 });
   }
 
   const order = await prisma.order.findUnique({ where: { orderNumber } });
