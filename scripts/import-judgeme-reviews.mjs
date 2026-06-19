@@ -25,6 +25,18 @@ import { join } from "node:path";
 
 const prisma = new PrismaClient();
 
+/**
+ * Judge.me product handle -> our Product.slug, for products whose handle
+ * changed between the Shopify store and this one.
+ */
+const HANDLE_ALIASES = {
+  "estrogene-60-capsules-one-month-supply": "estrogene-ultimate-hormonal-support-for-women",
+  soul: "soul-natural-formula-for-stress-depression-anxiety-emotional-balance",
+  "estrolean-60-capsules-one-month-supply": "estrolean-fast-slimming-fitness-support-for-women",
+  // "Dianabolean" was renamed to "AnaboLean" — confirm with store owner.
+  "dianabolean-60-capsules-one-month-supply": "anabolean-testosterone-booster-anabolic-support",
+};
+
 /* ----------------------- locate the CSV ----------------------- */
 function findCsv() {
   const arg = process.argv[2];
@@ -45,8 +57,9 @@ function findCsv() {
 }
 
 /* ----------------------- minimal CSV parser ----------------------- */
-// Handles quoted fields, escaped quotes (""), and newlines inside quotes.
-function parseCsv(text) {
+// Handles quoted fields, escaped quotes (""), newlines inside quotes, and a
+// configurable delimiter (Judge.me's "judgeme format" export uses ";").
+function parseCsv(text, delim = ",") {
   const rows = [];
   let row = [];
   let field = "";
@@ -66,7 +79,7 @@ function parseCsv(text) {
       }
     } else if (c === '"') {
       inQuotes = true;
-    } else if (c === ",") {
+    } else if (c === delim) {
       row.push(field);
       field = "";
     } else if (c === "\n" || c === "\r") {
@@ -107,16 +120,32 @@ function statusFor(rec) {
 async function main() {
   const path = findCsv();
   console.log(`Reading: ${path}`);
-  const rows = parseCsv(readFileSync(path, "utf8"));
-  if (rows.length < 2) throw new Error("CSV has no data rows.");
+  const raw = readFileSync(path, "utf8");
 
-  const headers = rows[0].map((h) => h.trim().toLowerCase());
-  const records = rows.slice(1).map((r) => {
+  // Detect the delimiter from the header line (Judge.me uses ";").
+  const lines = raw.split(/\r?\n/);
+  const headerLine =
+    lines.find((l) => /(^|[;,\t])rating([;,\t]|$)/i.test(l) && /body/i.test(l)) || lines[0];
+  const delim = [";", "\t", ","]
+    .map((d) => [d, headerLine.split(d).length])
+    .sort((a, b) => b[1] - a[1])[0][0];
+
+  const rows = parseCsv(raw, delim);
+  // Skip any leading metadata lines — find the real header row.
+  const headerIdx = rows.findIndex((r) => {
+    const s = r.map((x) => x.trim().toLowerCase());
+    return s.includes("rating") && s.includes("body");
+  });
+  if (headerIdx === -1) throw new Error("Could not find a header row with 'rating' and 'body'.");
+
+  const headers = rows[headerIdx].map((h) => h.trim().toLowerCase());
+  const records = rows.slice(headerIdx + 1).map((r) => {
     const o = {};
     headers.forEach((h, i) => (o[h] = r[i] ?? ""));
     return o;
   });
-  console.log(`Parsed ${records.length} rows. Columns: ${headers.join(", ")}`);
+  console.log(`Delimiter: "${delim === "\t" ? "\\t" : delim}"  |  ${records.length} data rows`);
+  console.log(`Columns: ${headers.join(", ")}`);
 
   // Build product lookup maps
   const products = await prisma.product.findMany({ select: { id: true, slug: true, name: true } });
@@ -132,7 +161,9 @@ async function main() {
   for (const rec of records) {
     const handle = pick(rec, "product_handle", "handle").toLowerCase();
     const titleOrName = pick(rec, "product_title", "product_name", "product_type").toLowerCase();
-    const productId = bySlug.get(handle) || byName.get(titleOrName);
+    const aliasedSlug = HANDLE_ALIASES[handle];
+    const productId =
+      (aliasedSlug && bySlug.get(aliasedSlug)) || bySlug.get(handle) || byName.get(titleOrName);
 
     const ratingRaw = parseInt(pick(rec, "rating", "score"), 10);
     const body = pick(rec, "body", "review", "content", "comment");
