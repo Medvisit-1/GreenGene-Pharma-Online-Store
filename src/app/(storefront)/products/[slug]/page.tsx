@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { Truck, ShieldCheck, RotateCcw, Check } from "lucide-react";
+import { Truck, ShieldCheck, RotateCcw, Check, BadgeCheck } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatPrice, parseImages } from "@/lib/utils";
 import { ProductGallery } from "@/components/product-gallery";
@@ -204,7 +204,12 @@ export default async function ProductPage({ params }: { params: Params }) {
                   </div>
                   {r.title && <p className="mt-2 font-semibold">{r.title}</p>}
                   <p className="mt-1 text-sm text-foreground/80">{r.body}</p>
-                  <p className="mt-3 text-xs font-medium text-brand-700">— {r.author}</p>
+                  <div className="mt-3 flex items-center gap-2">
+                    <p className="text-xs font-medium text-brand-700">— {r.author}</p>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2 py-0.5 text-[11px] font-semibold text-brand-700">
+                      <BadgeCheck className="h-3.5 w-3.5" /> Verified
+                    </span>
+                  </div>
                 </div>
               ))
             )}
