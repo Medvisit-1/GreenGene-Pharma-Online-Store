@@ -3,6 +3,7 @@ import { writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 import crypto from "node:crypto";
 import { isAuthed } from "@/lib/auth";
+import { normalizeImage } from "@/lib/image";
 
 export const runtime = "nodejs";
 
@@ -37,7 +38,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "File too large (max 6 MB)." }, { status: 400 });
   }
 
-  const buffer = Buffer.from(await file.arrayBuffer());
+  const raw = Buffer.from(await file.arrayBuffer());
+  // Trim transparent/solid margins + cap size so all product images render
+  // at a consistent visual size on the storefront.
+  const buffer = await normalizeImage(raw, ext);
   const name = `${Date.now()}-${crypto.randomUUID().slice(0, 8)}.${ext}`;
   const dir = path.join(process.cwd(), "public", "uploads");
   await mkdir(dir, { recursive: true });
