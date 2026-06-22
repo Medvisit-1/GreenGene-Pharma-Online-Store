@@ -1,7 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { Trash2 } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
+import { deleteOrder } from "@/app/admin/actions";
 
 const statusColor: Record<string, string> = {
   unfulfilled: "bg-amber-100 text-amber-700",
@@ -46,6 +48,29 @@ export function OrderRow({ order }: { order: OrderRowData }) {
         </span>
       </td>
       <td className="px-4 py-3 text-right font-medium">{formatPrice(order.total)}</td>
+      <td className="px-2 py-3 text-right">
+        <form action={deleteOrder} className="inline">
+          <input type="hidden" name="id" value={order.id} />
+          <button
+            type="submit"
+            title="Delete order"
+            aria-label={`Delete order ${order.orderNumber}`}
+            onClick={(e) => {
+              e.stopPropagation(); // don't open the order
+              if (
+                !window.confirm(
+                  `Delete order ${order.orderNumber}? This permanently removes it and cannot be undone.`
+                )
+              ) {
+                e.preventDefault();
+              }
+            }}
+            className="rounded-lg p-2 text-muted-foreground hover:bg-red-50 hover:text-red-600"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        </form>
+      </td>
     </tr>
   );
 }

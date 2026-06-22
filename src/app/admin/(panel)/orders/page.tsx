@@ -49,6 +49,7 @@ export default async function AdminOrders() {
                 <th className="px-4 py-3">Status</th>
                 <th className="px-4 py-3">Payment</th>
                 <th className="px-4 py-3 text-right">Total</th>
+                <th className="px-2 py-3"><span className="sr-only">Actions</span></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">

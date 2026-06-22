@@ -86,6 +86,13 @@ export async function deleteProduct(formData: FormData) {
 
 /* ---------------- Orders ---------------- */
 
+/** Permanently delete an order (its line items cascade away). */
+export async function deleteOrder(formData: FormData) {
+  const id = String(formData.get("id"));
+  await prisma.order.delete({ where: { id } });
+  revalidatePath("/admin/orders");
+}
+
 /** Update payment status only (fulfilment is handled separately). */
 export async function updateOrder(formData: FormData) {
   const id = String(formData.get("id"));
