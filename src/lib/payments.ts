@@ -352,6 +352,7 @@ async function initiatePaystack(order: Order): Promise<InitiateResult> {
  * Marks the order paid only when status is success AND amount + currency match.
  */
 export async function confirmPaystackPayment(order: Order): Promise<boolean> {
+  if (order.paymentStatus === "paid") return true; // already confirmed — don't re-email
   const key = process.env.PAYSTACK_SECRET_KEY;
   const ref = order.paymentRef || order.orderNumber;
   if (!key || !ref) return false;
