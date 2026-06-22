@@ -3,6 +3,8 @@
 A fully custom e-commerce store + admin panel for GreenGene Pharma (South Africa).
 Built with **Next.js 16, TypeScript, Tailwind CSS, Prisma**.
 
+> Deploys automatically to Railway on every push to `main`.
+
 ## Getting started
 
 ```bash
