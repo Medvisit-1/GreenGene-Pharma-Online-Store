@@ -87,3 +87,14 @@ h1, h2, h3, .font-display {
 .animate-fade-in-up {
   animation: fade-in-up 0.5s ease both;
 }
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.animate-marquee {
+  animation: marquee linear infinite;
+}
+.marquee-track:hover {
+  animation-play-state: paused;
+}

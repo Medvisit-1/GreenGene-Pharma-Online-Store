@@ -10,6 +10,7 @@ import {
   Star,
   CreditCard,
   Settings,
+  LayoutTemplate,
   ExternalLink,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -20,6 +21,7 @@ const LINKS = [
   { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
   { href: "/admin/promotions", label: "Promotions", icon: Tag },
   { href: "/admin/reviews", label: "Reviews", icon: Star },
+  { href: "/admin/front-shop", label: "Front Shop", icon: LayoutTemplate },
   { href: "/admin/payments", label: "Payment Gateways", icon: CreditCard },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];

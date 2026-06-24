@@ -3,6 +3,7 @@ import { Truck, ShieldCheck, FlaskConical, Leaf, ArrowRight } from "lucide-react
 import { prisma } from "@/lib/prisma";
 import { ProductCard } from "@/components/product-card";
 import { getRatingMap } from "@/lib/reviews";
+import { getSettings } from "@/lib/settings";
 import { Button } from "@/components/ui/button";
 
 export const dynamic = "force-dynamic";
@@ -24,43 +25,67 @@ export default async function HomePage() {
     reviewCount: ratings.get(p.id)?.count,
   }));
 
+  const s = await getSettings();
+  const features = [
+    { icon: Leaf, title: s.feat1Title, text: s.feat1Text },
+    { icon: ShieldCheck, title: s.feat2Title, text: s.feat2Text },
+    { icon: FlaskConical, title: s.feat3Title, text: s.feat3Text },
+    { icon: Truck, title: s.feat4Title, text: s.feat4Text },
+  ];
+  const stats = [
+    { k: s.rqtStat1Key, v: s.rqtStat1Val },
+    { k: s.rqtStat2Key, v: s.rqtStat2Val },
+    { k: s.rqtStat3Key, v: s.rqtStat3Val },
+  ];
+  const rqtParagraphs = s.rqtBody.split(/\n\s*\n/).map((t) => t.trim()).filter(Boolean);
+
   return (
     <>
       {/* Hero */}
       <section className="bg-background">
         <div className="mx-auto max-w-3xl px-4 py-20 text-center md:py-28">
-          <span className="inline-flex items-center gap-2 rounded-full border border-brand-300 bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700">
-            <Leaf className="h-3.5 w-3.5" /> Research · Quality · Trust
-          </span>
+          {s.heroBadge && (
+            <span className="inline-flex items-center gap-2 rounded-full border border-brand-300 bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700">
+              <Leaf className="h-3.5 w-3.5" /> {s.heroBadge}
+            </span>
+          )}
           <h1 className="animate-fade-in-up mx-auto mt-6 max-w-2xl text-balance text-3xl font-semibold leading-[1.12] tracking-tight text-brand-700 sm:text-4xl md:text-5xl">
-            Empower Your Wellness, Live Better.
+            {s.heroHeading}
           </h1>
-          <p className="mx-auto mt-5 max-w-xl text-lg text-brand-800/80">
-            Empowering your journey to holistic well-being with our premium
-            natural health solutions.
-          </p>
+          {s.heroSubheading && (
+            <p className="mx-auto mt-5 max-w-xl text-lg text-brand-800/80">
+              {s.heroSubheading}
+            </p>
+          )}
           <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Link href="/products">
-              <Button variant="accent" size="lg">
-                Shop all products <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
-            <Link href="/promotions">
-              <Button variant="outline" size="lg">View promotions</Button>
-            </Link>
+            {s.heroPrimaryLabel && (
+              <Link href={s.heroPrimaryLink || "/products"}>
+                <Button variant="accent" size="lg">
+                  {s.heroPrimaryLabel} <ArrowRight className="h-4 w-4" />
+                </Button>
+              </Link>
+            )}
+            {s.heroSecondaryLabel && (
+              <Link href={s.heroSecondaryLink || "/promotions"}>
+                <Button variant="outline" size="lg">{s.heroSecondaryLabel}</Button>
+              </Link>
+            )}
           </div>
+          {s.heroImage && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={s.heroImage}
+              alt=""
+              className="animate-fade-in-up mx-auto mt-12 max-h-[440px] w-auto rounded-3xl object-contain"
+            />
+          )}
         </div>
       </section>
 
       {/* Value props */}
       <section className="mx-auto max-w-7xl px-4 pb-4">
         <div className="grid grid-cols-2 gap-6 rounded-3xl bg-surface p-8 shadow-sm lg:grid-cols-4">
-          {[
-            { icon: Leaf, title: "100% Natural", text: "Premium plant-based formulas" },
-            { icon: ShieldCheck, title: "SAHPRA-Approved Facility", text: "Manufactured to high standards" },
-            { icon: FlaskConical, title: "Research-Backed", text: "Clinically studied ingredients" },
-            { icon: Truck, title: "Fast Delivery", text: "Across South Africa" },
-          ].map((f) => (
+          {features.map((f) => (
             <div key={f.title} className="flex items-start gap-3">
               <div className="rounded-xl bg-brand-50 p-2.5 text-brand-600">
                 <f.icon className="h-5 w-5" />
@@ -79,32 +104,22 @@ export default async function HomePage() {
         <div className="grid items-center gap-10 rounded-3xl bg-brand-800 p-8 text-white md:grid-cols-2 md:p-12">
           <div>
             <h2 className="text-3xl font-semibold tracking-tight">
-              Research, Quality &amp; Trust
+              {s.rqtHeading}
             </h2>
-            <p className="mt-4 text-white/85">
-              GreenGene products are thoughtfully developed by a team of expert
-              researchers, utilising the highest-quality ingredients and
-              showcasing unique, innovative formulations. Each product is backed
-              by rigorous science and research, setting us apart from the rest.
-            </p>
-            <p className="mt-4 text-white/85">
-              What sets us apart is our transparency — our ingredients are fully
-              disclosed with precise dosages clearly stated, and every product is
-              manufactured in a SAHPRA-approved facility under ethical practices.
-            </p>
-            <Link href="/products" className="mt-7 inline-block">
-              <Button variant="accent" size="lg">Explore our range</Button>
-            </Link>
+            {rqtParagraphs.map((para, i) => (
+              <p key={i} className="mt-4 text-white/85">{para}</p>
+            ))}
+            {s.rqtButtonLabel && (
+              <Link href={s.rqtButtonLink || "/products"} className="mt-7 inline-block">
+                <Button variant="accent" size="lg">{s.rqtButtonLabel}</Button>
+              </Link>
+            )}
           </div>
           <div className="grid grid-cols-3 gap-4">
-            {[
-              { k: "100%", v: "Natural ingredients" },
-              { k: "Full", v: "Dosage transparency" },
-              { k: "SAHPRA", v: "Approved facility" },
-            ].map((s) => (
-              <div key={s.v} className="rounded-2xl bg-white/10 p-5 text-center">
-                <p className="text-2xl font-semibold text-accent">{s.k}</p>
-                <p className="mt-1 text-xs text-white/80">{s.v}</p>
+            {stats.map((st) => (
+              <div key={st.v} className="rounded-2xl bg-white/10 p-5 text-center">
+                <p className="text-2xl font-semibold text-accent">{st.k}</p>
+                <p className="mt-1 text-xs text-white/80">{st.v}</p>
               </div>
             ))}
           </div>

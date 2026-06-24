@@ -202,6 +202,36 @@ export async function saveSettings(formData: FormData) {
   redirect("/admin/settings?saved=1");
 }
 
+export async function saveFrontShop(formData: FormData) {
+  const g = (k: string) => String(formData.get(k) ?? "");
+  await updateSettings({
+    heroBadge: g("heroBadge"),
+    heroHeading: g("heroHeading"),
+    heroSubheading: g("heroSubheading"),
+    heroPrimaryLabel: g("heroPrimaryLabel"),
+    heroPrimaryLink: g("heroPrimaryLink"),
+    heroSecondaryLabel: g("heroSecondaryLabel"),
+    heroSecondaryLink: g("heroSecondaryLink"),
+    heroImage: g("heroImage"),
+    feat1Title: g("feat1Title"), feat1Text: g("feat1Text"),
+    feat2Title: g("feat2Title"), feat2Text: g("feat2Text"),
+    feat3Title: g("feat3Title"), feat3Text: g("feat3Text"),
+    feat4Title: g("feat4Title"), feat4Text: g("feat4Text"),
+    rqtHeading: g("rqtHeading"),
+    rqtBody: g("rqtBody"),
+    rqtButtonLabel: g("rqtButtonLabel"),
+    rqtButtonLink: g("rqtButtonLink"),
+    rqtStat1Key: g("rqtStat1Key"), rqtStat1Val: g("rqtStat1Val"),
+    rqtStat2Key: g("rqtStat2Key"), rqtStat2Val: g("rqtStat2Val"),
+    rqtStat3Key: g("rqtStat3Key"), rqtStat3Val: g("rqtStat3Val"),
+    marqueeEnabled: formData.get("marqueeEnabled") === "on" ? "1" : "0",
+    marqueeText: g("marqueeText"),
+    marqueeSpeed: String(parseInt(g("marqueeSpeed"), 10) || 30),
+  });
+  revalidatePath("/", "layout");
+  redirect("/admin/front-shop?saved=1");
+}
+
 export async function saveGateways(formData: FormData) {
   const active: Record<string, boolean> = {};
   for (const g of GATEWAYS) {
