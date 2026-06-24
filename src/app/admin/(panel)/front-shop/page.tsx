@@ -190,6 +190,33 @@ export default async function AdminFrontShop({
           </div>
         </div>
 
+        {/* Bottom CTA banner */}
+        <div className={card}>
+          <h2 className="mb-1 font-bold">Bottom call-to-action banner</h2>
+          <p className="mb-4 text-xs text-muted-foreground">The green banner near the bottom of the homepage.</p>
+          <div className="grid gap-4">
+            <div>
+              <label className={label}>Heading</label>
+              <input name="ctaHeading" defaultValue={s.ctaHeading} className={input} />
+            </div>
+            <div>
+              <label className={label}>Subheading</label>
+              <input name="ctaSubheading" defaultValue={s.ctaSubheading} className={input} />
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label className={label}>Button — text</label>
+                <input name="ctaButtonLabel" defaultValue={s.ctaButtonLabel} className={input} />
+              </div>
+              <div>
+                <label className={label}>Button — link</label>
+                <input name="ctaButtonLink" defaultValue={s.ctaButtonLink} className={input} />
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground">Leave the heading and button text empty to hide the banner entirely.</p>
+          </div>
+        </div>
+
         <Button type="submit" size="lg">Save front shop</Button>
       </form>
     </div>

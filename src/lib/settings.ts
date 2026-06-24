@@ -32,6 +32,11 @@ export type SiteSettings = {
   rqtStat1Key: string; rqtStat1Val: string;
   rqtStat2Key: string; rqtStat2Val: string;
   rqtStat3Key: string; rqtStat3Val: string;
+  // Bottom CTA banner
+  ctaHeading: string;
+  ctaSubheading: string;
+  ctaButtonLabel: string;
+  ctaButtonLink: string;
 
   // ---- Floating marquee banner ----
   marqueeEnabled: string; // "1" | "0"
@@ -69,6 +74,10 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   rqtStat1Key: "100%", rqtStat1Val: "Natural ingredients",
   rqtStat2Key: "Full", rqtStat2Val: "Dosage transparency",
   rqtStat3Key: "SAHPRA", rqtStat3Val: "Approved facility",
+  ctaHeading: "Free shipping on orders R1000 and above",
+  ctaSubheading: "Stock up and we'll cover the delivery.",
+  ctaButtonLabel: "Start shopping",
+  ctaButtonLink: "/products",
 
   marqueeEnabled: "0",
   marqueeText: "🎉 Free shipping on orders over R1000 · Use code WELCOME10 for 10% off your first order",

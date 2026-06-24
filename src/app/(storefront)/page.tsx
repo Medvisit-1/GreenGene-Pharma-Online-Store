@@ -184,17 +184,23 @@ export default async function HomePage() {
       </section>
 
       {/* CTA banner */}
-      <section className="mx-auto max-w-7xl px-4 pb-16">
-        <div className="overflow-hidden rounded-3xl bg-brand-700 px-8 py-12 text-center text-white md:py-16">
-          <h2 className="text-2xl font-semibold md:text-3xl">Free shipping on orders R1000 and above</h2>
-          <p className="mx-auto mt-2 max-w-md text-white/80">
-            Stock up and we&apos;ll cover the delivery.
-          </p>
-          <Link href="/products" className="mt-6 inline-block">
-            <Button variant="accent" size="lg">Start shopping</Button>
-          </Link>
-        </div>
-      </section>
+      {(s.ctaHeading || s.ctaButtonLabel) && (
+        <section className="mx-auto max-w-7xl px-4 pb-16">
+          <div className="overflow-hidden rounded-3xl bg-brand-700 px-8 py-12 text-center text-white md:py-16">
+            {s.ctaHeading && (
+              <h2 className="text-2xl font-semibold md:text-3xl">{s.ctaHeading}</h2>
+            )}
+            {s.ctaSubheading && (
+              <p className="mx-auto mt-2 max-w-md text-white/80">{s.ctaSubheading}</p>
+            )}
+            {s.ctaButtonLabel && (
+              <Link href={s.ctaButtonLink || "/products"} className="mt-6 inline-block">
+                <Button variant="accent" size="lg">{s.ctaButtonLabel}</Button>
+              </Link>
+            )}
+          </div>
+        </section>
+      )}
     </>
   );
 }
