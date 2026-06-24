@@ -10,9 +10,9 @@ const slotW = Math.ceil((W + 2 * O) / 3); // ~634
 const step = slotW - O;
 
 const sources = [
-  { file: "family1.jpg", warm: false },
-  { file: "family4.jpg", warm: true }, // B&W → warm-toned, put in the bright golden middle
-  { file: "family2.jpg", warm: false },
+  { file: "family1.jpg", warm: false }, // tender parent + child
+  { file: "family4.jpg", warm: true },  // young family in field (B&W → warm-toned)
+  { file: "family5.jpg", warm: false }, // grandparents
 ];
 
 /* horizontal feather mask (white = keep, transparent = blend away) */
