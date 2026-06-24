@@ -115,11 +115,11 @@ export default async function HomePage() {
               </Link>
             )}
           </div>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-3 gap-2 sm:gap-4">
             {stats.map((st) => (
-              <div key={st.v} className="rounded-2xl bg-white/10 p-5 text-center">
-                <p className="text-2xl font-semibold text-accent">{st.k}</p>
-                <p className="mt-1 text-xs text-white/80">{st.v}</p>
+              <div key={st.v} className="rounded-2xl bg-white/10 p-3 text-center sm:p-5">
+                <p className="break-words text-base font-semibold leading-tight text-accent sm:text-2xl">{st.k}</p>
+                <p className="mt-1 text-[11px] leading-tight text-white/80 sm:text-xs">{st.v}</p>
               </div>
             ))}
           </div>
