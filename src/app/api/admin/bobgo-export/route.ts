@@ -58,31 +58,40 @@ export async function GET(req: Request) {
     } catch {
       addr = {};
     }
-    const fullName = (o.customer?.name ?? "").trim();
-    const [firstName, ...rest] = fullName.split(/\s+/);
+    const fullName =
+      (o.customer?.name ?? "").trim() ||
+      [addr.firstName, addr.lastName].filter(Boolean).join(" ").trim() ||
+      (addr.name ?? "").trim();
+    const [firstName, ...rest] = fullName.split(/\s+/).filter(Boolean);
     const lastName = rest.join(" ");
-    const street = [addr.line1, addr.line2].filter(Boolean).join(", ");
+    const street = [addr.line1, addr.line2].filter(Boolean).join(", ") || addr.street || "";
     const suburb = addr.suburb?.trim() || addr.city || "";
+    // Bob Go accepts: Unpaid, Paid, Partially paid, Refunded, Partially refunded,
+    // Pending, Voided, Authorized — map our lower-case status to a valid value.
+    const payStatus = o.paymentStatus === "paid" ? "Paid" : "Unpaid";
 
-    const items = o.items.length ? o.items : [{ name: "", price: 0, quantity: 1 }];
+    const items = o.items.length
+      ? o.items
+      : [{ name: `Order ${o.orderNumber}`, price: o.total, quantity: 1 }];
     items.forEach((it, idx) => {
-      const first = idx === 0; // order-level fields only on first item row
+      const first = idx === 0; // shipping/notes only ONCE per order (avoid double-charge)
       rows.push(
         [
           cell(o.orderNumber),
-          cell(first ? firstName ?? "" : ""),
-          cell(first ? lastName : ""),
-          cell(first ? o.email : ""),
-          cell(first ? o.phone ?? "" : ""),
-          cell(first ? street : ""),
-          cell(first ? suburb : ""),
-          cell(first ? addr.city ?? "" : ""),
-          cell(first ? addr.province ?? "" : ""),
-          cell(first ? addr.postalCode ?? "" : ""),
-          cell(first ? "Paid" : ""),
+          // Required customer/address/payment fields must be present on EVERY row
+          cell(firstName || "-"),
+          cell(lastName || "-"),
+          cell(o.email),
+          cell(o.phone ?? ""),
+          cell(street),
+          cell(suburb),
+          cell(addr.city ?? ""),
+          cell(addr.province ?? ""),
+          cell(addr.postalCode ?? ""),
+          cell(payStatus),
           cell(""), // collection address name
           cell(first ? o.notes ?? "" : ""),
-          cell(first ? (o.shipping / 100).toFixed(2) : ""), // shipping charge once
+          cell(first ? (o.shipping / 100).toFixed(2) : ""), // shipping charge once per order
           cell(it.name),
           cell(""), // weight
           cell((it.price / 100).toFixed(2)),
