@@ -7,6 +7,7 @@ import { formatPrice, parseImages } from "@/lib/utils";
 import { ProductGallery } from "@/components/product-gallery";
 import { AddToCart } from "@/components/add-to-cart";
 import { ProductCard } from "@/components/product-card";
+import { MarketplaceLinks } from "@/components/marketplace-links";
 import { Stars } from "@/components/stars";
 import { ReviewForm } from "@/components/review-form";
 import { getRatingMap } from "@/lib/reviews";
@@ -69,6 +70,7 @@ export default async function ProductPage({ params }: { params: Params }) {
       : 0;
 
   return (
+    <>
     <div className="mx-auto max-w-7xl px-4 py-10">
       <nav className="mb-6 text-xs text-muted-foreground">
         <Link href="/" className="hover:text-brand-700">Home</Link>
@@ -238,5 +240,11 @@ export default async function ProductPage({ params }: { params: Params }) {
         </section>
       )}
     </div>
+      <MarketplaceLinks
+        takealotUrl={product.takealotUrl}
+        amazonUrl={product.amazonUrl}
+        bobshopUrl={product.bobshopUrl}
+      />
+    </>
   );
 }

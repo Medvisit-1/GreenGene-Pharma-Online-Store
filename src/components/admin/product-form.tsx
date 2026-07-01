@@ -91,6 +91,28 @@ export function ProductForm({
       </div>
 
       <div className="rounded-2xl border border-border bg-surface p-6">
+        <h3 className="mb-1 font-bold">Also available on</h3>
+        <p className="mb-4 text-xs text-muted-foreground">
+          Paste this product&apos;s link on each marketplace. Filled-in ones show as
+          clickable logos at the bottom of the product page. Leave blank to hide.
+        </p>
+        <div className="grid gap-4">
+          <div>
+            <label className={label}>Takealot link</label>
+            <input name="takealotUrl" type="url" placeholder="https://www.takealot.com/..." defaultValue={product?.takealotUrl ?? ""} className={input} />
+          </div>
+          <div>
+            <label className={label}>Amazon link</label>
+            <input name="amazonUrl" type="url" placeholder="https://www.amazon.com/..." defaultValue={product?.amazonUrl ?? ""} className={input} />
+          </div>
+          <div>
+            <label className={label}>BobShop link</label>
+            <input name="bobshopUrl" type="url" placeholder="https://www.bobshop.co.za/..." defaultValue={product?.bobshopUrl ?? ""} className={input} />
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-border bg-surface p-6">
         <label className={label}>Product images</label>
         <ImageUploader initial={images} />
         <p className="mt-2 text-xs text-muted-foreground">

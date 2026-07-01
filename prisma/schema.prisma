@@ -36,6 +36,10 @@ model Product {
   // JSON-encoded array of image URLs
   images           String      @default("[]")
   brand            String?
+  // External marketplace product links (optional)
+  takealotUrl      String?
+  amazonUrl        String?
+  bobshopUrl       String?
   featured         Boolean     @default(false)
   active           Boolean     @default(true)
   category         Category?   @relation(fields: [categoryId], references: [id])
