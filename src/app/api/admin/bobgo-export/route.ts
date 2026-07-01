@@ -73,38 +73,42 @@ export async function GET(req: Request) {
     const items = o.items.length
       ? o.items
       : [{ name: `Order ${o.orderNumber}`, price: o.total, quantity: 1 }];
-    items.forEach((it, idx) => {
-      const first = idx === 0; // shipping/notes only ONCE per order (avoid double-charge)
-      rows.push(
-        [
-          cell(o.orderNumber),
-          // Required customer/address/payment fields must be present on EVERY row
-          cell(firstName || "-"),
-          cell(lastName || "-"),
-          cell(o.email),
-          cell(o.phone ?? ""),
-          cell(street),
-          cell(suburb),
-          cell(addr.city ?? ""),
-          cell(addr.province ?? ""),
-          cell(addr.postalCode ?? ""),
-          cell(payStatus),
-          cell(""), // collection address name
-          cell(first ? o.notes ?? "" : ""),
-          cell(first ? (o.shipping / 100).toFixed(2) : ""), // shipping charge once per order
-          cell(it.name),
-          cell(""), // weight
-          cell((it.price / 100).toFixed(2)),
-          cell(it.quantity),
-          cell(""), // length
-          cell(""), // width
-          cell(""), // height
-        ].join(",")
-      );
-    });
+    // Bob Go treats each ROW as a separate order, so emit exactly ONE row per
+    // order and fold all line items into the single item-summary columns.
+    const subtotal = items.reduce((n, it) => n + it.price * it.quantity, 0); // cents
+    const itemSummary = items
+      .map((it) => (it.quantity > 1 ? `${it.name} (x${it.quantity})` : it.name))
+      .join("; ");
+
+    rows.push(
+      [
+        cell(o.orderNumber),
+        cell(firstName || "-"),
+        cell(lastName || "-"),
+        cell(o.email),
+        cell(o.phone ?? ""),
+        cell(street),
+        cell(suburb),
+        cell(addr.city ?? ""),
+        cell(addr.province ?? ""),
+        cell(addr.postalCode ?? ""),
+        cell(payStatus),
+        cell(""), // collection address name
+        cell(o.notes ?? ""), // delivery instructions
+        cell((o.shipping / 100).toFixed(2)), // buyer shipping charge
+        cell(itemSummary), // item name — all products + quantities combined
+        cell(""), // weight
+        cell((subtotal / 100).toFixed(2)), // unit price = full order value
+        cell(1), // qty — one consolidated order line
+        cell(""), // length
+        cell(""), // width
+        cell(""), // height
+      ].join(",")
+    );
   }
 
-  const csv = rows.join("\n");
+  // Bob Go's importer needs Windows (CRLF) line endings, plus a trailing newline.
+  const csv = rows.join("\r\n") + "\r\n";
   const date = new Date().toISOString().slice(0, 10);
   const safe = (s: string) => s.replace(/[^a-zA-Z0-9-_]/g, "");
   const filename =
