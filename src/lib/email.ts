@@ -21,7 +21,13 @@ function transport() {
   });
 }
 
-type MailArgs = { to: string; subject: string; html: string; replyTo?: string };
+type MailArgs = {
+  to: string;
+  subject: string;
+  html: string;
+  replyTo?: string;
+  attachments?: { filename: string; content: Buffer }[];
+};
 
 /** Parse "Name <email>" into sender parts for the Brevo API. */
 function senderFrom(): { name: string; email: string } {
@@ -35,11 +41,11 @@ function senderFrom(): { name: string; email: string } {
  * Preferred path: Brevo HTTP API over HTTPS (works from hosts that block SMTP ports).
  * Returns true/false if attempted, or null if not configured (so we can fall back).
  */
-async function sendViaBrevoApi({ to, subject, html, replyTo }: MailArgs): Promise<boolean | null> {
+async function sendViaBrevoApi({ to, subject, html, replyTo, attachments }: MailArgs): Promise<boolean | null> {
   const key = process.env.BREVO_API_KEY;
   if (!key) return null;
   const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), 12000);
+  const timer = setTimeout(() => ctrl.abort(), 20000);
   try {
     const res = await fetch("https://api.brevo.com/v3/smtp/email", {
       method: "POST",
@@ -50,6 +56,9 @@ async function sendViaBrevoApi({ to, subject, html, replyTo }: MailArgs): Promis
         subject,
         htmlContent: html,
         ...(replyTo ? { replyTo: { email: replyTo } } : {}),
+        ...(attachments?.length
+          ? { attachment: attachments.map((a) => ({ name: a.filename, content: a.content.toString("base64") })) }
+          : {}),
       }),
       signal: ctrl.signal,
     });
@@ -66,9 +75,9 @@ async function sendViaBrevoApi({ to, subject, html, replyTo }: MailArgs): Promis
   }
 }
 
-export async function sendMail({ to, subject, html, replyTo }: MailArgs): Promise<boolean> {
+export async function sendMail({ to, subject, html, replyTo, attachments }: MailArgs): Promise<boolean> {
   // 1) Brevo HTTP API (HTTPS) — used when BREVO_API_KEY is set.
-  const viaApi = await sendViaBrevoApi({ to, subject, html, replyTo });
+  const viaApi = await sendViaBrevoApi({ to, subject, html, replyTo, attachments });
   if (viaApi !== null) return viaApi;
 
   // 2) Fallback: SMTP (only works if the host allows outbound SMTP ports).
@@ -79,7 +88,7 @@ export async function sendMail({ to, subject, html, replyTo }: MailArgs): Promis
   }
   const from = process.env.SMTP_FROM || process.env.SMTP_USER || "no-reply@greengenepharma.co.za";
   try {
-    await t.sendMail({ from, to, subject, html, replyTo });
+    await t.sendMail({ from, to, subject, html, replyTo, attachments });
     return true;
   } catch (e) {
     console.error("[email] SMTP send failed:", (e as Error).message);
@@ -302,11 +311,22 @@ export async function sendInvoiceEmail(invoiceId: string): Promise<boolean> {
     ${inv.notes ? `<p style="margin-top:16px;color:#4a5a51;font-size:13px">${esc(inv.notes)}</p>` : ""}
   `;
 
+  // Generate a PDF copy to attach (best-effort — email still sends if this fails)
+  let attachments: { filename: string; content: Buffer }[] | undefined;
+  try {
+    const { renderInvoicePdf } = await import("@/lib/invoice-pdf");
+    const pdf = await renderInvoicePdf(inv);
+    attachments = [{ filename: `Invoice-${inv.number}.pdf`, content: pdf }];
+  } catch (e) {
+    console.error("[invoice] PDF generation failed:", (e as Error).message);
+  }
+
   const ok = await sendMail({
     to: inv.customerEmail,
-    subject: `Invoice ${inv.number} from ${company.name || "GreenGene Pharma"}`,
+    subject: `Invoice ${inv.number} from ${companyName}`,
     html: layout(`Invoice ${inv.number}`, body),
     replyTo: company.email || undefined,
+    attachments,
   });
   if (ok) {
     await prisma.invoice.update({ where: { id: inv.id }, data: { sentAt: new Date() } }).catch(() => {});
