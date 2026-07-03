@@ -4,8 +4,14 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/utils";
-import { updateSettings } from "@/lib/settings";
+import { updateSettings, getSettings } from "@/lib/settings";
 import { GATEWAYS, saveGatewayStates } from "@/lib/payments";
+import {
+  computeTotals,
+  parseLines,
+  companyFromSettings,
+  bankFromSettings,
+} from "@/lib/invoice";
 import {
   checkCredentials,
   setSession,
@@ -247,4 +253,90 @@ export async function saveGateways(formData: FormData) {
   await saveGatewayStates(active);
   revalidatePath("/", "layout");
   redirect("/admin/payments?saved=1");
+}
+
+/* ---------------- Invoicing ---------------- */
+
+async function nextInvoiceNumber(): Promise<string> {
+  const count = await prisma.invoice.count();
+  return `INV-${String(count + 1).padStart(4, "0")}`;
+}
+
+export async function saveInvoiceSettings(formData: FormData) {
+  const g = (k: string) => String(formData.get(k) ?? "");
+  await updateSettings({
+    invoiceCompanyName: g("invoiceCompanyName"),
+    invoiceRegNo: g("invoiceRegNo"),
+    invoiceVatNo: g("invoiceVatNo"),
+    invoiceCompanyAddress: g("invoiceCompanyAddress"),
+    invoiceCompanyEmail: g("invoiceCompanyEmail"),
+    invoiceCompanyPhone: g("invoiceCompanyPhone"),
+    invoiceBankName: g("invoiceBankName"),
+    invoiceBankAccountName: g("invoiceBankAccountName"),
+    invoiceBankAccountNumber: g("invoiceBankAccountNumber"),
+    invoiceBankBranchCode: g("invoiceBankBranchCode"),
+    invoiceBankAccountType: g("invoiceBankAccountType"),
+    invoiceDefaultNotes: g("invoiceDefaultNotes"),
+    invoiceDefaultTaxRate: String(parseInt(g("invoiceDefaultTaxRate"), 10) || 0),
+  });
+  redirect("/admin/invoices?settings=1");
+}
+
+export async function createInvoice(formData: FormData) {
+  const g = (k: string) => String(formData.get(k) ?? "").trim();
+  const lines = parseLines(g("items"));
+  if (!g("customerName") || !g("customerEmail") || !lines.length) {
+    redirect("/admin/invoices/new?error=1");
+  }
+  const taxRate = parseInt(g("taxRate"), 10) || 0;
+  const { subtotal, taxAmount, total } = computeTotals(lines, taxRate);
+
+  const settings = await getSettings();
+  const number = await nextInvoiceNumber();
+  const dueRaw = g("dueDate");
+
+  const inv = await prisma.invoice.create({
+    data: {
+      number,
+      customerName: g("customerName"),
+      customerEmail: g("customerEmail"),
+      customerAddress: g("customerAddress") || null,
+      status: "unpaid",
+      issueDate: g("issueDate") ? new Date(g("issueDate")) : new Date(),
+      dueDate: dueRaw ? new Date(dueRaw) : null,
+      items: JSON.stringify(lines),
+      subtotal,
+      taxRate,
+      taxAmount,
+      total,
+      notes: g("notes") || null,
+      companyDetails: JSON.stringify(companyFromSettings(settings)),
+      bankDetails: JSON.stringify(bankFromSettings(settings)),
+    },
+  });
+  revalidatePath("/admin/invoices");
+  redirect(`/admin/invoices/${inv.id}`);
+}
+
+export async function setInvoiceStatus(formData: FormData) {
+  const id = String(formData.get("id"));
+  const status = String(formData.get("status")) === "paid" ? "paid" : "unpaid";
+  await prisma.invoice.update({ where: { id }, data: { status } });
+  revalidatePath(`/admin/invoices/${id}`);
+  revalidatePath("/admin/invoices");
+}
+
+export async function deleteInvoice(formData: FormData) {
+  const id = String(formData.get("id"));
+  await prisma.invoice.delete({ where: { id } });
+  revalidatePath("/admin/invoices");
+  redirect("/admin/invoices");
+}
+
+export async function sendInvoice(formData: FormData) {
+  const id = String(formData.get("id"));
+  const { sendInvoiceEmail } = await import("@/lib/email");
+  const ok = await sendInvoiceEmail(id);
+  revalidatePath(`/admin/invoices/${id}`);
+  redirect(`/admin/invoices/${id}?${ok ? "sent=1" : "senterror=1"}`);
 }

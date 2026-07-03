@@ -47,8 +47,8 @@ export function MarketplaceLinks({
   if (!available.length) return null;
 
   return (
-    <section className="mx-auto max-w-3xl px-4 pb-16 pt-4">
-      <div className="rounded-3xl border border-border bg-surface p-6 text-center sm:p-8">
+    <section className="mt-16">
+      <div className="mx-auto max-w-3xl rounded-3xl border border-border bg-surface p-6 text-center sm:p-8">
         <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
           Also available at
         </h3>

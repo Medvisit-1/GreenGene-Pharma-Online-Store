@@ -71,6 +71,33 @@ model Setting {
   value String
 }
 
+model Invoice {
+  id              String    @id @default(cuid())
+  number          String    @unique
+  customerName    String
+  customerEmail   String
+  customerAddress String?
+  // unpaid | paid
+  status          String    @default("unpaid")
+  issueDate       DateTime  @default(now())
+  dueDate         DateTime?
+  // JSON: [{ description, quantity, unitPrice(cents) }]
+  items           String    @default("[]")
+  subtotal        Int       @default(0)
+  taxRate         Int       @default(0) // percent
+  taxAmount       Int       @default(0)
+  total           Int       @default(0)
+  notes           String?
+  // snapshot of business + banking details at creation time (JSON)
+  companyDetails  String    @default("{}")
+  bankDetails     String    @default("{}")
+  sentAt          DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([status, createdAt])
+}
+
 model Customer {
   id        String    @id @default(cuid())
   email     String    @unique

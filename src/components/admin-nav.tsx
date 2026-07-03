@@ -11,6 +11,7 @@ import {
   CreditCard,
   Settings,
   LayoutTemplate,
+  FileText,
   ExternalLink,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -19,6 +20,7 @@ const LINKS = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { href: "/admin/products", label: "Products", icon: Package },
   { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
+  { href: "/admin/invoices", label: "Invoicing", icon: FileText },
   { href: "/admin/promotions", label: "Promotions", icon: Tag },
   { href: "/admin/reviews", label: "Reviews", icon: Star },
   { href: "/admin/front-shop", label: "Front Shop", icon: LayoutTemplate },

@@ -70,7 +70,6 @@ export default async function ProductPage({ params }: { params: Params }) {
       : 0;
 
   return (
-    <>
     <div className="mx-auto max-w-7xl px-4 py-10">
       <nav className="mb-6 text-xs text-muted-foreground">
         <Link href="/" className="hover:text-brand-700">Home</Link>
@@ -183,6 +182,13 @@ export default async function ProductPage({ params }: { params: Params }) {
         </div>
       </div>
 
+      {/* Also available at (marketplace links) */}
+      <MarketplaceLinks
+        takealotUrl={product.takealotUrl}
+        amazonUrl={product.amazonUrl}
+        bobshopUrl={product.bobshopUrl}
+      />
+
       {/* Reviews */}
       <section id="reviews" className="mt-16 scroll-mt-24">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
@@ -240,11 +246,5 @@ export default async function ProductPage({ params }: { params: Params }) {
         </section>
       )}
     </div>
-      <MarketplaceLinks
-        takealotUrl={product.takealotUrl}
-        amazonUrl={product.amazonUrl}
-        bobshopUrl={product.bobshopUrl}
-      />
-    </>
   );
 }

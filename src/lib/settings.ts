@@ -42,6 +42,21 @@ export type SiteSettings = {
   marqueeEnabled: string; // "1" | "0"
   marqueeText: string;
   marqueeSpeed: string; // seconds per loop
+
+  // ---- Invoicing: our business + banking details ----
+  invoiceCompanyName: string;
+  invoiceRegNo: string;
+  invoiceVatNo: string;
+  invoiceCompanyAddress: string;
+  invoiceCompanyEmail: string;
+  invoiceCompanyPhone: string;
+  invoiceBankName: string;
+  invoiceBankAccountName: string;
+  invoiceBankAccountNumber: string;
+  invoiceBankBranchCode: string;
+  invoiceBankAccountType: string;
+  invoiceDefaultNotes: string;
+  invoiceDefaultTaxRate: string; // percent, e.g. "15"
 };
 
 export const DEFAULT_SETTINGS: SiteSettings = {
@@ -82,6 +97,20 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   marqueeEnabled: "0",
   marqueeText: "🎉 Free shipping on orders over R1000 · Use code WELCOME10 for 10% off your first order",
   marqueeSpeed: "30",
+
+  invoiceCompanyName: "GreenGene Pharma",
+  invoiceRegNo: "",
+  invoiceVatNo: "",
+  invoiceCompanyAddress: "Duncan Drive, Westville, 3629, South Africa",
+  invoiceCompanyEmail: "info@greengenepharma.co.za",
+  invoiceCompanyPhone: "",
+  invoiceBankName: "",
+  invoiceBankAccountName: "GreenGene Pharma",
+  invoiceBankAccountNumber: "",
+  invoiceBankBranchCode: "",
+  invoiceBankAccountType: "Current / Cheque",
+  invoiceDefaultNotes: "Thank you for your business. Please use the invoice number as your payment reference.",
+  invoiceDefaultTaxRate: "0",
 };
 
 /** Parse shipping settings into cents numbers for calculations. */

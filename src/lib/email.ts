@@ -201,3 +201,113 @@ export async function sendOrderShipped(orderId: string) {
     `),
   });
 }
+
+/* ---------- Invoice ---------- */
+function esc(s: string): string {
+  return String(s ?? "").replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]!));
+}
+
+/**
+ * Render + email an invoice to the customer from info@greengenepharma.co.za.
+ * Returns true if the email was accepted for delivery.
+ */
+export async function sendInvoiceEmail(invoiceId: string): Promise<boolean> {
+  const inv = await prisma.invoice.findUnique({ where: { id: invoiceId } });
+  if (!inv) return false;
+
+  type Line = { description: string; quantity: number; unitPrice: number };
+  type Company = { name?: string; regNo?: string; vatNo?: string; address?: string; email?: string; phone?: string };
+  type Bank = { bankName?: string; accountName?: string; accountNumber?: string; branchCode?: string; accountType?: string };
+  const items: Line[] = JSON.parse(inv.items || "[]");
+  const company: Company = JSON.parse(inv.companyDetails || "{}");
+  const bank: Bank = JSON.parse(inv.bankDetails || "{}");
+
+  const rows = items
+    .map(
+      (l) => `<tr>
+        <td style="padding:8px 0;border-bottom:1px solid #eee">${esc(l.description)}</td>
+        <td style="padding:8px 0;border-bottom:1px solid #eee;text-align:center">${l.quantity}</td>
+        <td style="padding:8px 0;border-bottom:1px solid #eee;text-align:right">${formatPrice(l.unitPrice)}</td>
+        <td style="padding:8px 0;border-bottom:1px solid #eee;text-align:right">${formatPrice(l.unitPrice * l.quantity)}</td>
+      </tr>`
+    )
+    .join("");
+
+  const bankRows = [
+    ["Bank", bank.bankName],
+    ["Account name", bank.accountName],
+    ["Account number", bank.accountNumber],
+    ["Branch code", bank.branchCode],
+    ["Account type", bank.accountType],
+    ["Reference", inv.number],
+  ]
+    .filter(([, v]) => v)
+    .map(([k, v]) => `<tr><td style="padding:2px 12px 2px 0;color:#6b7c73">${k}</td><td style="padding:2px 0;font-weight:600">${esc(String(v))}</td></tr>`)
+    .join("");
+
+  const issue = new Date(inv.issueDate).toLocaleDateString("en-ZA", { dateStyle: "long" });
+  const due = inv.dueDate ? new Date(inv.dueDate).toLocaleDateString("en-ZA", { dateStyle: "long" }) : "";
+
+  const body = `
+    <table style="width:100%;font-size:13px;margin-bottom:16px"><tr>
+      <td style="vertical-align:top">
+        <strong style="font-size:15px;color:#104536">${esc(company.name || "GreenGene Pharma")}</strong><br/>
+        ${company.address ? esc(company.address) + "<br/>" : ""}
+        ${company.regNo ? "Reg. No: " + esc(company.regNo) + "<br/>" : ""}
+        ${company.vatNo ? "VAT No: " + esc(company.vatNo) + "<br/>" : ""}
+        ${company.email ? esc(company.email) + "<br/>" : ""}
+        ${company.phone ? esc(company.phone) : ""}
+      </td>
+      <td style="vertical-align:top;text-align:right">
+        <div style="font-size:20px;font-weight:800;color:#104536">INVOICE</div>
+        <div style="color:#6b7c73"># ${esc(inv.number)}</div>
+        <div style="margin-top:6px">Date: ${issue}</div>
+        ${due ? `<div>Due: ${due}</div>` : ""}
+        <div style="margin-top:6px;display:inline-block;padding:3px 10px;border-radius:999px;font-weight:700;font-size:12px;${inv.status === "paid" ? "background:#d9f0e0;color:#1c6b40" : "background:#fdecec;color:#b3261e"}">${inv.status === "paid" ? "PAID" : "UNPAID"}</div>
+      </td>
+    </tr></table>
+
+    <div style="background:#f6f8f6;border-radius:10px;padding:12px 14px;margin-bottom:14px">
+      <div style="color:#6b7c73;font-size:12px">Billed to</div>
+      <strong>${esc(inv.customerName)}</strong><br/>
+      <span style="color:#4a5a51;font-size:13px">${esc(inv.customerEmail)}</span>
+      ${inv.customerAddress ? `<br/><span style="color:#4a5a51;font-size:13px">${esc(inv.customerAddress)}</span>` : ""}
+    </div>
+
+    <table style="width:100%;border-collapse:collapse;font-size:13px">
+      <thead><tr style="color:#6b7c73;text-align:left">
+        <th style="padding:6px 0;border-bottom:2px solid #dfe6e1">Description</th>
+        <th style="padding:6px 0;border-bottom:2px solid #dfe6e1;text-align:center">Qty</th>
+        <th style="padding:6px 0;border-bottom:2px solid #dfe6e1;text-align:right">Unit</th>
+        <th style="padding:6px 0;border-bottom:2px solid #dfe6e1;text-align:right">Amount</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+
+    <table style="width:100%;font-size:14px;margin-top:10px"><tr><td></td><td style="width:200px">
+      <table style="width:100%">
+        <tr><td style="padding:3px 0;color:#6b7c73">Subtotal</td><td style="padding:3px 0;text-align:right">${formatPrice(inv.subtotal)}</td></tr>
+        ${inv.taxRate ? `<tr><td style="padding:3px 0;color:#6b7c73">VAT (${inv.taxRate}%)</td><td style="padding:3px 0;text-align:right">${formatPrice(inv.taxAmount)}</td></tr>` : ""}
+        <tr><td style="padding:6px 0;border-top:2px solid #dfe6e1;font-weight:800;color:#104536">Total</td><td style="padding:6px 0;border-top:2px solid #dfe6e1;text-align:right;font-weight:800;color:#104536">${formatPrice(inv.total)}</td></tr>
+      </table>
+    </td></tr></table>
+
+    ${bankRows ? `<div style="margin-top:18px;background:#f6f8f6;border-radius:10px;padding:12px 14px">
+      <div style="font-weight:700;color:#104536;margin-bottom:6px">Banking details</div>
+      <table style="font-size:13px">${bankRows}</table>
+    </div>` : ""}
+
+    ${inv.notes ? `<p style="margin-top:16px;color:#4a5a51;font-size:13px">${esc(inv.notes)}</p>` : ""}
+  `;
+
+  const ok = await sendMail({
+    to: inv.customerEmail,
+    subject: `Invoice ${inv.number} from ${company.name || "GreenGene Pharma"}`,
+    html: layout(`Invoice ${inv.number}`, body),
+    replyTo: company.email || undefined,
+  });
+  if (ok) {
+    await prisma.invoice.update({ where: { id: inv.id }, data: { sentAt: new Date() } }).catch(() => {});
+  }
+  return ok;
+}
