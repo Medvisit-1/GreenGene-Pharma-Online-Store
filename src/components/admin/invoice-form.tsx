@@ -176,27 +176,43 @@ export function InvoiceForm({
           <Plus className="h-4 w-4" /> Add item
         </button>
 
+        {/* Tax / VAT */}
+        <div className="mt-5 flex flex-wrap items-center gap-3 rounded-xl bg-muted/40 px-4 py-3">
+          <label className="text-sm font-medium">Tax / VAT rate</label>
+          <div className="flex items-center gap-1">
+            <input
+              inputMode="decimal"
+              value={taxRate}
+              onChange={(e) => setTaxRate(e.target.value)}
+              className="w-20 rounded-lg border border-border bg-white px-3 py-1.5 text-center text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+            />
+            <span className="text-sm text-muted-foreground">%</span>
+          </div>
+          <div className="flex gap-1.5">
+            <button type="button" onClick={() => setTaxRate("0")} className="rounded-lg border border-border px-2.5 py-1 text-xs font-medium hover:bg-muted">
+              No VAT
+            </button>
+            <button type="button" onClick={() => setTaxRate("15")} className="rounded-lg border border-border px-2.5 py-1 text-xs font-medium hover:bg-muted">
+              15%
+            </button>
+          </div>
+          <span className="ml-auto text-xs text-muted-foreground">SA VAT is 15%</span>
+        </div>
+
         {/* Totals */}
-        <div className="mt-5 flex justify-end">
+        <div className="mt-4 flex justify-end">
           <table className="w-full max-w-xs text-sm">
             <tbody>
               <tr>
                 <td className="py-1 text-muted-foreground">Subtotal</td>
                 <td className="py-1 text-right tabular-nums">{formatPrice(subtotal)}</td>
               </tr>
-              <tr>
-                <td className="py-1 text-muted-foreground">
-                  VAT
-                  <input
-                    inputMode="numeric"
-                    value={taxRate}
-                    onChange={(e) => setTaxRate(e.target.value)}
-                    className="mx-1 w-12 rounded-md border border-border px-1.5 py-0.5 text-center text-xs"
-                  />
-                  %
-                </td>
-                <td className="py-1 text-right tabular-nums">{formatPrice(taxAmount)}</td>
-              </tr>
+              {(parseFloat(taxRate) || 0) > 0 && (
+                <tr>
+                  <td className="py-1 text-muted-foreground">VAT ({taxRate}%)</td>
+                  <td className="py-1 text-right tabular-nums">{formatPrice(taxAmount)}</td>
+                </tr>
+              )}
               <tr className="border-t border-border">
                 <td className="py-2 font-bold">Total</td>
                 <td className="py-2 text-right text-base font-bold tabular-nums">{formatPrice(total)}</td>
