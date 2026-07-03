@@ -12,15 +12,18 @@ const label = "mb-1.5 block text-sm font-medium";
 
 type Line = { description: string; quantity: string; unitPrice: string };
 export type SavedCustomer = { name: string; email: string; address: string };
+export type ShopProduct = { name: string; price: number }; // price in cents
 
 export function InvoiceForm({
   defaultTaxRate,
   today,
   customers = [],
+  products = [],
 }: {
   defaultTaxRate: string;
   today: string;
   customers?: SavedCustomer[];
+  products?: ShopProduct[];
 }) {
   const [lines, setLines] = useState<Line[]>([
     { description: "", quantity: "1", unitPrice: "" },
@@ -44,6 +47,11 @@ export function InvoiceForm({
 
   const setLine = (i: number, patch: Partial<Line>) =>
     setLines((ls) => ls.map((l, idx) => (idx === i ? { ...l, ...patch } : l)));
+  // Picking/typing a product name auto-fills its price (still editable after)
+  const onDescChange = (i: number, val: string) => {
+    const p = products.find((pr) => pr.name === val);
+    setLine(i, p ? { description: val, unitPrice: (p.price / 100).toFixed(2) } : { description: val });
+  };
   const addLine = () =>
     setLines((ls) => [...ls, { description: "", quantity: "1", unitPrice: "" }]);
   const removeLine = (i: number) =>
@@ -64,6 +72,13 @@ export function InvoiceForm({
     <form action={createInvoice} className="space-y-5">
       <input type="hidden" name="items" value={itemsJson} />
       <input type="hidden" name="taxRate" value={String(effRate)} />
+      {products.length > 0 && (
+        <datalist id="invoice-products">
+          {products.map((p) => (
+            <option key={p.name} value={p.name} />
+          ))}
+        </datalist>
+      )}
 
       {/* Customer */}
       <div className="rounded-2xl border border-border bg-surface p-6">
@@ -139,9 +154,10 @@ export function InvoiceForm({
           {lines.map((l, i) => (
             <div key={i} className="grid gap-2 sm:grid-cols-[1fr_80px_120px_120px_36px] sm:items-center">
               <input
-                placeholder="Item description"
+                placeholder="Pick a product or type a custom item"
+                list="invoice-products"
                 value={l.description}
-                onChange={(e) => setLine(i, { description: e.target.value })}
+                onChange={(e) => onDescChange(i, e.target.value)}
                 className={input}
               />
               <input

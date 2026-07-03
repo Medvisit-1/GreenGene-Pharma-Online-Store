@@ -8,15 +8,21 @@ export const dynamic = "force-dynamic";
 export const metadata = { title: "New invoice" };
 
 export default async function NewInvoicePage() {
-  const [s, savedCustomers] = await Promise.all([
+  const [s, savedCustomers, shopProducts] = await Promise.all([
     getSettings(),
     prisma.customer.findMany({ orderBy: { name: "asc" }, take: 500 }),
+    prisma.product.findMany({
+      where: { active: true },
+      select: { name: true, price: true },
+      orderBy: { name: "asc" },
+    }),
   ]);
   const customers = savedCustomers.map((c) => ({
     name: c.name ?? "",
     email: c.email,
     address: c.address ?? "",
   }));
+  const products = shopProducts.map((p) => ({ name: p.name, price: p.price }));
   const today = new Date().toISOString().slice(0, 10);
 
   return (
@@ -30,7 +36,7 @@ export default async function NewInvoicePage() {
           Your business &amp; banking details are added automatically — edit them on the Invoices page.
         </p>
       </div>
-      <InvoiceForm defaultTaxRate={s.invoiceDefaultTaxRate} today={today} customers={customers} />
+      <InvoiceForm defaultTaxRate={s.invoiceDefaultTaxRate} today={today} customers={customers} products={products} />
     </div>
   );
 }
