@@ -25,7 +25,9 @@ export function InvoiceForm({
   const [lines, setLines] = useState<Line[]>([
     { description: "", quantity: "1", unitPrice: "" },
   ]);
-  const [taxRate, setTaxRate] = useState(defaultTaxRate || "0");
+  const defRate = parseFloat(defaultTaxRate) || 0;
+  const [vatOn, setVatOn] = useState(defRate > 0);
+  const [taxRate, setTaxRate] = useState(defRate > 0 ? defaultTaxRate : "15");
   const [cust, setCust] = useState<SavedCustomer>({ name: "", email: "", address: "" });
 
   const pickCustomer = (email: string) => {
@@ -36,7 +38,8 @@ export function InvoiceForm({
   const cents = (v: string) => Math.round((parseFloat(v) || 0) * 100);
   const lineTotal = (l: Line) => cents(l.unitPrice) * (parseInt(l.quantity, 10) || 0);
   const subtotal = lines.reduce((n, l) => n + lineTotal(l), 0);
-  const taxAmount = Math.round((subtotal * (parseFloat(taxRate) || 0)) / 100);
+  const effRate = vatOn ? parseFloat(taxRate) || 0 : 0;
+  const taxAmount = Math.round((subtotal * effRate) / 100);
   const total = subtotal + taxAmount;
 
   const setLine = (i: number, patch: Partial<Line>) =>
@@ -60,7 +63,7 @@ export function InvoiceForm({
   return (
     <form action={createInvoice} className="space-y-5">
       <input type="hidden" name="items" value={itemsJson} />
-      <input type="hidden" name="taxRate" value={taxRate} />
+      <input type="hidden" name="taxRate" value={String(effRate)} />
 
       {/* Customer */}
       <div className="rounded-2xl border border-border bg-surface p-6">
@@ -178,25 +181,35 @@ export function InvoiceForm({
 
         {/* Tax / VAT */}
         <div className="mt-5 flex flex-wrap items-center gap-3 rounded-xl bg-muted/40 px-4 py-3">
-          <label className="text-sm font-medium">Tax / VAT rate</label>
-          <div className="flex items-center gap-1">
-            <input
-              inputMode="decimal"
-              value={taxRate}
-              onChange={(e) => setTaxRate(e.target.value)}
-              className="w-20 rounded-lg border border-border bg-white px-3 py-1.5 text-center text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
-            />
-            <span className="text-sm text-muted-foreground">%</span>
-          </div>
-          <div className="flex gap-1.5">
-            <button type="button" onClick={() => setTaxRate("0")} className="rounded-lg border border-border px-2.5 py-1 text-xs font-medium hover:bg-muted">
-              No VAT
-            </button>
-            <button type="button" onClick={() => setTaxRate("15")} className="rounded-lg border border-border px-2.5 py-1 text-xs font-medium hover:bg-muted">
-              15%
-            </button>
-          </div>
-          <span className="ml-auto text-xs text-muted-foreground">SA VAT is 15%</span>
+          <label className="flex cursor-pointer items-center gap-2.5">
+            <span className="relative inline-flex items-center">
+              <input
+                type="checkbox"
+                checked={vatOn}
+                onChange={(e) => setVatOn(e.target.checked)}
+                className="peer sr-only"
+              />
+              <span className="h-6 w-11 rounded-full bg-gray-300 transition-colors after:absolute after:left-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow after:transition-all peer-checked:bg-brand-600 peer-checked:after:translate-x-5" />
+            </span>
+            <span className="text-sm font-medium">Charge VAT / Tax</span>
+          </label>
+          {vatOn && (
+            <>
+              <div className="flex items-center gap-1">
+                <input
+                  inputMode="decimal"
+                  value={taxRate}
+                  onChange={(e) => setTaxRate(e.target.value)}
+                  className="w-20 rounded-lg border border-border bg-white px-3 py-1.5 text-center text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+                />
+                <span className="text-sm text-muted-foreground">%</span>
+              </div>
+              <button type="button" onClick={() => setTaxRate("15")} className="rounded-lg border border-border px-2.5 py-1 text-xs font-medium hover:bg-muted">
+                15%
+              </button>
+              <span className="ml-auto text-xs text-muted-foreground">SA VAT is 15%</span>
+            </>
+          )}
         </div>
 
         {/* Totals */}
@@ -207,9 +220,9 @@ export function InvoiceForm({
                 <td className="py-1 text-muted-foreground">Subtotal</td>
                 <td className="py-1 text-right tabular-nums">{formatPrice(subtotal)}</td>
               </tr>
-              {(parseFloat(taxRate) || 0) > 0 && (
+              {effRate > 0 && (
                 <tr>
-                  <td className="py-1 text-muted-foreground">VAT ({taxRate}%)</td>
+                  <td className="py-1 text-muted-foreground">VAT ({effRate}%)</td>
                   <td className="py-1 text-right tabular-nums">{formatPrice(taxAmount)}</td>
                 </tr>
               )}
