@@ -74,6 +74,12 @@ export async function POST(req: Request) {
         where: { orderNumber: String(orderNumber) },
         data: { paymentStatus: "paid", paymentRef: paymentId },
       });
+      // Deduct stock once (idempotent) now that it's paid
+      const order = await prisma.order.findUnique({ where: { orderNumber: String(orderNumber) } });
+      if (order) {
+        const { finalizePaidOrder } = await import("@/lib/inventory");
+        await finalizePaidOrder(order.id);
+      }
     }
   }
 

@@ -105,10 +105,13 @@ export async function deleteOrder(formData: FormData) {
 /** Update payment status only (fulfilment is handled separately). */
 export async function updateOrder(formData: FormData) {
   const id = String(formData.get("id"));
-  await prisma.order.update({
-    where: { id },
-    data: { paymentStatus: String(formData.get("paymentStatus") ?? "unpaid") },
-  });
+  const paymentStatus = String(formData.get("paymentStatus") ?? "unpaid");
+  await prisma.order.update({ where: { id }, data: { paymentStatus } });
+  // If the admin marks it paid, deduct stock (idempotent — runs once)
+  if (paymentStatus === "paid") {
+    const { finalizePaidOrder } = await import("@/lib/inventory");
+    await finalizePaidOrder(id);
+  }
   revalidatePath(`/admin/orders/${id}`);
   revalidatePath("/admin/orders");
 }

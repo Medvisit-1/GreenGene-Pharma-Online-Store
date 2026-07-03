@@ -86,6 +86,8 @@ export async function POST(req: Request) {
           paymentRef: String(data.short_reference ?? data.uuid ?? data.id ?? ""),
         },
       });
+      const { finalizePaidOrder } = await import("@/lib/inventory");
+      await finalizePaidOrder(order.id);
       const { sendOrderConfirmation } = await import("@/lib/email");
       await sendOrderConfirmation(order.id);
     }

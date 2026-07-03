@@ -120,6 +120,8 @@ model Order {
   // Payment: unpaid | paid | refunded | failed
   paymentStatus   String      @default("unpaid")
   paymentMethod   String?
+  // Stock is only decremented once, when the order is first marked paid
+  stockDeducted   Boolean     @default(false)
   paymentRef      String?
   // Amounts in cents (ZAR)
   subtotal        Int

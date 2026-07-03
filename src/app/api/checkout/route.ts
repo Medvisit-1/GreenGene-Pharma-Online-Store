@@ -89,21 +89,9 @@ export async function POST(req: Request) {
     },
   });
 
-  // Decrement stock + count promo usage (best-effort)
-  await Promise.all([
-    ...lineItems.map((i) =>
-      prisma.product.update({
-        where: { id: i.productId },
-        data: { stock: { decrement: i.quantity } },
-      })
-    ),
-    discount.valid && discount.code
-      ? prisma.promotion.update({
-          where: { code: discount.code },
-          data: { usageCount: { increment: 1 } },
-        })
-      : Promise.resolve(),
-  ]);
+  // Stock + promo usage are NOT touched here — they are applied only when the
+  // order is confirmed paid (see finalizePaidOrder), so failed/abandoned
+  // payments never reduce stock.
 
   return NextResponse.json({ orderNumber: order.orderNumber, total });
 }

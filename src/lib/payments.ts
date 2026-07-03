@@ -235,7 +235,9 @@ export async function confirmYocoPayment(order: Order): Promise<boolean> {
         where: { id: order.id },
         data: { paymentStatus: "paid", paymentRef: data.paymentId ?? order.paymentRef },
       });
-      // Send confirmation + admin alert (this only runs on the paid transition)
+      // Deduct stock + send confirmation (both only run on the paid transition)
+      const { finalizePaidOrder } = await import("@/lib/inventory");
+      await finalizePaidOrder(order.id);
       const { sendOrderConfirmation } = await import("@/lib/email");
       await sendOrderConfirmation(order.id);
       return true;
@@ -374,6 +376,8 @@ export async function confirmPaystackPayment(order: Order): Promise<boolean> {
         where: { id: order.id },
         data: { paymentStatus: "paid" },
       });
+      const { finalizePaidOrder } = await import("@/lib/inventory");
+      await finalizePaidOrder(order.id);
       const { sendOrderConfirmation } = await import("@/lib/email");
       await sendOrderConfirmation(order.id);
       return true;
