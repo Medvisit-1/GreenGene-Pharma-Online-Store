@@ -103,6 +103,7 @@ model Customer {
   email     String    @unique
   name      String?
   phone     String?
+  address   String?
   orders    Order[]
   createdAt DateTime  @default(now())
 }

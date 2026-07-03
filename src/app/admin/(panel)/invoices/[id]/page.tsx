@@ -27,13 +27,14 @@ export default async function InvoiceView({
   const bank = safeJson<BankDetails>(inv.bankDetails, {} as BankDetails);
   const paid = inv.status === "paid";
 
+  const companyName = company.name || "GreenGene Pharma";
   const bankRows = [
     ["Bank", bank.bankName],
     ["Account name", bank.accountName],
     ["Account number", bank.accountNumber],
     ["Branch code", bank.branchCode],
     ["Account type", bank.accountType],
-    ["Reference", inv.number],
+    ["Reference", `${companyName} #${inv.number}`],
   ].filter(([, v]) => v);
 
   return (
@@ -86,7 +87,9 @@ export default async function InvoiceView({
       <div className="mx-auto max-w-3xl rounded-2xl border border-border bg-white p-8 shadow-sm print:border-0 print:shadow-none sm:p-10">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="text-sm leading-relaxed">
-            <div className="text-lg font-bold text-brand-800">{company.name || "GreenGene Pharma"}</div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo.png" alt="GreenGene Pharma" className="mb-3 h-11 w-auto" />
+            <div className="text-lg font-bold text-brand-800">{companyName}</div>
             {company.address && <div className="text-muted-foreground">{company.address}</div>}
             {company.regNo && <div className="text-muted-foreground">Reg. No: {company.regNo}</div>}
             {company.vatNo && <div className="text-muted-foreground">VAT No: {company.vatNo}</div>}

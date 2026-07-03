@@ -233,13 +233,14 @@ export async function sendInvoiceEmail(invoiceId: string): Promise<boolean> {
     )
     .join("");
 
+  const companyName = company.name || "GreenGene Pharma";
   const bankRows = [
     ["Bank", bank.bankName],
     ["Account name", bank.accountName],
     ["Account number", bank.accountNumber],
     ["Branch code", bank.branchCode],
     ["Account type", bank.accountType],
-    ["Reference", inv.number],
+    ["Reference", `${companyName} #${inv.number}`],
   ]
     .filter(([, v]) => v)
     .map(([k, v]) => `<tr><td style="padding:2px 12px 2px 0;color:#6b7c73">${k}</td><td style="padding:2px 0;font-weight:600">${esc(String(v))}</td></tr>`)
@@ -251,7 +252,8 @@ export async function sendInvoiceEmail(invoiceId: string): Promise<boolean> {
   const body = `
     <table style="width:100%;font-size:13px;margin-bottom:16px"><tr>
       <td style="vertical-align:top">
-        <strong style="font-size:15px;color:#104536">${esc(company.name || "GreenGene Pharma")}</strong><br/>
+        <img src="${APP_URL}/logo.png" alt="GreenGene Pharma" style="height:38px;width:auto;display:block;margin-bottom:10px"/>
+        <strong style="font-size:15px;color:#104536">${esc(companyName)}</strong><br/>
         ${company.address ? esc(company.address) + "<br/>" : ""}
         ${company.regNo ? "Reg. No: " + esc(company.regNo) + "<br/>" : ""}
         ${company.vatNo ? "VAT No: " + esc(company.vatNo) + "<br/>" : ""}

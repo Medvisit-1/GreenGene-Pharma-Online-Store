@@ -11,18 +11,27 @@ const input =
 const label = "mb-1.5 block text-sm font-medium";
 
 type Line = { description: string; quantity: string; unitPrice: string };
+export type SavedCustomer = { name: string; email: string; address: string };
 
 export function InvoiceForm({
   defaultTaxRate,
   today,
+  customers = [],
 }: {
   defaultTaxRate: string;
   today: string;
+  customers?: SavedCustomer[];
 }) {
   const [lines, setLines] = useState<Line[]>([
     { description: "", quantity: "1", unitPrice: "" },
   ]);
   const [taxRate, setTaxRate] = useState(defaultTaxRate || "0");
+  const [cust, setCust] = useState<SavedCustomer>({ name: "", email: "", address: "" });
+
+  const pickCustomer = (email: string) => {
+    const c = customers.find((x) => x.email === email);
+    if (c) setCust({ name: c.name, email: c.email, address: c.address });
+  };
 
   const cents = (v: string) => Math.round((parseFloat(v) || 0) * 100);
   const lineTotal = (l: Line) => cents(l.unitPrice) * (parseInt(l.quantity, 10) || 0);
@@ -56,18 +65,53 @@ export function InvoiceForm({
       {/* Customer */}
       <div className="rounded-2xl border border-border bg-surface p-6">
         <h2 className="mb-4 font-bold">Bill to</h2>
+        {customers.length > 0 && (
+          <div className="mb-4">
+            <label className={label}>Use a saved customer</label>
+            <select
+              defaultValue=""
+              onChange={(e) => pickCustomer(e.target.value)}
+              className={input}
+            >
+              <option value="">— New customer / type below —</option>
+              {customers.map((c) => (
+                <option key={c.email} value={c.email}>
+                  {c.name ? `${c.name} · ${c.email}` : c.email}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label className={label}>Customer name *</label>
-            <input name="customerName" required className={input} />
+            <input
+              name="customerName"
+              required
+              value={cust.name}
+              onChange={(e) => setCust((c) => ({ ...c, name: e.target.value }))}
+              className={input}
+            />
           </div>
           <div>
             <label className={label}>Customer email *</label>
-            <input name="customerEmail" type="email" required className={input} />
+            <input
+              name="customerEmail"
+              type="email"
+              required
+              value={cust.email}
+              onChange={(e) => setCust((c) => ({ ...c, email: e.target.value }))}
+              className={input}
+            />
           </div>
           <div className="sm:col-span-2">
             <label className={label}>Customer address (optional)</label>
-            <input name="customerAddress" className={input} />
+            <input
+              name="customerAddress"
+              value={cust.address}
+              onChange={(e) => setCust((c) => ({ ...c, address: e.target.value }))}
+              className={input}
+            />
           </div>
         </div>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">

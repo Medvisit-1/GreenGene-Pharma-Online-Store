@@ -314,6 +314,23 @@ export async function createInvoice(formData: FormData) {
       bankDetails: JSON.stringify(bankFromSettings(settings)),
     },
   });
+
+  // Remember this customer for future invoices
+  await prisma.customer
+    .upsert({
+      where: { email: g("customerEmail") },
+      create: {
+        email: g("customerEmail"),
+        name: g("customerName") || null,
+        address: g("customerAddress") || null,
+      },
+      update: {
+        name: g("customerName") || undefined,
+        ...(g("customerAddress") ? { address: g("customerAddress") } : {}),
+      },
+    })
+    .catch(() => {});
+
   revalidatePath("/admin/invoices");
   redirect(`/admin/invoices/${inv.id}`);
 }
