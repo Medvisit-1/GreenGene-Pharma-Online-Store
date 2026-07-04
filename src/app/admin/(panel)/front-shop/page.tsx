@@ -217,6 +217,32 @@ export default async function AdminFrontShop({
           </div>
         </div>
 
+        {/* Promo / advertising banner */}
+        <div className={card}>
+          <h2 className="mb-1 font-bold">Promo / advertising image</h2>
+          <p className="mb-4 text-xs text-muted-foreground">
+            An image banner shown after Featured products — great for specials or a new launch.
+          </p>
+          <label className="mb-4 flex cursor-pointer items-center gap-3">
+            <span className="relative inline-flex items-center">
+              <input
+                type="checkbox"
+                name="promoBannerEnabled"
+                defaultChecked={s.promoBannerEnabled === "1"}
+                className="peer sr-only"
+              />
+              <span className="h-6 w-11 rounded-full bg-gray-300 transition-colors after:absolute after:left-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow after:transition-all peer-checked:bg-brand-600 peer-checked:after:translate-x-5" />
+            </span>
+            <span className="text-sm font-medium">Show on the homepage</span>
+          </label>
+          <label className={label}>Banner image</label>
+          <SingleImageField name="promoBannerImage" initial={s.promoBannerImage} />
+          <div className="mt-4">
+            <label className={label}>Link (optional) — where clicking the image goes</label>
+            <input name="promoBannerLink" defaultValue={s.promoBannerLink} placeholder="/products or https://…" className={input} />
+          </div>
+        </div>
+
         <Button type="submit" size="lg">Save front shop</Button>
       </form>
     </div>

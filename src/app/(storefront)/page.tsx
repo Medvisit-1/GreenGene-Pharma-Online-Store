@@ -183,6 +183,21 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* Promo / advertising banner */}
+      {s.promoBannerEnabled === "1" && s.promoBannerImage && (
+        <section className="mx-auto max-w-7xl px-4 py-4">
+          {s.promoBannerLink ? (
+            <Link href={s.promoBannerLink} className="block overflow-hidden rounded-3xl">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={s.promoBannerImage} alt="" className="w-full object-cover transition-transform duration-500 hover:scale-[1.02]" />
+            </Link>
+          ) : (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={s.promoBannerImage} alt="" className="w-full rounded-3xl object-cover" />
+          )}
+        </section>
+      )}
+
       {/* CTA banner */}
       {(s.ctaHeading || s.ctaButtonLabel) && (
         <section className="mx-auto max-w-7xl px-4 pb-16">

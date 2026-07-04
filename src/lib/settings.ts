@@ -37,6 +37,10 @@ export type SiteSettings = {
   ctaSubheading: string;
   ctaButtonLabel: string;
   ctaButtonLink: string;
+  // Promo / advertising image banner (after Featured products)
+  promoBannerEnabled: string; // "1" | "0"
+  promoBannerImage: string;
+  promoBannerLink: string;
 
   // ---- Floating marquee banner ----
   marqueeEnabled: string; // "1" | "0"
@@ -93,6 +97,9 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   ctaSubheading: "Stock up and we'll cover the delivery.",
   ctaButtonLabel: "Start shopping",
   ctaButtonLink: "/products",
+  promoBannerEnabled: "0",
+  promoBannerImage: "",
+  promoBannerLink: "",
 
   marqueeEnabled: "0",
   marqueeText: "🎉 Free shipping on orders over R1000 · Use code WELCOME10 for 10% off your first order",
