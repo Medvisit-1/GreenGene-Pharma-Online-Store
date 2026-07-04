@@ -232,7 +232,8 @@ export default async function AdminFrontShop({
         <div className={card}>
           <h2 className="mb-1 font-bold">Promo / advertising image</h2>
           <p className="mb-4 text-xs text-muted-foreground">
-            An image banner shown after Featured products — great for specials or a new launch.
+            A promo block shown between the feature strip and the trust section — an image beside a
+            colourful call-to-action card. Great for specials or a new launch.
           </p>
           <label className="mb-4 flex cursor-pointer items-center gap-3">
             <span className="relative inline-flex items-center">
@@ -249,9 +250,36 @@ export default async function AdminFrontShop({
           <label className={label}>Banner image</label>
           <SingleImageField name="promoBannerImage" initial={s.promoBannerImage} />
           <div className="mt-4">
-            <label className={label}>Link (optional) — where clicking the image goes</label>
+            <label className={label}>Image link (optional) — where clicking the image goes</label>
             <LinkPicker name="promoBannerLink" initial={s.promoBannerLink} options={linkOptions} />
             <p className="mt-1.5 text-xs text-muted-foreground">Type a product name to link to it, pick a page, or paste any custom URL.</p>
+          </div>
+
+          <div className="mt-6 rounded-xl border border-border p-4">
+            <h3 className="mb-1 text-sm font-semibold">Call-to-action card (beside the image)</h3>
+            <p className="mb-4 text-xs text-muted-foreground">
+              A colourful card in the shop theme. Edit its text and where the button links.
+            </p>
+            <div className="grid gap-4">
+              <div>
+                <label className={label}>Card heading</label>
+                <input name="promoCardTitle" defaultValue={s.promoCardTitle} className={input} />
+              </div>
+              <div>
+                <label className={label}>Card text</label>
+                <textarea name="promoCardText" defaultValue={s.promoCardText} rows={3} className={input} />
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className={label}>Button — text</label>
+                  <input name="promoCardButtonLabel" defaultValue={s.promoCardButtonLabel} className={input} />
+                </div>
+                <div>
+                  <label className={label}>Button — link</label>
+                  <LinkPicker name="promoCardButtonLink" initial={s.promoCardButtonLink} options={linkOptions} />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 

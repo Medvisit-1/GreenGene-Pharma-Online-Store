@@ -99,6 +99,51 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* Promo / advertising banner */}
+      {s.promoBannerEnabled === "1" && s.promoBannerImage && (
+        <section className="mx-auto max-w-7xl px-4 pt-10">
+          <div className="grid items-stretch gap-6 md:grid-cols-2">
+            {/* Image */}
+            {s.promoBannerLink ? (
+              <Link href={s.promoBannerLink} className="group block overflow-hidden rounded-3xl">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={s.promoBannerImage}
+                  alt=""
+                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                />
+              </Link>
+            ) : (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={s.promoBannerImage} alt="" className="h-full w-full rounded-3xl object-cover" />
+            )}
+
+            {/* Colourful card */}
+            <div className="relative flex flex-col justify-center overflow-hidden rounded-3xl bg-gradient-to-br from-brand-600 via-brand-700 to-brand-900 p-8 text-white shadow-sm md:p-12">
+              <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-accent/20 blur-2xl" />
+              <div className="pointer-events-none absolute -bottom-12 -left-8 h-44 w-44 rounded-full bg-accent/10 blur-3xl" />
+              <div className="relative">
+                {s.promoCardTitle && (
+                  <h2 className="text-2xl font-semibold tracking-tight md:text-3xl">
+                    {s.promoCardTitle}
+                  </h2>
+                )}
+                {s.promoCardText && (
+                  <p className="mt-4 max-w-md text-white/85">{s.promoCardText}</p>
+                )}
+                {s.promoCardButtonLabel && (
+                  <Link href={s.promoCardButtonLink || "/products"} className="mt-7 inline-block">
+                    <Button variant="accent" size="lg">
+                      {s.promoCardButtonLabel} <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </Link>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Research, Quality & Trust */}
       <section className="mx-auto max-w-7xl px-4 py-14">
         <div className="grid items-center gap-10 rounded-3xl bg-brand-800 p-8 text-white md:grid-cols-2 md:p-12">
@@ -182,21 +227,6 @@ export default async function HomePage() {
           ))}
         </div>
       </section>
-
-      {/* Promo / advertising banner */}
-      {s.promoBannerEnabled === "1" && s.promoBannerImage && (
-        <section className="mx-auto max-w-7xl px-4 py-4">
-          {s.promoBannerLink ? (
-            <Link href={s.promoBannerLink} className="block overflow-hidden rounded-3xl">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={s.promoBannerImage} alt="" className="w-full object-cover transition-transform duration-500 hover:scale-[1.02]" />
-            </Link>
-          ) : (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={s.promoBannerImage} alt="" className="w-full rounded-3xl object-cover" />
-          )}
-        </section>
-      )}
 
       {/* CTA banner */}
       {(s.ctaHeading || s.ctaButtonLabel) && (
