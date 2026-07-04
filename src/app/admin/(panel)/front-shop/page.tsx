@@ -1,9 +1,11 @@
 import { CheckCircle2, ExternalLink } from "lucide-react";
 import Link from "next/link";
+import { prisma } from "@/lib/prisma";
 import { getSettings } from "@/lib/settings";
 import { saveFrontShop } from "@/app/admin/actions";
 import { Button } from "@/components/ui/button";
 import { SingleImageField } from "@/components/admin/single-image";
+import { LinkPicker } from "@/components/admin/link-picker";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Front Shop" };
@@ -19,7 +21,16 @@ export default async function AdminFrontShop({
   searchParams: Promise<{ saved?: string }>;
 }) {
   const { saved } = await searchParams;
-  const s = await getSettings();
+  const [s, products] = await Promise.all([
+    getSettings(),
+    prisma.product.findMany({ where: { active: true }, select: { name: true, slug: true }, orderBy: { name: "asc" } }),
+  ]);
+  const linkOptions = [
+    { label: "All products", value: "/products" },
+    { label: "Promotions", value: "/promotions" },
+    { label: "Home", value: "/" },
+    ...products.map((p) => ({ label: p.name, value: `/products/${p.slug}` })),
+  ];
 
   return (
     <div className="space-y-6">
@@ -239,7 +250,8 @@ export default async function AdminFrontShop({
           <SingleImageField name="promoBannerImage" initial={s.promoBannerImage} />
           <div className="mt-4">
             <label className={label}>Link (optional) — where clicking the image goes</label>
-            <input name="promoBannerLink" defaultValue={s.promoBannerLink} placeholder="/products or https://…" className={input} />
+            <LinkPicker name="promoBannerLink" initial={s.promoBannerLink} options={linkOptions} />
+            <p className="mt-1.5 text-xs text-muted-foreground">Type a product name to link to it, pick a page, or paste any custom URL.</p>
           </div>
         </div>
 
