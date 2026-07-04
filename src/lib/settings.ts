@@ -37,10 +37,15 @@ export type SiteSettings = {
   ctaSubheading: string;
   ctaButtonLabel: string;
   ctaButtonLink: string;
-  // Promo / advertising image banner (after Featured products)
+  // Promo / advertising image banner (between value props and the trust section)
   promoBannerEnabled: string; // "1" | "0"
   promoBannerImage: string;
   promoBannerLink: string;
+  // Colourful card shown beside the promo image
+  promoCardTitle: string;
+  promoCardText: string;
+  promoCardButtonLabel: string;
+  promoCardButtonLink: string;
 
   // ---- Floating marquee banner ----
   marqueeEnabled: string; // "1" | "0"
@@ -100,6 +105,11 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   promoBannerEnabled: "0",
   promoBannerImage: "",
   promoBannerLink: "",
+  promoCardTitle: "Discover our full range",
+  promoCardText:
+    "Browse our complete collection of premium, research-backed natural health products — all fully dosage-transparent.",
+  promoCardButtonLabel: "Shop all products",
+  promoCardButtonLink: "/products",
 
   marqueeEnabled: "0",
   marqueeText: "🎉 Free shipping on orders over R1000 · Use code WELCOME10 for 10% off your first order",
