@@ -167,7 +167,7 @@ export async function renderQuotationPdf(q: QuotationRecord): Promise<Buffer> {
     );
     y += 20;
     doc.font("Helvetica-Oblique").fontSize(8).fillColor(MUTED).text(
-      `* The recommended retail price (RRP) is ${q.rrpMarginPct ?? 20}% below the selling price on online platforms, exclusive of delivery costs — this gives you an idea of your profit margin / mark-up.`,
+      `* The discounted ${q.rrpMarginPct ?? 20}% is below the selling price on online platforms, exclusive of delivery costs — this gives you an idea of your profit margin / mark-up. RRP is suggestive but you may change it according to your market needs.`,
       L, y, { width: W }
     );
     y += 22;

@@ -214,9 +214,9 @@ export default async function QuotationView({
               The more units you order, the lower your per-unit cost — order into a higher tier to unlock a bigger discount.
             </p>
             <p className="mt-2 text-xs italic text-muted-foreground">
-              * The recommended retail price (RRP) is {rrpMarginPct}% below the selling price on
-              online platforms, exclusive of delivery costs — this gives you an idea of your profit
-              margin / mark-up.
+              * The discounted {rrpMarginPct}% is below the selling price on online platforms,
+              exclusive of delivery costs — this gives you an idea of your profit margin / mark-up.
+              RRP is suggestive but you may change it according to your market needs.
             </p>
           </div>
         )}

@@ -443,7 +443,7 @@ export async function sendQuotationEmail(quoteId: string): Promise<boolean> {
       <div style="font-weight:700;color:#104536;margin-bottom:8px">Volume discount tiers</div>
       <table style="width:100%;font-size:13px">${tierRows}</table>
       <p style="margin:10px 0 0;color:#4a5a51;font-size:12px">The more units you order, the lower your per-unit cost — order into a higher tier to unlock a bigger discount.</p>
-      <p style="margin:8px 0 0;color:#6b7c73;font-size:11px;font-style:italic">* The recommended retail price (RRP) is ${rrpMarginPct}% below the selling price on online platforms, exclusive of delivery costs — this gives you an idea of your profit margin / mark-up.</p>
+      <p style="margin:8px 0 0;color:#6b7c73;font-size:11px;font-style:italic">* The discounted ${rrpMarginPct}% is below the selling price on online platforms, exclusive of delivery costs — this gives you an idea of your profit margin / mark-up. RRP is suggestive but you may change it according to your market needs.</p>
     </div>`
         : ""
     }
