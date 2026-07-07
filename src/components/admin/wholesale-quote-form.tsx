@@ -25,11 +25,13 @@ export type WholesaleProduct = { name: string; unitCost: number; rrp: number | n
 export function WholesaleQuoteForm({
   today,
   tiers,
+  rrpMarginPct,
   customers = [],
   products = [],
 }: {
   today: string;
   tiers: WholesaleTier[];
+  rrpMarginPct: number;
   customers?: SavedCustomer[];
   products?: WholesaleProduct[];
 }) {
@@ -311,11 +313,16 @@ export function WholesaleQuoteForm({
           {tiers.map((t, i) => (
             <div key={i} className="rounded-xl border border-brand-200 bg-white px-4 py-3 text-center">
               <div className="text-sm font-semibold text-brand-800">{tierRange(t)}</div>
-              <div className="text-2xl font-bold text-brand-600">{t.discountPercent}%</div>
+              <div className="text-2xl font-bold text-brand-600">{t.discountPercent}%*</div>
               <div className="text-[11px] uppercase tracking-wide text-muted-foreground">off unit cost</div>
             </div>
           ))}
         </div>
+        <p className="mt-4 text-xs italic text-muted-foreground">
+          * The discounted {rrpMarginPct}% is below the selling price on online platforms, exclusive
+          of delivery costs — this gives you an idea of your profit margin / mark-up. RRP is
+          suggestive but you may change it according to your market needs.
+        </p>
       </div>
 
       {/* Notes */}

@@ -149,10 +149,20 @@ export default async function WholesalePage({
                 <input name="wholesaleValidityDays" inputMode="numeric" defaultValue={s.wholesaleValidityDays} className={input} />
               </div>
               <div>
-                <label className={label}>RRP margin note (%)</label>
-                <input name="wholesaleRrpMarginPct" inputMode="numeric" defaultValue={s.wholesaleRrpMarginPct} className={input} />
+                <label className={label}>Margin note percentage</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    name="wholesaleRrpMarginPct"
+                    inputMode="numeric"
+                    placeholder="X"
+                    defaultValue={s.wholesaleRrpMarginPct}
+                    className={`${input} max-w-[110px]`}
+                  />
+                  <span className="text-sm font-medium text-muted-foreground">%</span>
+                </div>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Footnote on the quotation: the RRP sits this % below the online platform selling price (excluding delivery).
+                  A flat percentage used in the quotation footnote — the discounted price sits this % below
+                  the online platform selling price (excluding delivery). Enter any value, e.g. 20, 10.
                 </p>
               </div>
             </div>
