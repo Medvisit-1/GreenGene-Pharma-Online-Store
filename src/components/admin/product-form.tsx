@@ -4,6 +4,8 @@ import { parseImages } from "@/lib/utils";
 import { saveProduct } from "@/app/admin/actions";
 import { Button } from "@/components/ui/button";
 import { ImageUploader } from "@/components/admin/image-uploader";
+import { WholesalePricingFields } from "@/components/admin/wholesale-pricing-fields";
+import type { WholesaleTier } from "@/lib/wholesale";
 
 const input =
   "w-full rounded-xl border border-border bg-white px-4 py-2.5 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100";
@@ -12,9 +14,11 @@ const label = "mb-1.5 block text-sm font-medium";
 export function ProductForm({
   product,
   categories,
+  wholesaleTiers,
 }: {
   product?: Product | null;
   categories: Category[];
+  wholesaleTiers: WholesaleTier[];
 }) {
   const images = parseImages(product?.images);
 
@@ -90,36 +94,11 @@ export function ProductForm({
         </div>
       </div>
 
-      <div className="rounded-2xl border border-border bg-surface p-6">
-        <h3 className="mb-1 font-bold">Wholesale pricing</h3>
-        <p className="mb-4 text-xs text-muted-foreground">
-          The wholesale unit cost is the base GreenGene sets — quantity tier discounts on
-          quotations are calculated from it. The recommended retail price is shown to resellers
-          as guidance.
-        </p>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <label className={label}>Wholesale unit cost (R)</label>
-            <input
-              name="wholesalePrice"
-              inputMode="decimal"
-              placeholder="0.00"
-              defaultValue={product?.wholesalePrice ? (product.wholesalePrice / 100).toFixed(2) : ""}
-              className={input}
-            />
-          </div>
-          <div>
-            <label className={label}>Recommended retail price (R)</label>
-            <input
-              name="rrp"
-              inputMode="decimal"
-              placeholder="0.00"
-              defaultValue={product?.rrp ? (product.rrp / 100).toFixed(2) : ""}
-              className={input}
-            />
-          </div>
-        </div>
-      </div>
+      <WholesalePricingFields
+        initialUnitCost={product?.unitCost ? (product.unitCost / 100).toFixed(2) : ""}
+        initialRrp={product?.rrp ? (product.rrp / 100).toFixed(2) : ""}
+        tiers={wholesaleTiers}
+      />
 
       <div className="rounded-2xl border border-border bg-surface p-6">
         <h3 className="mb-1 font-bold">Also available on</h3>

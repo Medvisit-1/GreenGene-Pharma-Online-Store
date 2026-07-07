@@ -14,7 +14,7 @@ export default async function NewQuotationPage() {
     prisma.customer.findMany({ orderBy: { name: "asc" }, take: 500 }),
     prisma.product.findMany({
       where: { active: true },
-      select: { name: true, price: true, wholesalePrice: true, rrp: true },
+      select: { name: true, price: true, unitCost: true, rrp: true },
       orderBy: { name: "asc" },
     }),
   ]);
@@ -24,10 +24,10 @@ export default async function NewQuotationPage() {
     email: c.email,
     address: c.address ?? "",
   }));
-  // Fall back to the retail price as the wholesale base when none is set yet.
+  // Fall back to the retail price as the unit cost when none is set yet.
   const products = shopProducts.map((p) => ({
     name: p.name,
-    wholesalePrice: p.wholesalePrice ?? p.price,
+    unitCost: p.unitCost ?? p.price,
     rrp: p.rrp ?? p.price,
   }));
   const tiers = tiersFromSettings(s);

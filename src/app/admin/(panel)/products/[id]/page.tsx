@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { ProductForm } from "@/components/admin/product-form";
+import { getSettings } from "@/lib/settings";
+import { tiersFromSettings } from "@/lib/wholesale";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Edit product" };
@@ -12,9 +14,10 @@ export default async function EditProduct({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [product, categories] = await Promise.all([
+  const [product, categories, s] = await Promise.all([
     prisma.product.findUnique({ where: { id } }),
     prisma.category.findMany({ orderBy: { sortOrder: "asc" } }),
+    getSettings(),
   ]);
   if (!product) notFound();
 
@@ -26,7 +29,7 @@ export default async function EditProduct({
           View in store →
         </Link>
       </div>
-      <ProductForm product={product} categories={categories} />
+      <ProductForm product={product} categories={categories} wholesaleTiers={tiersFromSettings(s)} />
     </div>
   );
 }
