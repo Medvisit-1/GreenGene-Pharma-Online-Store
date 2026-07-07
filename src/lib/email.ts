@@ -428,7 +428,7 @@ export async function sendQuotationEmail(quoteId: string): Promise<boolean> {
         <th style="padding:6px 0;border-bottom:2px solid #dfe6e1">Product</th>
         <th style="padding:6px 0;border-bottom:2px solid #dfe6e1;text-align:center">Qty</th>
         <th style="padding:6px 0;border-bottom:2px solid #dfe6e1;text-align:center">Discount</th>
-        <th style="padding:6px 0;border-bottom:2px solid #dfe6e1;text-align:right">Wholesale</th>
+        <th style="padding:6px 0;border-bottom:2px solid #dfe6e1;text-align:right">Wholesale Price</th>
         <th style="padding:6px 0;border-bottom:2px solid #dfe6e1;text-align:right">RRP</th>
         <th style="padding:6px 0;border-bottom:2px solid #dfe6e1;text-align:right">Amount</th>
       </tr></thead>

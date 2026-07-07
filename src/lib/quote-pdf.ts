@@ -106,18 +106,18 @@ export async function renderQuotationPdf(q: QuotationRecord): Promise<Buffer> {
   }
 
   // ---- Items table ----
-  const cDesc = L, wDesc = 170;
-  const cQty = 225, wQty = 35;
-  const cDisc = 262, wDisc = 55;
-  const cUnit = 320, wUnit = 73;
-  const cRrp = 398, wRrp = 62;
+  const cDesc = L, wDesc = 150;
+  const cQty = 205, wQty = 32;
+  const cDisc = 240, wDisc = 52;
+  const cUnit = 300, wUnit = 94;
+  const cRrp = 405, wRrp = 55;
   const cAmt = 465, wAmt = 80;
 
   doc.font("Helvetica-Bold").fontSize(8.5).fillColor(MUTED);
   doc.text("PRODUCT", cDesc, y, { width: wDesc });
   doc.text("QTY", cQty, y, { width: wQty, align: "center" });
   doc.text("DISCOUNT", cDisc, y, { width: wDisc, align: "center" });
-  doc.text("WHOLESALE", cUnit, y, { width: wUnit, align: "right" });
+  doc.text("WHOLESALE PRICE", cUnit, y, { width: wUnit, align: "right" });
   doc.text("RRP", cRrp, y, { width: wRrp, align: "right" });
   doc.text("AMOUNT", cAmt, y, { width: wAmt, align: "right" });
   y += 14;

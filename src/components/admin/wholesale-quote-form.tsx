@@ -185,7 +185,7 @@ export function WholesaleQuoteForm({
           <span>Qty</span>
           <span>Unit cost (R)</span>
           <span>RRP (R)</span>
-          <span className="text-right">Wholesale / Amount</span>
+          <span className="text-right">Wholesale Price / Amount</span>
           <span />
         </div>
         <div className="space-y-3">
