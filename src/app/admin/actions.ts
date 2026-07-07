@@ -70,9 +70,7 @@ export async function saveProduct(formData: FormData) {
     compareAtPrice: formData.get("compareAtPrice")
       ? randsToCents(formData.get("compareAtPrice"))
       : null,
-    wholesalePrice: formData.get("wholesalePrice")
-      ? randsToCents(formData.get("wholesalePrice"))
-      : null,
+    unitCost: formData.get("unitCost") ? randsToCents(formData.get("unitCost")) : null,
     rrp: formData.get("rrp") ? randsToCents(formData.get("rrp")) : null,
     sku: String(formData.get("sku") ?? "") || null,
     stock: parseInt(String(formData.get("stock") ?? "0"), 10) || 0,

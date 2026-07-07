@@ -31,9 +31,10 @@ model Product {
   // Price in cents (ZAR). Avoids float rounding issues.
   price            Int
   compareAtPrice   Int?
-  // Wholesale base unit cost (cents) that GreenGene sets — all tier discounts
-  // are calculated off this. Recommended Retail Price (cents) is advisory.
-  wholesalePrice   Int?
+  // Admin-determined unit cost (cents) that GreenGene sets. Wholesale prices on
+  // quotations are calculated by deducting the volume tier % from this.
+  // Recommended Retail Price (cents) is advisory guidance for resellers.
+  unitCost         Int?
   rrp              Int?
   sku              String?
   stock            Int         @default(0)

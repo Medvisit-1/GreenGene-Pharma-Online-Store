@@ -18,9 +18,9 @@ const input =
   "w-full rounded-xl border border-border bg-white px-3.5 py-2.5 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100";
 const label = "mb-1.5 block text-sm font-medium";
 
-type Line = { name: string; quantity: string; wholesalePrice: string; rrp: string };
+type Line = { name: string; quantity: string; unitCost: string; rrp: string };
 export type SavedCustomer = { name: string; email: string; address: string };
-export type WholesaleProduct = { name: string; wholesalePrice: number; rrp: number | null }; // cents
+export type WholesaleProduct = { name: string; unitCost: number; rrp: number | null }; // cents
 
 export function WholesaleQuoteForm({
   today,
@@ -34,7 +34,7 @@ export function WholesaleQuoteForm({
   products?: WholesaleProduct[];
 }) {
   const [lines, setLines] = useState<Line[]>([
-    { name: "", quantity: "1", wholesalePrice: "", rrp: "" },
+    { name: "", quantity: "1", unitCost: "", rrp: "" },
   ]);
   const [cust, setCust] = useState({ name: "", company: "", email: "", address: "" });
 
@@ -45,7 +45,7 @@ export function WholesaleQuoteForm({
     .filter((l) => l.name.trim() && qtyOf(l) > 0)
     .map((l) =>
       computeLine(
-        { name: l.name.trim(), basePrice: cents(l.wholesalePrice), rrp: l.rrp ? cents(l.rrp) : null, quantity: qtyOf(l) },
+        { name: l.name.trim(), basePrice: cents(l.unitCost), rrp: l.rrp ? cents(l.rrp) : null, quantity: qtyOf(l) },
         tiers
       )
     );
@@ -62,14 +62,14 @@ export function WholesaleQuoteForm({
       p
         ? {
             name: val,
-            wholesalePrice: (p.wholesalePrice / 100).toFixed(2),
+            unitCost: (p.unitCost / 100).toFixed(2),
             rrp: p.rrp != null ? (p.rrp / 100).toFixed(2) : "",
           }
         : { name: val }
     );
   };
   const addLine = () =>
-    setLines((ls) => [...ls, { name: "", quantity: "1", wholesalePrice: "", rrp: "" }]);
+    setLines((ls) => [...ls, { name: "", quantity: "1", unitCost: "", rrp: "" }]);
   const removeLine = (i: number) =>
     setLines((ls) => (ls.length > 1 ? ls.filter((_, idx) => idx !== i) : ls));
 
@@ -81,7 +81,7 @@ export function WholesaleQuoteForm({
   // Per-line derived values for the live table
   const rowInfo = (l: Line) => {
     const q = qtyOf(l);
-    const base = cents(l.wholesalePrice);
+    const base = cents(l.unitCost);
     const tier = tierForQty(q, tiers);
     const unit = q > 0 ? computeLine({ name: l.name, basePrice: base, quantity: q }, tiers).unitPrice : base;
     return { q, unit, pct: tier.discountPercent, amount: unit * q };
@@ -173,15 +173,15 @@ export function WholesaleQuoteForm({
       <div className="rounded-2xl border border-border bg-surface p-6">
         <h2 className="mb-1 font-bold">Products</h2>
         <p className="mb-4 text-xs text-muted-foreground">
-          Pick a product to auto-fill its wholesale cost &amp; RRP, then set the quantity — the
-          volume discount is applied automatically.
+          Pick a product to auto-fill its unit cost &amp; RRP, then set the quantity — the wholesale
+          price (unit cost minus the volume discount) is calculated automatically.
         </p>
         <div className="hidden gap-3 px-1 pb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground lg:grid lg:grid-cols-[1fr_70px_110px_110px_150px_36px]">
           <span>Product</span>
           <span>Qty</span>
-          <span>Wholesale (R)</span>
+          <span>Unit cost (R)</span>
           <span>RRP (R)</span>
-          <span className="text-right">Unit / Amount</span>
+          <span className="text-right">Wholesale / Amount</span>
           <span />
         </div>
         <div className="space-y-3">
@@ -205,8 +205,8 @@ export function WholesaleQuoteForm({
                 <input
                   inputMode="decimal"
                   placeholder="0.00"
-                  value={l.wholesalePrice}
-                  onChange={(e) => setLine(i, { wholesalePrice: e.target.value })}
+                  value={l.unitCost}
+                  onChange={(e) => setLine(i, { unitCost: e.target.value })}
                   className={input}
                 />
                 <input

@@ -150,7 +150,7 @@ export default async function QuotationView({
               <th className="py-2">Product</th>
               <th className="py-2 text-center">Qty</th>
               <th className="py-2 text-center">Discount</th>
-              <th className="py-2 text-right">Unit</th>
+              <th className="py-2 text-right">Wholesale</th>
               <th className="py-2 text-right">Amount</th>
             </tr>
           </thead>

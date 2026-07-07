@@ -102,7 +102,7 @@ export async function renderQuotationPdf(q: QuotationRecord): Promise<Buffer> {
   doc.text("PRODUCT", cDesc, y, { width: wDesc });
   doc.text("QTY", cQty, y, { width: wQty, align: "center" });
   doc.text("DISCOUNT", cTier, y, { width: wTier, align: "center" });
-  doc.text("UNIT", cUnit, y, { width: wUnit, align: "right" });
+  doc.text("WHOLESALE", cUnit, y, { width: wUnit, align: "right" });
   doc.text("AMOUNT", cAmt, y, { width: wAmt, align: "right" });
   y += 14;
   doc.moveTo(L, y).lineTo(R, y).lineWidth(1.4).strokeColor(LINE).stroke();
