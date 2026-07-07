@@ -148,6 +148,13 @@ export default async function WholesalePage({
                 <label className={label}>Quote validity (days)</label>
                 <input name="wholesaleValidityDays" inputMode="numeric" defaultValue={s.wholesaleValidityDays} className={input} />
               </div>
+              <div>
+                <label className={label}>RRP margin note (%)</label>
+                <input name="wholesaleRrpMarginPct" inputMode="numeric" defaultValue={s.wholesaleRrpMarginPct} className={input} />
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Footnote on the quotation: the RRP sits this % below the online platform selling price (excluding delivery).
+                </p>
+              </div>
             </div>
             <div>
               <label className={label}>Intro / default notes on the quotation</label>

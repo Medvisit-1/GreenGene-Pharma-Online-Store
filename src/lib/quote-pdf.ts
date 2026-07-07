@@ -27,6 +27,7 @@ export type QuotationRecord = {
   companyDetails: string;
   tierTable: string;
   notes: string | null;
+  rrpMarginPct?: number;
 };
 
 const DARK = "#104536";
@@ -166,7 +167,7 @@ export async function renderQuotationPdf(q: QuotationRecord): Promise<Buffer> {
     );
     y += 20;
     doc.font("Helvetica-Oblique").fontSize(8).fillColor(MUTED).text(
-      "* The recommended retail price (RRP) is approximately 20% below the average selling price on online platforms (excluding delivery fees) — this gives you an idea of your profit margin / mark-up.",
+      `* The recommended retail price (RRP) is ${q.rrpMarginPct ?? 20}% below the selling price on online platforms, exclusive of delivery costs — this gives you an idea of your profit margin / mark-up.`,
       L, y, { width: W }
     );
     y += 22;

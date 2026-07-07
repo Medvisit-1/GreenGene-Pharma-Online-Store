@@ -400,6 +400,7 @@ export async function saveWholesaleSettings(formData: FormData) {
     wholesaleTier2Pct: pct("wholesaleTier2Pct"),
     wholesaleTier3Pct: pct("wholesaleTier3Pct"),
     wholesaleValidityDays: posInt("wholesaleValidityDays", 30),
+    wholesaleRrpMarginPct: pct("wholesaleRrpMarginPct"),
     wholesaleIntro: g("wholesaleIntro"),
   });
   redirect("/admin/wholesale?settings=1");
