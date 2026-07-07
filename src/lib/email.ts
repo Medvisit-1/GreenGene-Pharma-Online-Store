@@ -333,3 +333,137 @@ export async function sendInvoiceEmail(invoiceId: string): Promise<boolean> {
   }
   return ok;
 }
+
+/* ---------- Wholesale quotation ---------- */
+
+/**
+ * Render + email a wholesale quotation (elegant HTML + PDF attachment) to the
+ * customer. Returns true if the email was accepted for delivery.
+ */
+export async function sendQuotationEmail(quoteId: string): Promise<boolean> {
+  const q = await prisma.quotation.findUnique({ where: { id: quoteId } });
+  if (!q) return false;
+
+  type Line = { name: string; quantity: number; tierPercent: number; basePrice: number; unitPrice: number; rrp: number | null };
+  type Tier = { minQty: number; maxQty: number | null; discountPercent: number };
+  type Company = { name?: string; regNo?: string; vatNo?: string; address?: string; email?: string; phone?: string };
+  const items: Line[] = JSON.parse(q.items || "[]");
+  const tiers: Tier[] = JSON.parse(q.tierTable || "[]");
+  const company: Company = JSON.parse(q.companyDetails || "{}");
+  const companyName = company.name || "GreenGene Pharma";
+
+  const rows = items
+    .map(
+      (l) => `<tr>
+        <td style="padding:8px 0;border-bottom:1px solid #eee">${esc(l.name)}${
+          l.rrp != null ? `<br/><span style="color:#8a978f;font-size:11px">RRP ${formatPrice(l.rrp)}</span>` : ""
+        }</td>
+        <td style="padding:8px 0;border-bottom:1px solid #eee;text-align:center">${l.quantity}</td>
+        <td style="padding:8px 0;border-bottom:1px solid #eee;text-align:center">${
+          l.tierPercent > 0 ? `<span style="color:#155640;font-weight:700">−${l.tierPercent}%</span>` : "—"
+        }</td>
+        <td style="padding:8px 0;border-bottom:1px solid #eee;text-align:right">${formatPrice(l.unitPrice)}</td>
+        <td style="padding:8px 0;border-bottom:1px solid #eee;text-align:right">${formatPrice(l.unitPrice * l.quantity)}</td>
+      </tr>`
+    )
+    .join("");
+
+  const tierRangeLabel = (t: Tier) =>
+    t.maxQty === null ? `${t.minQty}+ units` : `${t.minQty}–${t.maxQty} units`;
+  const tierRows = tiers
+    .map(
+      (t) => `<tr>
+        <td style="padding:6px 0;border-bottom:1px solid #e6ede8;color:#4a5a51">${tierRangeLabel(t)}</td>
+        <td style="padding:6px 0;border-bottom:1px solid #e6ede8;text-align:right;font-weight:700;color:#155640">${t.discountPercent}% off unit cost</td>
+      </tr>`
+    )
+    .join("");
+
+  const issue = new Date(q.issueDate).toLocaleDateString("en-ZA", { dateStyle: "long" });
+  const valid = q.validUntil ? new Date(q.validUntil).toLocaleDateString("en-ZA", { dateStyle: "long" }) : "";
+
+  const body = `
+    <table style="width:100%;font-size:13px;margin-bottom:16px"><tr>
+      <td style="vertical-align:top">
+        <img src="${APP_URL}/logo.png" alt="GreenGene Pharma" style="height:38px;width:auto;display:block;margin-bottom:10px"/>
+        <strong style="font-size:15px;color:#104536">${esc(companyName)}</strong><br/>
+        ${company.address ? esc(company.address) + "<br/>" : ""}
+        ${company.regNo ? "Reg. No: " + esc(company.regNo) + "<br/>" : ""}
+        ${company.vatNo ? "VAT No: " + esc(company.vatNo) + "<br/>" : ""}
+        ${company.email ? esc(company.email) + "<br/>" : ""}
+        ${company.phone ? esc(company.phone) : ""}
+      </td>
+      <td style="vertical-align:top;text-align:right">
+        <div style="font-size:18px;font-weight:800;color:#104536;line-height:1.15">WHOLESALE<br/>QUOTATION</div>
+        <div style="color:#6b7c73;margin-top:4px"># ${esc(q.number)}</div>
+        <div style="margin-top:6px">Date: ${issue}</div>
+        ${valid ? `<div>Valid until: ${valid}</div>` : ""}
+      </td>
+    </tr></table>
+
+    <div style="background:#f6f8f6;border-radius:10px;padding:12px 14px;margin-bottom:14px">
+      <div style="color:#6b7c73;font-size:12px">Prepared for</div>
+      <strong>${esc(q.customerCompany || q.customerName)}</strong><br/>
+      ${q.customerCompany ? `<span style="color:#4a5a51;font-size:13px">${esc(q.customerName)}</span><br/>` : ""}
+      <span style="color:#4a5a51;font-size:13px">${esc(q.customerEmail)}</span>
+      ${q.customerAddress ? `<br/><span style="color:#4a5a51;font-size:13px">${esc(q.customerAddress)}</span>` : ""}
+    </div>
+
+    <table style="width:100%;border-collapse:collapse;font-size:13px">
+      <thead><tr style="color:#6b7c73;text-align:left">
+        <th style="padding:6px 0;border-bottom:2px solid #dfe6e1">Product</th>
+        <th style="padding:6px 0;border-bottom:2px solid #dfe6e1;text-align:center">Qty</th>
+        <th style="padding:6px 0;border-bottom:2px solid #dfe6e1;text-align:center">Discount</th>
+        <th style="padding:6px 0;border-bottom:2px solid #dfe6e1;text-align:right">Unit</th>
+        <th style="padding:6px 0;border-bottom:2px solid #dfe6e1;text-align:right">Amount</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+
+    <table style="width:100%;font-size:14px;margin-top:10px"><tr><td></td><td style="width:220px">
+      <table style="width:100%">
+        <tr><td style="padding:6px 0;border-top:2px solid #dfe6e1;font-weight:800;color:#104536">Order total</td><td style="padding:6px 0;border-top:2px solid #dfe6e1;text-align:right;font-weight:800;color:#104536">${formatPrice(q.subtotal)}</td></tr>
+      </table>
+    </td></tr></table>
+
+    ${
+      tierRows
+        ? `<div style="margin-top:18px;background:#eef4ef;border:1px solid #d7e5db;border-radius:10px;padding:14px 16px">
+      <div style="font-weight:700;color:#104536;margin-bottom:8px">Volume discount tiers</div>
+      <table style="width:100%;font-size:13px">${tierRows}</table>
+      <p style="margin:10px 0 0;color:#4a5a51;font-size:12px">The more units you order, the lower your per-unit cost — order into a higher tier to unlock a bigger discount.</p>
+    </div>`
+        : ""
+    }
+
+    ${q.notes ? `<p style="margin-top:16px;color:#4a5a51;font-size:13px;white-space:pre-wrap">${esc(q.notes)}</p>` : ""}
+
+    <p style="margin-top:18px;color:#4a5a51;font-size:13px">To place an order or discuss your requirements, simply reply to this email${
+      company.phone ? ` or call us on ${esc(company.phone)}` : ""
+    }.</p>
+  `;
+
+  // Generate a PDF copy to attach (best-effort — email still sends if this fails)
+  let attachments: { filename: string; content: Buffer }[] | undefined;
+  try {
+    const { renderQuotationPdf } = await import("@/lib/quote-pdf");
+    const pdf = await renderQuotationPdf(q);
+    attachments = [{ filename: `Wholesale-Quotation-${q.number}.pdf`, content: pdf }];
+  } catch (e) {
+    console.error("[quotation] PDF generation failed:", (e as Error).message);
+  }
+
+  const ok = await sendMail({
+    to: q.customerEmail,
+    subject: `Wholesale quotation ${q.number} from ${companyName}`,
+    html: layout(`Wholesale quotation ${q.number}`, body),
+    replyTo: company.email || undefined,
+    attachments,
+  });
+  if (ok) {
+    await prisma.quotation
+      .update({ where: { id: q.id }, data: { sentAt: new Date(), status: q.status === "draft" ? "sent" : q.status } })
+      .catch(() => {});
+  }
+  return ok;
+}

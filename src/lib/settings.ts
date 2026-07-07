@@ -66,6 +66,16 @@ export type SiteSettings = {
   invoiceBankAccountType: string;
   invoiceDefaultNotes: string;
   invoiceDefaultTaxRate: string; // percent, e.g. "15"
+
+  // ---- Wholesale quotations: quantity → discount tiers ----
+  // Discount is applied to each product's wholesale base unit cost.
+  wholesaleTier1Max: string; // top of tier 1 (e.g. "50")
+  wholesaleTier1Pct: string; // discount % for 1..tier1Max
+  wholesaleTier2Max: string; // top of tier 2 (e.g. "100")
+  wholesaleTier2Pct: string; // discount % for tier1Max+1..tier2Max
+  wholesaleTier3Pct: string; // discount % for tier2Max+1 and above
+  wholesaleValidityDays: string; // quote validity window in days
+  wholesaleIntro: string; // intro blurb shown on the quotation
 };
 
 export const DEFAULT_SETTINGS: SiteSettings = {
@@ -128,6 +138,15 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   invoiceBankAccountType: "Current / Cheque",
   invoiceDefaultNotes: "Thank you for your business. Please use the invoice number as your payment reference.",
   invoiceDefaultTaxRate: "0",
+
+  wholesaleTier1Max: "50",
+  wholesaleTier1Pct: "10",
+  wholesaleTier2Max: "100",
+  wholesaleTier2Pct: "15",
+  wholesaleTier3Pct: "30",
+  wholesaleValidityDays: "30",
+  wholesaleIntro:
+    "Thank you for your interest in reselling GreenGene Pharma products. Our wholesale pricing rewards larger orders — the more units you order, the lower your per-unit cost. Review the tiers below to choose the volume that works best for your business.",
 };
 
 /** Parse shipping settings into cents numbers for calculations. */

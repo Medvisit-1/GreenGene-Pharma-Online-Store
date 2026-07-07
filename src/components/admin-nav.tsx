@@ -12,6 +12,7 @@ import {
   Settings,
   LayoutTemplate,
   FileText,
+  Boxes,
   ExternalLink,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -21,6 +22,7 @@ const LINKS = [
   { href: "/admin/products", label: "Products", icon: Package },
   { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
   { href: "/admin/invoices", label: "Invoicing", icon: FileText },
+  { href: "/admin/wholesale", label: "Wholesale", icon: Boxes },
   { href: "/admin/promotions", label: "Promotions", icon: Tag },
   { href: "/admin/reviews", label: "Reviews", icon: Star },
   { href: "/admin/front-shop", label: "Front Shop", icon: LayoutTemplate },
