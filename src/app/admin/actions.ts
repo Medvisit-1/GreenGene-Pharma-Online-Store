@@ -416,6 +416,10 @@ export async function createQuotation(formData: FormData) {
   const tiers = tiersFromSettings(settings);
   const number = await nextQuotationNumber();
 
+  const bonusBuyQty = Math.max(0, parseInt(g("bonusBuyQty"), 10) || 0);
+  const bonusFreeQty = Math.max(0, parseInt(g("bonusFreeQty"), 10) || 0);
+  const bonusActive = bonusBuyQty > 0 && bonusFreeQty > 0;
+
   const issueDate = g("issueDate") ? new Date(g("issueDate")) : new Date();
   let validUntil: Date | null = g("validUntil") ? new Date(g("validUntil")) : null;
   if (!validUntil) {
@@ -438,6 +442,8 @@ export async function createQuotation(formData: FormData) {
       validUntil,
       items: JSON.stringify(lines),
       subtotal,
+      bonusBuyQty: bonusActive ? bonusBuyQty : null,
+      bonusFreeQty: bonusActive ? bonusFreeQty : null,
       companyDetails: JSON.stringify(wholesaleCompanyFromSettings(settings)),
       tierTable: JSON.stringify(tiers),
       notes: g("notes") || settings.wholesaleIntro || null,

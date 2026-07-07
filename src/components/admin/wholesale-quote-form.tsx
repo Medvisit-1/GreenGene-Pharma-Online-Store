@@ -37,6 +37,8 @@ export function WholesaleQuoteForm({
     { name: "", quantity: "1", unitCost: "", rrp: "" },
   ]);
   const [cust, setCust] = useState({ name: "", company: "", email: "", address: "" });
+  const [bonusBuy, setBonusBuy] = useState("");
+  const [bonusFree, setBonusFree] = useState("");
 
   const cents = (v: string) => Math.round((parseFloat(v) || 0) * 100);
   const qtyOf = (l: Line) => parseInt(l.quantity, 10) || 0;
@@ -257,6 +259,44 @@ export function WholesaleQuoteForm({
               </tr>
             </tbody>
           </table>
+        </div>
+      </div>
+
+      {/* Bonus offer */}
+      <div className="rounded-2xl border border-border bg-surface p-6">
+        <h2 className="mb-1 font-bold">Bonus offer</h2>
+        <p className="mb-4 text-xs text-muted-foreground">
+          Optional free-stock incentive shown on the quotation, e.g. “Buy 100, get 10 free”. Leave at
+          zero to hide it.
+        </p>
+        <div className="flex flex-wrap items-end gap-3">
+          <div>
+            <label className={label}>Buy (units)</label>
+            <input
+              name="bonusBuyQty"
+              inputMode="numeric"
+              placeholder="0"
+              value={bonusBuy}
+              onChange={(e) => setBonusBuy(e.target.value)}
+              className="w-32 rounded-xl border border-border bg-white px-3.5 py-2.5 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+            />
+          </div>
+          <div>
+            <label className={label}>Get free (units)</label>
+            <input
+              name="bonusFreeQty"
+              inputMode="numeric"
+              placeholder="0"
+              value={bonusFree}
+              onChange={(e) => setBonusFree(e.target.value)}
+              className="w-32 rounded-xl border border-border bg-white px-3.5 py-2.5 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+            />
+          </div>
+          {(parseInt(bonusBuy, 10) || 0) > 0 && (parseInt(bonusFree, 10) || 0) > 0 && (
+            <div className="rounded-xl bg-accent/15 px-4 py-2.5 text-sm font-semibold text-brand-800">
+              🎁 Buy {parseInt(bonusBuy, 10)}, get {parseInt(bonusFree, 10)} free
+            </div>
+          )}
         </div>
       </div>
 

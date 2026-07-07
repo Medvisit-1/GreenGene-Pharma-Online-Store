@@ -355,14 +355,12 @@ export async function sendQuotationEmail(quoteId: string): Promise<boolean> {
   const rows = items
     .map(
       (l) => `<tr>
-        <td style="padding:8px 0;border-bottom:1px solid #eee">${esc(l.name)}${
-          l.rrp != null ? `<br/><span style="color:#8a978f;font-size:11px">RRP ${formatPrice(l.rrp)}</span>` : ""
-        }</td>
+        <td style="padding:8px 0;border-bottom:1px solid #eee">${esc(l.name)}</td>
         <td style="padding:8px 0;border-bottom:1px solid #eee;text-align:center">${l.quantity}</td>
-        <td style="padding:8px 0;border-bottom:1px solid #eee;text-align:center">${
-          l.tierPercent > 0 ? `<span style="color:#155640;font-weight:700">−${l.tierPercent}%</span>` : "—"
-        }</td>
         <td style="padding:8px 0;border-bottom:1px solid #eee;text-align:right">${formatPrice(l.unitPrice)}</td>
+        <td style="padding:8px 0;border-bottom:1px solid #eee;text-align:right;color:#6b7c73">${
+          l.rrp != null ? formatPrice(l.rrp) : "—"
+        }</td>
         <td style="padding:8px 0;border-bottom:1px solid #eee;text-align:right">${formatPrice(l.unitPrice * l.quantity)}</td>
       </tr>`
     )
@@ -374,13 +372,22 @@ export async function sendQuotationEmail(quoteId: string): Promise<boolean> {
     .map(
       (t) => `<tr>
         <td style="padding:6px 0;border-bottom:1px solid #e6ede8;color:#4a5a51">${tierRangeLabel(t)}</td>
-        <td style="padding:6px 0;border-bottom:1px solid #e6ede8;text-align:right;font-weight:700;color:#155640">${t.discountPercent}% off unit cost</td>
+        <td style="padding:6px 0;border-bottom:1px solid #e6ede8;text-align:right;font-weight:700;color:#155640">${t.discountPercent}%*</td>
       </tr>`
     )
     .join("");
 
   const issue = new Date(q.issueDate).toLocaleDateString("en-ZA", { dateStyle: "long" });
   const valid = q.validUntil ? new Date(q.validUntil).toLocaleDateString("en-ZA", { dateStyle: "long" }) : "";
+
+  const bonusHtml =
+    q.bonusBuyQty && q.bonusFreeQty
+      ? `<div style="margin-bottom:14px;background:#eef7e3;border:1px solid #cfe6ab;border-radius:10px;padding:12px 14px">
+          <span style="font-size:18px">🎁</span>
+          <strong style="color:#104536"> Bonus offer:</strong>
+          <span style="color:#155640;font-weight:700">Buy ${q.bonusBuyQty}, get ${q.bonusFreeQty} free</span>
+        </div>`
+      : "";
 
   const body = `
     <table style="width:100%;font-size:13px;margin-bottom:16px"><tr>
@@ -409,12 +416,14 @@ export async function sendQuotationEmail(quoteId: string): Promise<boolean> {
       ${q.customerAddress ? `<br/><span style="color:#4a5a51;font-size:13px">${esc(q.customerAddress)}</span>` : ""}
     </div>
 
+    ${bonusHtml}
+
     <table style="width:100%;border-collapse:collapse;font-size:13px">
       <thead><tr style="color:#6b7c73;text-align:left">
         <th style="padding:6px 0;border-bottom:2px solid #dfe6e1">Product</th>
         <th style="padding:6px 0;border-bottom:2px solid #dfe6e1;text-align:center">Qty</th>
-        <th style="padding:6px 0;border-bottom:2px solid #dfe6e1;text-align:center">Discount</th>
         <th style="padding:6px 0;border-bottom:2px solid #dfe6e1;text-align:right">Wholesale</th>
+        <th style="padding:6px 0;border-bottom:2px solid #dfe6e1;text-align:right">RRP</th>
         <th style="padding:6px 0;border-bottom:2px solid #dfe6e1;text-align:right">Amount</th>
       </tr></thead>
       <tbody>${rows}</tbody>
@@ -432,6 +441,7 @@ export async function sendQuotationEmail(quoteId: string): Promise<boolean> {
       <div style="font-weight:700;color:#104536;margin-bottom:8px">Volume discount tiers</div>
       <table style="width:100%;font-size:13px">${tierRows}</table>
       <p style="margin:10px 0 0;color:#4a5a51;font-size:12px">The more units you order, the lower your per-unit cost — order into a higher tier to unlock a bigger discount.</p>
+      <p style="margin:8px 0 0;color:#6b7c73;font-size:11px;font-style:italic">* The recommended retail price (RRP) is approximately 20% below the average selling price on online platforms (excluding delivery fees) — this gives you an idea of your profit margin / mark-up.</p>
     </div>`
         : ""
     }
