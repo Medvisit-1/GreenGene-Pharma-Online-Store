@@ -117,6 +117,9 @@ model Quotation {
   // JSON: [{ name, quantity, tierPercent, basePrice(cents), unitPrice(cents), rrp(cents|null) }]
   items           String    @default("[]")
   subtotal        Int       @default(0)
+  // Bonus offer: buy `bonusBuyQty` units, get `bonusFreeQty` free.
+  bonusBuyQty     Int?
+  bonusFreeQty    Int?
   // snapshot of the business details + tier table at creation time (JSON)
   companyDetails  String    @default("{}")
   tierTable       String    @default("[]")

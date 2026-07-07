@@ -144,34 +144,37 @@ export default async function QuotationView({
           {q.customerAddress && <div className="text-muted-foreground">{q.customerAddress}</div>}
         </div>
 
+        {q.bonusBuyQty && q.bonusFreeQty ? (
+          <div className="mt-6 flex items-center gap-3 rounded-xl border border-accent/40 bg-accent/10 p-4">
+            <span className="text-2xl">🎁</span>
+            <div>
+              <div className="text-sm font-bold text-brand-800">Bonus offer</div>
+              <div className="text-sm text-brand-700">
+                Buy {q.bonusBuyQty}, get {q.bonusFreeQty} free
+              </div>
+            </div>
+          </div>
+        ) : null}
+
         <table className="mt-6 w-full text-sm">
           <thead>
             <tr className="border-b-2 border-border text-left text-xs uppercase tracking-wide text-muted-foreground">
               <th className="py-2">Product</th>
               <th className="py-2 text-center">Qty</th>
-              <th className="py-2 text-center">Discount</th>
               <th className="py-2 text-right">Wholesale</th>
+              <th className="py-2 text-right">RRP</th>
               <th className="py-2 text-right">Amount</th>
             </tr>
           </thead>
           <tbody>
             {items.map((l, idx) => (
               <tr key={idx} className="border-b border-border">
-                <td className="py-2.5">
-                  {l.name}
-                  {l.rrp != null && (
-                    <span className="ml-2 text-xs text-muted-foreground">RRP {formatPrice(l.rrp)}</span>
-                  )}
-                </td>
+                <td className="py-2.5">{l.name}</td>
                 <td className="py-2.5 text-center tabular-nums">{l.quantity}</td>
-                <td className="py-2.5 text-center tabular-nums">
-                  {l.tierPercent > 0 ? (
-                    <span className="font-semibold text-brand-700">−{l.tierPercent}%</span>
-                  ) : (
-                    "—"
-                  )}
-                </td>
                 <td className="py-2.5 text-right tabular-nums">{formatPrice(l.unitPrice)}</td>
+                <td className="py-2.5 text-right tabular-nums text-muted-foreground">
+                  {l.rrp != null ? formatPrice(l.rrp) : "—"}
+                </td>
                 <td className="py-2.5 text-right tabular-nums">{formatPrice(l.unitPrice * l.quantity)}</td>
               </tr>
             ))}
@@ -197,13 +200,18 @@ export default async function QuotationView({
                 {tiers.map((t, i) => (
                   <tr key={i} className="border-b border-brand-100 last:border-0">
                     <td className="py-1.5 text-muted-foreground">{tierRange(t)}</td>
-                    <td className="py-1.5 text-right font-semibold text-brand-700">{t.discountPercent}% off unit cost</td>
+                    <td className="py-1.5 text-right font-semibold text-brand-700">{t.discountPercent}%*</td>
                   </tr>
                 ))}
               </tbody>
             </table>
             <p className="mt-2 text-xs text-muted-foreground">
               The more units you order, the lower your per-unit cost — order into a higher tier to unlock a bigger discount.
+            </p>
+            <p className="mt-2 text-xs italic text-muted-foreground">
+              * The recommended retail price (RRP) is approximately 20% below the average selling
+              price on online platforms (excluding delivery fees) — this gives you an idea of your
+              profit margin / mark-up.
             </p>
           </div>
         )}

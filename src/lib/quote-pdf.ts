@@ -22,6 +22,8 @@ export type QuotationRecord = {
   validUntil: Date | null;
   items: string;
   subtotal: number;
+  bonusBuyQty: number | null;
+  bonusFreeQty: number | null;
   companyDetails: string;
   tierTable: string;
   notes: string | null;
@@ -91,18 +93,29 @@ export async function renderQuotationPdf(q: QuotationRecord): Promise<Buffer> {
   if (q.customerAddress) doc.text(q.customerAddress, L + 12, undefined, { width: W - 24 });
   y += boxH + 16;
 
+  // ---- Bonus offer ----
+  if (q.bonusBuyQty && q.bonusFreeQty) {
+    doc.roundedRect(L, y, W, 30, 6).fill("#eef7e3");
+    doc.fillColor(DARK).font("Helvetica-Bold").fontSize(10).text("Bonus offer", L + 12, y + 6);
+    doc.fillColor(ACCENT).font("Helvetica-Bold").fontSize(10).text(
+      `Buy ${q.bonusBuyQty}, get ${q.bonusFreeQty} free`,
+      L + 12, y + 18, { width: W - 24 }
+    );
+    y += 44;
+  }
+
   // ---- Items table ----
-  const cDesc = L, wDesc = 210;
-  const cQty = 270, wQty = 45;
-  const cTier = 320, wTier = 55;
-  const cUnit = 380, wUnit = 80;
-  const cAmt = 465, wAmt = 80;
+  const cDesc = L, wDesc = 215;
+  const cQty = 275, wQty = 45;
+  const cUnit = 325, wUnit = 75;
+  const cRrp = 405, wRrp = 60;
+  const cAmt = 470, wAmt = 75;
 
   doc.font("Helvetica-Bold").fontSize(8.5).fillColor(MUTED);
   doc.text("PRODUCT", cDesc, y, { width: wDesc });
   doc.text("QTY", cQty, y, { width: wQty, align: "center" });
-  doc.text("DISCOUNT", cTier, y, { width: wTier, align: "center" });
   doc.text("WHOLESALE", cUnit, y, { width: wUnit, align: "right" });
+  doc.text("RRP", cRrp, y, { width: wRrp, align: "right" });
   doc.text("AMOUNT", cAmt, y, { width: wAmt, align: "right" });
   y += 14;
   doc.moveTo(L, y).lineTo(R, y).lineWidth(1.4).strokeColor(LINE).stroke();
@@ -115,15 +128,12 @@ export async function renderQuotationPdf(q: QuotationRecord): Promise<Buffer> {
       y = 50;
     }
     const nameH = doc.heightOfString(it.name, { width: wDesc });
-    const rrpText = it.rrp != null ? `RRP ${formatPrice(it.rrp)}` : "";
     doc.fillColor("#222").text(it.name, cDesc, y, { width: wDesc });
-    if (rrpText) doc.fillColor(MUTED).fontSize(8).text(rrpText, cDesc, y + nameH + 1, { width: wDesc });
-    doc.fillColor("#222").fontSize(10);
     doc.text(String(it.quantity), cQty, y, { width: wQty, align: "center" });
-    doc.text(it.tierPercent > 0 ? `−${it.tierPercent}%` : "—", cTier, y, { width: wTier, align: "center" });
     doc.text(formatPrice(it.unitPrice), cUnit, y, { width: wUnit, align: "right" });
-    doc.text(formatPrice(it.unitPrice * it.quantity), cAmt, y, { width: wAmt, align: "right" });
-    const rowH = Math.max(nameH + (rrpText ? 11 : 0), 14);
+    doc.fillColor(MUTED).text(it.rrp != null ? formatPrice(it.rrp) : "—", cRrp, y, { width: wRrp, align: "right" });
+    doc.fillColor("#222").text(formatPrice(it.unitPrice * it.quantity), cAmt, y, { width: wAmt, align: "right" });
+    const rowH = Math.max(nameH, 14);
     y += rowH + 8;
     doc.moveTo(L, y - 4).lineTo(R, y - 4).lineWidth(0.5).strokeColor(LINE).stroke();
   }
@@ -146,7 +156,7 @@ export async function renderQuotationPdf(q: QuotationRecord): Promise<Buffer> {
     doc.fontSize(9);
     for (const t of tiers) {
       doc.font("Helvetica").fillColor(MUTED).text(tierRange(t), L + 12, ty, { width: 200 });
-      doc.font("Helvetica-Bold").fillColor(ACCENT).text(`${t.discountPercent}% off unit cost`, L + 220, ty, { width: W - 232 });
+      doc.font("Helvetica-Bold").fillColor(ACCENT).text(`${t.discountPercent}%*`, L + 220, ty, { width: W - 232 });
       ty += 18;
     }
     y += 26 + tiers.length * 18;
@@ -154,7 +164,12 @@ export async function renderQuotationPdf(q: QuotationRecord): Promise<Buffer> {
       "The more units you order, the lower your per-unit cost. Order into a higher tier to unlock a bigger discount.",
       L, y + 6, { width: W }
     );
-    y += 24;
+    y += 20;
+    doc.font("Helvetica-Oblique").fontSize(8).fillColor(MUTED).text(
+      "* The recommended retail price (RRP) is approximately 20% below the average selling price on online platforms (excluding delivery fees) — this gives you an idea of your profit margin / mark-up.",
+      L, y, { width: W }
+    );
+    y += 22;
   }
 
   // ---- Notes ----
