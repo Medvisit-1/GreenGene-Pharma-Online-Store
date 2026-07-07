@@ -45,7 +45,13 @@ export default async function NewQuotationPage() {
           Wholesale &amp; Invoicing pages.
         </p>
       </div>
-      <WholesaleQuoteForm today={today} tiers={tiers} customers={customers} products={products} />
+      <WholesaleQuoteForm
+        today={today}
+        tiers={tiers}
+        rrpMarginPct={parseInt(s.wholesaleRrpMarginPct, 10) || 20}
+        customers={customers}
+        products={products}
+      />
     </div>
   );
 }

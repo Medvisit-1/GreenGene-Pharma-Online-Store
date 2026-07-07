@@ -106,15 +106,17 @@ export async function renderQuotationPdf(q: QuotationRecord): Promise<Buffer> {
   }
 
   // ---- Items table ----
-  const cDesc = L, wDesc = 215;
-  const cQty = 275, wQty = 45;
-  const cUnit = 325, wUnit = 75;
-  const cRrp = 405, wRrp = 60;
-  const cAmt = 470, wAmt = 75;
+  const cDesc = L, wDesc = 170;
+  const cQty = 225, wQty = 35;
+  const cDisc = 262, wDisc = 55;
+  const cUnit = 320, wUnit = 73;
+  const cRrp = 398, wRrp = 62;
+  const cAmt = 465, wAmt = 80;
 
   doc.font("Helvetica-Bold").fontSize(8.5).fillColor(MUTED);
   doc.text("PRODUCT", cDesc, y, { width: wDesc });
   doc.text("QTY", cQty, y, { width: wQty, align: "center" });
+  doc.text("DISCOUNT", cDisc, y, { width: wDisc, align: "center" });
   doc.text("WHOLESALE", cUnit, y, { width: wUnit, align: "right" });
   doc.text("RRP", cRrp, y, { width: wRrp, align: "right" });
   doc.text("AMOUNT", cAmt, y, { width: wAmt, align: "right" });
@@ -131,6 +133,7 @@ export async function renderQuotationPdf(q: QuotationRecord): Promise<Buffer> {
     const nameH = doc.heightOfString(it.name, { width: wDesc });
     doc.fillColor("#222").text(it.name, cDesc, y, { width: wDesc });
     doc.text(String(it.quantity), cQty, y, { width: wQty, align: "center" });
+    doc.text(it.tierPercent > 0 ? `-${it.tierPercent}%` : "—", cDisc, y, { width: wDisc, align: "center" });
     doc.text(formatPrice(it.unitPrice), cUnit, y, { width: wUnit, align: "right" });
     doc.fillColor(MUTED).text(it.rrp != null ? formatPrice(it.rrp) : "—", cRrp, y, { width: wRrp, align: "right" });
     doc.fillColor("#222").text(formatPrice(it.unitPrice * it.quantity), cAmt, y, { width: wAmt, align: "right" });
