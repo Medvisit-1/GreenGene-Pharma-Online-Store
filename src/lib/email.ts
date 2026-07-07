@@ -351,6 +351,8 @@ export async function sendQuotationEmail(quoteId: string): Promise<boolean> {
   const tiers: Tier[] = JSON.parse(q.tierTable || "[]");
   const company: Company = JSON.parse(q.companyDetails || "{}");
   const companyName = company.name || "GreenGene Pharma";
+  const settings = await getSettings();
+  const rrpMarginPct = parseInt(settings.wholesaleRrpMarginPct, 10) || 20;
 
   const rows = items
     .map(
@@ -441,7 +443,7 @@ export async function sendQuotationEmail(quoteId: string): Promise<boolean> {
       <div style="font-weight:700;color:#104536;margin-bottom:8px">Volume discount tiers</div>
       <table style="width:100%;font-size:13px">${tierRows}</table>
       <p style="margin:10px 0 0;color:#4a5a51;font-size:12px">The more units you order, the lower your per-unit cost — order into a higher tier to unlock a bigger discount.</p>
-      <p style="margin:8px 0 0;color:#6b7c73;font-size:11px;font-style:italic">* The recommended retail price (RRP) is approximately 20% below the average selling price on online platforms (excluding delivery fees) — this gives you an idea of your profit margin / mark-up.</p>
+      <p style="margin:8px 0 0;color:#6b7c73;font-size:11px;font-style:italic">* The discounted ${rrpMarginPct}% is below the selling price on online platforms, exclusive of delivery costs — this gives you an idea of your profit margin / mark-up. RRP is suggestive but you may change it according to your market needs.</p>
     </div>`
         : ""
     }
@@ -457,7 +459,7 @@ export async function sendQuotationEmail(quoteId: string): Promise<boolean> {
   let attachments: { filename: string; content: Buffer }[] | undefined;
   try {
     const { renderQuotationPdf } = await import("@/lib/quote-pdf");
-    const pdf = await renderQuotationPdf(q);
+    const pdf = await renderQuotationPdf({ ...q, rrpMarginPct });
     attachments = [{ filename: `Wholesale-Quotation-${q.number}.pdf`, content: pdf }];
   } catch (e) {
     console.error("[quotation] PDF generation failed:", (e as Error).message);

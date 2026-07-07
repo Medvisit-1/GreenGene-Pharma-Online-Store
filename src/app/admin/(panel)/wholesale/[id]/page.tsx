@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, Send, CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatPrice } from "@/lib/utils";
+import { getSettings } from "@/lib/settings";
 import { setQuotationStatus, sendQuotation, deleteQuotation } from "@/app/admin/actions";
 import { PrintButton } from "@/components/admin/print-button";
 import { ConfirmSubmit } from "@/components/admin/confirm-submit";
@@ -59,8 +60,12 @@ export default async function QuotationView({
 }) {
   const { id } = await params;
   const { sent, senterror } = await searchParams;
-  const q = await prisma.quotation.findUnique({ where: { id } });
+  const [q, s] = await Promise.all([
+    prisma.quotation.findUnique({ where: { id } }),
+    getSettings(),
+  ]);
   if (!q) notFound();
+  const rrpMarginPct = parseInt(s.wholesaleRrpMarginPct, 10) || 20;
 
   const items = parseQuoteLines(q.items);
   const tiers = parseTierTable(q.tierTable);
@@ -209,9 +214,9 @@ export default async function QuotationView({
               The more units you order, the lower your per-unit cost — order into a higher tier to unlock a bigger discount.
             </p>
             <p className="mt-2 text-xs italic text-muted-foreground">
-              * The recommended retail price (RRP) is approximately 20% below the average selling
-              price on online platforms (excluding delivery fees) — this gives you an idea of your
-              profit margin / mark-up.
+              * The discounted {rrpMarginPct}% is below the selling price on online platforms,
+              exclusive of delivery costs — this gives you an idea of your profit margin / mark-up.
+              RRP is suggestive but you may change it according to your market needs.
             </p>
           </div>
         )}

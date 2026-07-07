@@ -76,6 +76,7 @@ export type SiteSettings = {
   wholesaleTier3Pct: string; // discount % for tier2Max+1 and above
   wholesaleValidityDays: string; // quote validity window in days
   wholesaleIntro: string; // intro blurb shown on the quotation
+  wholesaleRrpMarginPct: string; // RRP sits this % below the online platform selling price (ex. delivery)
 };
 
 export const DEFAULT_SETTINGS: SiteSettings = {
@@ -147,6 +148,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   wholesaleValidityDays: "30",
   wholesaleIntro:
     "Thank you for your interest in reselling GreenGene Pharma products. Our wholesale pricing rewards larger orders — the more units you order, the lower your per-unit cost. Review the tiers below to choose the volume that works best for your business.",
+  wholesaleRrpMarginPct: "20",
 };
 
 /** Parse shipping settings into cents numbers for calculations. */
