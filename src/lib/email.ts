@@ -359,6 +359,9 @@ export async function sendQuotationEmail(quoteId: string): Promise<boolean> {
       (l) => `<tr>
         <td style="padding:8px 0;border-bottom:1px solid #eee">${esc(l.name)}</td>
         <td style="padding:8px 0;border-bottom:1px solid #eee;text-align:center">${l.quantity}</td>
+        <td style="padding:8px 0;border-bottom:1px solid #eee;text-align:center">${
+          l.tierPercent > 0 ? `<span style="color:#155640;font-weight:700">−${l.tierPercent}%</span>` : "—"
+        }</td>
         <td style="padding:8px 0;border-bottom:1px solid #eee;text-align:right">${formatPrice(l.unitPrice)}</td>
         <td style="padding:8px 0;border-bottom:1px solid #eee;text-align:right;color:#6b7c73">${
           l.rrp != null ? formatPrice(l.rrp) : "—"
@@ -424,6 +427,7 @@ export async function sendQuotationEmail(quoteId: string): Promise<boolean> {
       <thead><tr style="color:#6b7c73;text-align:left">
         <th style="padding:6px 0;border-bottom:2px solid #dfe6e1">Product</th>
         <th style="padding:6px 0;border-bottom:2px solid #dfe6e1;text-align:center">Qty</th>
+        <th style="padding:6px 0;border-bottom:2px solid #dfe6e1;text-align:center">Discount</th>
         <th style="padding:6px 0;border-bottom:2px solid #dfe6e1;text-align:right">Wholesale</th>
         <th style="padding:6px 0;border-bottom:2px solid #dfe6e1;text-align:right">RRP</th>
         <th style="padding:6px 0;border-bottom:2px solid #dfe6e1;text-align:right">Amount</th>

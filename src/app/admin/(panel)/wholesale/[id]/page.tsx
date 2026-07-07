@@ -166,6 +166,7 @@ export default async function QuotationView({
             <tr className="border-b-2 border-border text-left text-xs uppercase tracking-wide text-muted-foreground">
               <th className="py-2">Product</th>
               <th className="py-2 text-center">Qty</th>
+              <th className="py-2 text-center">Discount</th>
               <th className="py-2 text-right">Wholesale</th>
               <th className="py-2 text-right">RRP</th>
               <th className="py-2 text-right">Amount</th>
@@ -176,6 +177,13 @@ export default async function QuotationView({
               <tr key={idx} className="border-b border-border">
                 <td className="py-2.5">{l.name}</td>
                 <td className="py-2.5 text-center tabular-nums">{l.quantity}</td>
+                <td className="py-2.5 text-center tabular-nums">
+                  {l.tierPercent > 0 ? (
+                    <span className="font-semibold text-brand-700">−{l.tierPercent}%</span>
+                  ) : (
+                    "—"
+                  )}
+                </td>
                 <td className="py-2.5 text-right tabular-nums">{formatPrice(l.unitPrice)}</td>
                 <td className="py-2.5 text-right tabular-nums text-muted-foreground">
                   {l.rrp != null ? formatPrice(l.rrp) : "—"}
