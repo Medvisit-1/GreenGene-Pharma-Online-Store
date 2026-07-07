@@ -13,6 +13,12 @@ import {
   bankFromSettings,
 } from "@/lib/invoice";
 import {
+  tiersFromSettings,
+  parseQuoteLines,
+  quoteSubtotal,
+  companyFromSettings as wholesaleCompanyFromSettings,
+} from "@/lib/wholesale";
+import {
   checkCredentials,
   setSession,
   clearSession,
@@ -64,6 +70,10 @@ export async function saveProduct(formData: FormData) {
     compareAtPrice: formData.get("compareAtPrice")
       ? randsToCents(formData.get("compareAtPrice"))
       : null,
+    wholesalePrice: formData.get("wholesalePrice")
+      ? randsToCents(formData.get("wholesalePrice"))
+      : null,
+    rrp: formData.get("rrp") ? randsToCents(formData.get("rrp")) : null,
     sku: String(formData.get("sku") ?? "") || null,
     stock: parseInt(String(formData.get("stock") ?? "0"), 10) || 0,
     brand: String(formData.get("brand") ?? "") || null,
@@ -366,4 +376,116 @@ export async function sendInvoice(formData: FormData) {
   const ok = await sendInvoiceEmail(id);
   revalidatePath(`/admin/invoices/${id}`);
   redirect(`/admin/invoices/${id}?${ok ? "sent=1" : "senterror=1"}`);
+}
+
+/* ---------------- Wholesale quotations ---------------- */
+
+async function nextQuotationNumber(): Promise<string> {
+  const count = await prisma.quotation.count();
+  return `WQ-${String(count + 1).padStart(4, "0")}`;
+}
+
+export async function saveWholesaleSettings(formData: FormData) {
+  const g = (k: string) => String(formData.get(k) ?? "");
+  const posInt = (k: string, fallback: number) => {
+    const n = parseInt(g(k), 10);
+    return String(Number.isFinite(n) && n > 0 ? n : fallback);
+  };
+  const pct = (k: string) => {
+    const n = parseInt(g(k), 10);
+    return String(Math.min(100, Math.max(0, Number.isFinite(n) ? n : 0)));
+  };
+  await updateSettings({
+    wholesaleTier1Max: posInt("wholesaleTier1Max", 50),
+    wholesaleTier1Pct: pct("wholesaleTier1Pct"),
+    wholesaleTier2Max: posInt("wholesaleTier2Max", 100),
+    wholesaleTier2Pct: pct("wholesaleTier2Pct"),
+    wholesaleTier3Pct: pct("wholesaleTier3Pct"),
+    wholesaleValidityDays: posInt("wholesaleValidityDays", 30),
+    wholesaleIntro: g("wholesaleIntro"),
+  });
+  redirect("/admin/wholesale?settings=1");
+}
+
+export async function createQuotation(formData: FormData) {
+  const g = (k: string) => String(formData.get(k) ?? "").trim();
+  const lines = parseQuoteLines(g("items"));
+  if (!g("customerName") || !g("customerEmail") || !lines.length) {
+    redirect("/admin/wholesale/new?error=1");
+  }
+  const subtotal = quoteSubtotal(lines);
+  const settings = await getSettings();
+  const tiers = tiersFromSettings(settings);
+  const number = await nextQuotationNumber();
+
+  const issueDate = g("issueDate") ? new Date(g("issueDate")) : new Date();
+  let validUntil: Date | null = g("validUntil") ? new Date(g("validUntil")) : null;
+  if (!validUntil) {
+    const days = parseInt(settings.wholesaleValidityDays, 10) || 0;
+    if (days > 0) {
+      validUntil = new Date(issueDate);
+      validUntil.setDate(validUntil.getDate() + days);
+    }
+  }
+
+  const quote = await prisma.quotation.create({
+    data: {
+      number,
+      customerName: g("customerName"),
+      customerCompany: g("customerCompany") || null,
+      customerEmail: g("customerEmail"),
+      customerAddress: g("customerAddress") || null,
+      status: "draft",
+      issueDate,
+      validUntil,
+      items: JSON.stringify(lines),
+      subtotal,
+      companyDetails: JSON.stringify(wholesaleCompanyFromSettings(settings)),
+      tierTable: JSON.stringify(tiers),
+      notes: g("notes") || settings.wholesaleIntro || null,
+    },
+  });
+
+  // Remember this customer for future quotations / invoices
+  await prisma.customer
+    .upsert({
+      where: { email: g("customerEmail") },
+      create: {
+        email: g("customerEmail"),
+        name: g("customerName") || null,
+        address: g("customerAddress") || null,
+      },
+      update: {
+        name: g("customerName") || undefined,
+        ...(g("customerAddress") ? { address: g("customerAddress") } : {}),
+      },
+    })
+    .catch(() => {});
+
+  revalidatePath("/admin/wholesale");
+  redirect(`/admin/wholesale/${quote.id}`);
+}
+
+export async function setQuotationStatus(formData: FormData) {
+  const id = String(formData.get("id"));
+  const raw = String(formData.get("status"));
+  const status = ["draft", "sent", "accepted", "declined"].includes(raw) ? raw : "draft";
+  await prisma.quotation.update({ where: { id }, data: { status } });
+  revalidatePath(`/admin/wholesale/${id}`);
+  revalidatePath("/admin/wholesale");
+}
+
+export async function deleteQuotation(formData: FormData) {
+  const id = String(formData.get("id"));
+  await prisma.quotation.delete({ where: { id } });
+  revalidatePath("/admin/wholesale");
+  redirect("/admin/wholesale");
+}
+
+export async function sendQuotation(formData: FormData) {
+  const id = String(formData.get("id"));
+  const { sendQuotationEmail } = await import("@/lib/email");
+  const ok = await sendQuotationEmail(id);
+  revalidatePath(`/admin/wholesale/${id}`);
+  redirect(`/admin/wholesale/${id}?${ok ? "sent=1" : "senterror=1"}`);
 }
