@@ -66,6 +66,7 @@ export type SiteSettings = {
   invoiceBankAccountType: string;
   invoiceDefaultNotes: string;
   invoiceDefaultTaxRate: string; // percent, e.g. "15"
+  invoiceDefaultPaymentTerms: string; // e.g. "Due on receipt", "Net 30 days"
 
   // ---- Wholesale quotations: quantity → discount tiers ----
   // Discount is applied to each product's wholesale base unit cost.
@@ -139,6 +140,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   invoiceBankAccountType: "Current / Cheque",
   invoiceDefaultNotes: "Thank you for your business. Please use the invoice number as your payment reference.",
   invoiceDefaultTaxRate: "0",
+  invoiceDefaultPaymentTerms: "Due on receipt",
 
   wholesaleTier1Max: "50",
   wholesaleTier1Pct: "10",

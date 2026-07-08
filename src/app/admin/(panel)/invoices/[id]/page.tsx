@@ -101,6 +101,7 @@ export default async function InvoiceView({
             <div className="text-muted-foreground"># {inv.number}</div>
             <div className="mt-2 text-sm">Date: {new Date(inv.issueDate).toLocaleDateString("en-ZA", { dateStyle: "long" })}</div>
             {inv.dueDate && <div className="text-sm">Due: {new Date(inv.dueDate).toLocaleDateString("en-ZA", { dateStyle: "long" })}</div>}
+            {inv.paymentTerms && <div className="text-sm text-muted-foreground">Terms: {inv.paymentTerms}</div>}
             <span className={`mt-2 inline-block rounded-full px-3 py-0.5 text-xs font-bold ${paid ? "bg-brand-100 text-brand-700" : "bg-amber-100 text-amber-700"}`}>
               {paid ? "PAID" : "UNPAID"}
             </span>

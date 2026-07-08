@@ -86,6 +86,8 @@ model Invoice {
   status          String    @default("unpaid")
   issueDate       DateTime  @default(now())
   dueDate         DateTime?
+  // Human-readable payment terms, e.g. "Net 30 days" or "Due on receipt"
+  paymentTerms    String?
   // JSON: [{ description, quantity, unitPrice(cents) }]
   items           String    @default("[]")
   subtotal        Int       @default(0)
