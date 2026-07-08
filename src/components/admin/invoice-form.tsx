@@ -14,13 +14,34 @@ type Line = { description: string; quantity: string; unitPrice: string };
 export type SavedCustomer = { name: string; email: string; address: string };
 export type ShopProduct = { name: string; price: number }; // price in cents
 
+const TERMS: { value: string; label: string; days: number | null }[] = [
+  { value: "receipt", label: "Due on receipt", days: 0 },
+  { value: "net7", label: "Net 7 days", days: 7 },
+  { value: "net14", label: "Net 14 days", days: 14 },
+  { value: "net30", label: "Net 30 days", days: 30 },
+  { value: "net60", label: "Net 60 days", days: 60 },
+  { value: "custom", label: "Custom date", days: null },
+];
+
+/** Add n days to a "YYYY-MM-DD" string, TZ-safe. */
+function addDays(dateStr: string, n: number): string {
+  if (!dateStr) return "";
+  const [y, m, d] = dateStr.split("-").map(Number);
+  const dt = new Date(y, m - 1, d);
+  dt.setDate(dt.getDate() + n);
+  const p = (x: number) => String(x).padStart(2, "0");
+  return `${dt.getFullYear()}-${p(dt.getMonth() + 1)}-${p(dt.getDate())}`;
+}
+
 export function InvoiceForm({
   defaultTaxRate,
+  defaultPaymentTerms,
   today,
   customers = [],
   products = [],
 }: {
   defaultTaxRate: string;
+  defaultPaymentTerms: string;
   today: string;
   customers?: SavedCustomer[];
   products?: ShopProduct[];
@@ -32,6 +53,24 @@ export function InvoiceForm({
   const [vatOn, setVatOn] = useState(defRate > 0);
   const [taxRate, setTaxRate] = useState(defRate > 0 ? defaultTaxRate : "15");
   const [cust, setCust] = useState<SavedCustomer>({ name: "", email: "", address: "" });
+
+  const initialTerm = TERMS.find((t) => t.label === defaultPaymentTerms) ?? TERMS[0];
+  const [issueDate, setIssueDate] = useState(today);
+  const [termValue, setTermValue] = useState(initialTerm.value);
+  const [dueDate, setDueDate] = useState(
+    initialTerm.days != null ? addDays(today, initialTerm.days) : ""
+  );
+  const currentTerm = TERMS.find((t) => t.value === termValue) ?? TERMS[0];
+  const isCustom = currentTerm.value === "custom";
+  const onTermChange = (v: string) => {
+    setTermValue(v);
+    const t = TERMS.find((x) => x.value === v)!;
+    if (t.days != null) setDueDate(addDays(issueDate, t.days));
+  };
+  const onIssueChange = (v: string) => {
+    setIssueDate(v);
+    if (currentTerm.days != null) setDueDate(addDays(v, currentTerm.days));
+  };
 
   const pickCustomer = (email: string) => {
     const c = customers.find((x) => x.email === email);
@@ -132,14 +171,36 @@ export function InvoiceForm({
             />
           </div>
         </div>
-        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+        <div className="mt-4 grid gap-4 sm:grid-cols-3">
           <div>
             <label className={label}>Issue date</label>
-            <input name="issueDate" type="date" defaultValue={today} className={input} />
+            <input
+              name="issueDate"
+              type="date"
+              value={issueDate}
+              onChange={(e) => onIssueChange(e.target.value)}
+              className={input}
+            />
           </div>
           <div>
-            <label className={label}>Due date (optional)</label>
-            <input name="dueDate" type="date" className={input} />
+            <label className={label}>Payment terms</label>
+            <select value={termValue} onChange={(e) => onTermChange(e.target.value)} className={input}>
+              {TERMS.map((t) => (
+                <option key={t.value} value={t.value}>{t.label}</option>
+              ))}
+            </select>
+            <input type="hidden" name="paymentTerms" value={isCustom ? "" : currentTerm.label} />
+          </div>
+          <div>
+            <label className={label}>Due date {isCustom ? "" : "(auto)"}</label>
+            <input
+              name="dueDate"
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+              readOnly={!isCustom}
+              className={`${input} ${!isCustom ? "bg-muted/50 text-muted-foreground" : ""}`}
+            />
           </div>
         </div>
       </div>

@@ -36,7 +36,13 @@ export default async function NewInvoicePage() {
           Your business &amp; banking details are added automatically — edit them on the Invoices page.
         </p>
       </div>
-      <InvoiceForm defaultTaxRate={s.invoiceDefaultTaxRate} today={today} customers={customers} products={products} />
+      <InvoiceForm
+        defaultTaxRate={s.invoiceDefaultTaxRate}
+        defaultPaymentTerms={s.invoiceDefaultPaymentTerms}
+        today={today}
+        customers={customers}
+        products={products}
+      />
     </div>
   );
 }

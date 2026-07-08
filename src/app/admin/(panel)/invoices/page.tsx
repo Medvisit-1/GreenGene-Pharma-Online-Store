@@ -124,6 +124,14 @@ export default async function InvoicesPage({
               <label className={label}>Default VAT rate (%)</label>
               <input name="invoiceDefaultTaxRate" inputMode="numeric" defaultValue={s.invoiceDefaultTaxRate} className={input} />
             </div>
+            <div>
+              <label className={label}>Default payment terms</label>
+              <select name="invoiceDefaultPaymentTerms" defaultValue={s.invoiceDefaultPaymentTerms} className={input}>
+                {["Due on receipt", "Net 7 days", "Net 14 days", "Net 30 days", "Net 60 days"].map((t) => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
+              </select>
+            </div>
             <div className="sm:col-span-2">
               <label className={label}>Address</label>
               <input name="invoiceCompanyAddress" defaultValue={s.invoiceCompanyAddress} className={input} />

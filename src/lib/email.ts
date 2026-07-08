@@ -274,6 +274,7 @@ export async function sendInvoiceEmail(invoiceId: string): Promise<boolean> {
         <div style="color:#6b7c73"># ${esc(inv.number)}</div>
         <div style="margin-top:6px">Date: ${issue}</div>
         ${due ? `<div>Due: ${due}</div>` : ""}
+        ${inv.paymentTerms ? `<div style="color:#6b7c73">Terms: ${esc(inv.paymentTerms)}</div>` : ""}
         <div style="margin-top:6px;display:inline-block;padding:3px 10px;border-radius:999px;font-weight:700;font-size:12px;${inv.status === "paid" ? "background:#d9f0e0;color:#1c6b40" : "background:#fdecec;color:#b3261e"}">${inv.status === "paid" ? "PAID" : "UNPAID"}</div>
       </td>
     </tr></table>

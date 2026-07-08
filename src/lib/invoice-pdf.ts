@@ -13,6 +13,7 @@ export type InvoiceRecord = {
   status: string;
   issueDate: Date;
   dueDate: Date | null;
+  paymentTerms: string | null;
   items: string;
   subtotal: number;
   taxRate: number;
@@ -74,6 +75,7 @@ export async function renderInvoicePdf(inv: InvoiceRecord): Promise<Buffer> {
   doc.font("Helvetica").fontSize(10).fillColor(MUTED).text(`# ${inv.number}`, 320, 78, { width: 225, align: "right" });
   doc.fillColor("#333").fontSize(9).text(`Date: ${fmtDate(inv.issueDate)}`, 320, 94, { width: 225, align: "right" });
   if (inv.dueDate) doc.text(`Due: ${fmtDate(inv.dueDate)}`, 320, undefined, { width: 225, align: "right" });
+  if (inv.paymentTerms) doc.text(`Terms: ${inv.paymentTerms}`, 320, undefined, { width: 225, align: "right" });
 
   // Status badge (right)
   const badge = paid ? "PAID" : "UNPAID";

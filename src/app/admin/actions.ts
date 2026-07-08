@@ -296,6 +296,7 @@ export async function saveInvoiceSettings(formData: FormData) {
     invoiceBankAccountType: g("invoiceBankAccountType"),
     invoiceDefaultNotes: g("invoiceDefaultNotes"),
     invoiceDefaultTaxRate: String(parseInt(g("invoiceDefaultTaxRate"), 10) || 0),
+    invoiceDefaultPaymentTerms: g("invoiceDefaultPaymentTerms") || "Due on receipt",
   });
   redirect("/admin/invoices?settings=1");
 }
@@ -322,6 +323,7 @@ export async function createInvoice(formData: FormData) {
       status: "unpaid",
       issueDate: g("issueDate") ? new Date(g("issueDate")) : new Date(),
       dueDate: dueRaw ? new Date(dueRaw) : null,
+      paymentTerms: g("paymentTerms") || null,
       items: JSON.stringify(lines),
       subtotal,
       taxRate,
