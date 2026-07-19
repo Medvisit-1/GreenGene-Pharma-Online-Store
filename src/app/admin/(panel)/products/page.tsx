@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Plus, Pencil } from "lucide-react";
+import { Plus, Pencil, Layers } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatPrice, parseImages } from "@/lib/utils";
 import { deleteProduct } from "@/app/admin/actions";
@@ -19,9 +19,14 @@ export default async function AdminProducts() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight">Products ({products.length})</h1>
-        <Link href="/admin/products/new">
-          <Button><Plus className="h-4 w-4" /> Add product</Button>
-        </Link>
+        <div className="flex gap-2">
+          <Link href="/admin/products/new?combo=1">
+            <Button variant="outline"><Layers className="h-4 w-4" /> Create combo</Button>
+          </Link>
+          <Link href="/admin/products/new">
+            <Button><Plus className="h-4 w-4" /> Add product</Button>
+          </Link>
+        </div>
       </div>
 
       <div className="overflow-hidden rounded-2xl border border-border bg-surface">

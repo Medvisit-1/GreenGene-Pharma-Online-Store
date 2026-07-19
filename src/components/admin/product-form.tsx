@@ -15,10 +15,12 @@ export function ProductForm({
   product,
   categories,
   wholesaleTiers,
+  defaultCombo = false,
 }: {
   product?: Product | null;
   categories: Category[];
   wholesaleTiers: WholesaleTier[];
+  defaultCombo?: boolean;
 }) {
   const images = parseImages(product?.images);
 
@@ -140,7 +142,7 @@ export function ProductForm({
             Active (visible in store)
           </label>
           <label className="flex items-center gap-2 text-sm font-medium">
-            <input type="checkbox" name="isCombo" defaultChecked={product?.isCombo ?? false} className="h-4 w-4 accent-brand-600" />
+            <input type="checkbox" name="isCombo" defaultChecked={product?.isCombo ?? defaultCombo} className="h-4 w-4 accent-brand-600" />
             Combo product (show under Combos)
           </label>
         </div>
