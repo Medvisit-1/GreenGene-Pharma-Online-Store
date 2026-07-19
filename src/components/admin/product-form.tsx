@@ -97,7 +97,8 @@ export function ProductForm({
         </div>
       </div>
 
-      {!combo && (
+      {/* Wholesale pricing only when editing an existing, non-combo product */}
+      {product && !combo && (
         <WholesalePricingFields
           initialUnitCost={product?.unitCost ? (product.unitCost / 100).toFixed(2) : ""}
           initialRrp={product?.rrp ? (product.rrp / 100).toFixed(2) : ""}
