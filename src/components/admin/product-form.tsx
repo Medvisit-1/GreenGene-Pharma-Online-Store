@@ -23,6 +23,7 @@ export function ProductForm({
   defaultCombo?: boolean;
 }) {
   const images = parseImages(product?.images);
+  const combo = product?.isCombo ?? defaultCombo;
 
   return (
     <form action={saveProduct} className="max-w-3xl space-y-5">
@@ -96,11 +97,13 @@ export function ProductForm({
         </div>
       </div>
 
-      <WholesalePricingFields
-        initialUnitCost={product?.unitCost ? (product.unitCost / 100).toFixed(2) : ""}
-        initialRrp={product?.rrp ? (product.rrp / 100).toFixed(2) : ""}
-        tiers={wholesaleTiers}
-      />
+      {!combo && (
+        <WholesalePricingFields
+          initialUnitCost={product?.unitCost ? (product.unitCost / 100).toFixed(2) : ""}
+          initialRrp={product?.rrp ? (product.rrp / 100).toFixed(2) : ""}
+          tiers={wholesaleTiers}
+        />
+      )}
 
       <div className="rounded-2xl border border-border bg-surface p-6">
         <h3 className="mb-1 font-bold">Also available on</h3>
