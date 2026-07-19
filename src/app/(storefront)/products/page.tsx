@@ -26,7 +26,8 @@ export default async function ProductsPage({
 }) {
   const { category, q, sort, featured } = await searchParams;
 
-  const where: Prisma.ProductWhereInput = { active: true };
+  // Combos live under their own /combos section, not the general product grid
+  const where: Prisma.ProductWhereInput = { active: true, isCombo: false };
   if (category) where.category = { slug: category };
   if (featured) where.featured = true;
   if (q)
