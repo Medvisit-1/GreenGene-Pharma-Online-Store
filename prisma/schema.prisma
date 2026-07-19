@@ -45,6 +45,8 @@ model Product {
   takealotUrl      String?
   amazonUrl        String?
   bobshopUrl       String?
+  // Show under the "Combos" section
+  isCombo          Boolean     @default(false)
   featured         Boolean     @default(false)
   active           Boolean     @default(true)
   category         Category?   @relation(fields: [categoryId], references: [id])

@@ -11,6 +11,7 @@ import { SearchOverlay } from "@/components/search-overlay";
 const NAV = [
   { href: "/", label: "Home" },
   { href: "/products", label: "Products" },
+  { href: "/combos", label: "Combos" },
   { href: "/promotions", label: "Promotions" },
   { href: "/contact", label: "Contact" },
 ];

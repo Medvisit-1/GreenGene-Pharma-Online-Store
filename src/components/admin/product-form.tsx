@@ -139,6 +139,10 @@ export function ProductForm({
             <input type="checkbox" name="active" defaultChecked={product?.active ?? true} className="h-4 w-4 accent-brand-600" />
             Active (visible in store)
           </label>
+          <label className="flex items-center gap-2 text-sm font-medium">
+            <input type="checkbox" name="isCombo" defaultChecked={product?.isCombo ?? false} className="h-4 w-4 accent-brand-600" />
+            Combo product (show under Combos)
+          </label>
         </div>
       </div>
 

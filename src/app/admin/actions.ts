@@ -82,6 +82,7 @@ export async function saveProduct(formData: FormData) {
     images: parseImageLines(formData.get("images")),
     featured: formData.get("featured") === "on",
     active: formData.get("active") === "on",
+    isCombo: formData.get("isCombo") === "on",
   };
 
   if (id) {
