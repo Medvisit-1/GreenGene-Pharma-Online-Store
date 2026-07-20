@@ -68,9 +68,12 @@ export function NewReleaseCarousel({
                 {c.title && <h3 className="text-xl font-semibold tracking-tight">{c.title}</h3>}
                 {c.text && <p className="mt-2 flex-1 text-sm text-muted-foreground">{c.text}</p>}
                 {c.buttonLabel && (
-                  <Link href={link} className="mt-5 inline-block">
-                    <Button size="lg">
-                      {c.buttonLabel} <ArrowRight className="h-4 w-4" />
+                  <Link href={link} className="mt-5 block">
+                    <Button
+                      size="lg"
+                      className="h-auto min-h-13 w-full whitespace-normal px-5 py-3 text-center leading-snug"
+                    >
+                      {c.buttonLabel} <ArrowRight className="h-4 w-4 shrink-0" />
                     </Button>
                   </Link>
                 )}
