@@ -56,7 +56,7 @@ export function NewReleaseCarousel({
               data-card
               className="flex w-[85%] shrink-0 snap-start flex-col overflow-hidden rounded-3xl border border-border bg-surface shadow-sm sm:w-[calc((100%-1.5rem)/2)] lg:w-[calc((100%-3rem)/3)]"
             >
-              <Link href={link} className="block aspect-[4/3] overflow-hidden bg-white">
+              <Link href={link} className="block aspect-[4/3] overflow-hidden bg-brand-50">
                 {c.image ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={c.image} alt={c.title} className="h-full w-full object-contain p-4 transition-transform duration-500 hover:scale-[1.04]" />
