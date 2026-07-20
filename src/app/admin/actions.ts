@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/utils";
 import { updateSettings, getSettings } from "@/lib/settings";
+import { parseNewReleaseCards } from "@/lib/new-release";
 import { GATEWAYS, saveGatewayStates } from "@/lib/payments";
 import {
   computeTotals,
@@ -249,13 +250,9 @@ export async function saveFrontShop(formData: FormData) {
     ctaSubheading: g("ctaSubheading"),
     ctaButtonLabel: g("ctaButtonLabel"),
     ctaButtonLink: g("ctaButtonLink"),
-    promoBannerEnabled: formData.get("promoBannerEnabled") === "on" ? "1" : "0",
-    promoBannerImage: g("promoBannerImage"),
-    promoBannerLink: g("promoBannerLink"),
-    promoCardTitle: g("promoCardTitle"),
-    promoCardText: g("promoCardText"),
-    promoCardButtonLabel: g("promoCardButtonLabel"),
-    promoCardButtonLink: g("promoCardButtonLink"),
+    newReleaseEnabled: formData.get("newReleaseEnabled") === "on" ? "1" : "0",
+    newReleaseHeading: g("newReleaseHeading"),
+    newReleaseCards: JSON.stringify(parseNewReleaseCards(g("newReleaseCards"))),
     marqueeEnabled: formData.get("marqueeEnabled") === "on" ? "1" : "0",
     marqueeText: g("marqueeText"),
     marqueeSpeed: String(parseInt(g("marqueeSpeed"), 10) || 30),

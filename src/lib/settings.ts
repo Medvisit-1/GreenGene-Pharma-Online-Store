@@ -47,6 +47,11 @@ export type SiteSettings = {
   promoCardButtonLabel: string;
   promoCardButtonLink: string;
 
+  // ---- "New Release" swipeable product cards ----
+  newReleaseEnabled: string; // "1" | "0"
+  newReleaseHeading: string;
+  newReleaseCards: string; // JSON array of { image, title, text, buttonLabel, buttonLink }
+
   // ---- Floating marquee banner ----
   marqueeEnabled: string; // "1" | "0"
   marqueeText: string;
@@ -122,6 +127,10 @@ export const DEFAULT_SETTINGS: SiteSettings = {
     "Browse our complete collection of premium, research-backed natural health products — all fully dosage-transparent.",
   promoCardButtonLabel: "Shop all products",
   promoCardButtonLink: "/products",
+
+  newReleaseEnabled: "0",
+  newReleaseHeading: "New Release",
+  newReleaseCards: "[]",
 
   marqueeEnabled: "0",
   marqueeText: "🎉 Free shipping on orders over R1000 · Use code WELCOME10 for 10% off your first order",

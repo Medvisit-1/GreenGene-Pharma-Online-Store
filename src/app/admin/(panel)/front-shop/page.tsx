@@ -6,6 +6,8 @@ import { saveFrontShop } from "@/app/admin/actions";
 import { Button } from "@/components/ui/button";
 import { SingleImageField } from "@/components/admin/single-image";
 import { LinkPicker } from "@/components/admin/link-picker";
+import { NewReleaseEditor } from "@/components/admin/new-release-editor";
+import { parseNewReleaseCards } from "@/lib/new-release";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Front Shop" };
@@ -31,6 +33,7 @@ export default async function AdminFrontShop({
     { label: "Home", value: "/" },
     ...products.map((p) => ({ label: p.name, value: `/products/${p.slug}` })),
   ];
+  const newReleaseCards = parseNewReleaseCards(s.newReleaseCards);
 
   return (
     <div className="space-y-6">
@@ -228,59 +231,36 @@ export default async function AdminFrontShop({
           </div>
         </div>
 
-        {/* Promo / advertising banner */}
+        {/* New Release — swipeable product cards */}
         <div className={card}>
-          <h2 className="mb-1 font-bold">Promo / advertising image</h2>
+          <h2 className="mb-1 font-bold">New Release</h2>
           <p className="mb-4 text-xs text-muted-foreground">
-            A promo block shown between the feature strip and the trust section — an image beside a
-            colourful call-to-action card. Great for specials or a new launch.
+            A swipeable row of cards shown between the feature strip and the trust section — add one
+            card per newly released product. Each card shows the product image with its own text,
+            button and link.
           </p>
           <label className="mb-4 flex cursor-pointer items-center gap-3">
             <span className="relative inline-flex items-center">
               <input
                 type="checkbox"
-                name="promoBannerEnabled"
-                defaultChecked={s.promoBannerEnabled === "1"}
+                name="newReleaseEnabled"
+                defaultChecked={s.newReleaseEnabled === "1"}
                 className="peer sr-only"
               />
               <span className="h-6 w-11 rounded-full bg-gray-300 transition-colors after:absolute after:left-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow after:transition-all peer-checked:bg-brand-600 peer-checked:after:translate-x-5" />
             </span>
             <span className="text-sm font-medium">Show on the homepage</span>
           </label>
-          <label className={label}>Banner image</label>
-          <SingleImageField name="promoBannerImage" initial={s.promoBannerImage} />
-          <div className="mt-4">
-            <label className={label}>Image link (optional) — where clicking the image goes</label>
-            <LinkPicker name="promoBannerLink" initial={s.promoBannerLink} options={linkOptions} />
-            <p className="mt-1.5 text-xs text-muted-foreground">Type a product name to link to it, pick a page, or paste any custom URL.</p>
+          <div className="mb-4">
+            <label className={label}>Section heading</label>
+            <input name="newReleaseHeading" defaultValue={s.newReleaseHeading} className={input} />
           </div>
-
-          <div className="mt-6 rounded-xl border border-border p-4">
-            <h3 className="mb-1 text-sm font-semibold">Call-to-action card (beside the image)</h3>
-            <p className="mb-4 text-xs text-muted-foreground">
-              A colourful card in the shop theme. Edit its text and where the button links.
-            </p>
-            <div className="grid gap-4">
-              <div>
-                <label className={label}>Card heading</label>
-                <input name="promoCardTitle" defaultValue={s.promoCardTitle} className={input} />
-              </div>
-              <div>
-                <label className={label}>Card text</label>
-                <textarea name="promoCardText" defaultValue={s.promoCardText} rows={3} className={input} />
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label className={label}>Button — text</label>
-                  <input name="promoCardButtonLabel" defaultValue={s.promoCardButtonLabel} className={input} />
-                </div>
-                <div>
-                  <label className={label}>Button — link</label>
-                  <LinkPicker name="promoCardButtonLink" initial={s.promoCardButtonLink} options={linkOptions} />
-                </div>
-              </div>
-            </div>
-          </div>
+          <label className={label}>Cards</label>
+          <NewReleaseEditor
+            name="newReleaseCards"
+            initial={newReleaseCards}
+            linkOptions={linkOptions}
+          />
         </div>
 
         <Button type="submit" size="lg">Save front shop</Button>
