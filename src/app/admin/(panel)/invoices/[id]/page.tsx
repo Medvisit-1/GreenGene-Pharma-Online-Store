@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Send, CheckCircle2, RotateCcw, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Send, CheckCircle2, RotateCcw, AlertTriangle, Download } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatPrice } from "@/lib/utils";
 import { setInvoiceStatus, sendInvoice, deleteInvoice } from "@/app/admin/actions";
@@ -39,6 +39,10 @@ export default async function InvoiceView({
 
   return (
     <div className="space-y-5">
+      {/* Zero page margins on print: the browser draws its date/URL header & footer
+          in the margin area, so removing the margins removes them too. */}
+      <style>{`@media print { @page { margin: 0; } }`}</style>
+
       {/* Toolbar (hidden when printing) */}
       <div className="print:hidden">
         <Link href="/admin/invoices" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-brand-700">
@@ -71,6 +75,13 @@ export default async function InvoiceView({
             {paid ? <><RotateCcw className="h-4 w-4" /> Mark unpaid</> : <><CheckCircle2 className="h-4 w-4" /> Mark paid</>}
           </button>
         </form>
+        <a
+          href={`/api/admin/invoices/${inv.id}/pdf`}
+          download
+          className="inline-flex items-center gap-2 rounded-xl border border-border px-4 py-2 text-sm font-medium hover:bg-muted"
+        >
+          <Download className="h-4 w-4" /> Download PDF
+        </a>
         <PrintButton />
         <form action={deleteInvoice} className="ml-auto">
           <input type="hidden" name="id" value={inv.id} />
@@ -84,7 +95,7 @@ export default async function InvoiceView({
       </div>
 
       {/* Printable invoice */}
-      <div className="mx-auto max-w-3xl rounded-2xl border border-border bg-white p-8 shadow-sm print:border-0 print:shadow-none sm:p-10">
+      <div className="mx-auto max-w-3xl rounded-2xl border border-border bg-white p-8 shadow-sm print:max-w-none print:rounded-none print:border-0 print:p-12 print:shadow-none sm:p-10">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="text-sm leading-relaxed">
             {/* eslint-disable-next-line @next/next/no-img-element */}

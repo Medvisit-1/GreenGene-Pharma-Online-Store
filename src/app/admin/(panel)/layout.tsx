@@ -25,7 +25,7 @@ export default async function AdminLayout({
   return (
     <div className="flex min-h-screen bg-background">
       {/* Sidebar */}
-      <aside className="hidden w-64 shrink-0 flex-col bg-header p-4 md:flex">
+      <aside className="hidden w-64 shrink-0 flex-col bg-header p-4 md:flex print:hidden!">
         <div className="mb-6 px-2 pt-2">
           <Image src="/logo.png" alt="GreenGene Pharma" width={1547} height={756} className="h-9 w-auto" />
         </div>
@@ -39,7 +39,7 @@ export default async function AdminLayout({
 
       {/* Mobile top bar */}
       <div className="flex flex-1 flex-col">
-        <header className="flex items-center justify-between gap-4 bg-header px-4 py-3 md:hidden">
+        <header className="flex items-center justify-between gap-4 bg-header px-4 py-3 md:hidden print:hidden">
           <Image src="/logo.png" alt="GreenGene Pharma" width={1547} height={756} className="h-8 w-auto" />
           <form action={logoutAction}>
             <button className="rounded-lg p-2 text-white/80 hover:bg-white/10">
@@ -47,7 +47,7 @@ export default async function AdminLayout({
             </button>
           </form>
         </header>
-        <div className="md:hidden">
+        <div className="md:hidden print:hidden">
           <div className="overflow-x-auto bg-header px-2 pb-3">
             <div className="min-w-max">
               <AdminNav pendingReviews={pendingReviews} />
@@ -55,7 +55,7 @@ export default async function AdminLayout({
           </div>
         </div>
 
-        <main className="flex-1 p-4 md:p-8">{children}</main>
+        <main className="flex-1 p-4 md:p-8 print:p-0">{children}</main>
       </div>
 
       <Toaster position="bottom-right" richColors closeButton />
