@@ -33,6 +33,12 @@ function fmtDate(d: Date) {
   return new Date(d).toLocaleDateString("en-ZA", { dateStyle: "long" });
 }
 
+// Textarea input is submitted with \r\n line endings; PDFKit renders the
+// stray \r as a visible glyph ("Ð"), so normalize to \n.
+function clean(s: string) {
+  return s.replace(/\r\n?/g, "\n");
+}
+
 /** Render an invoice to a PDF Buffer (A4). */
 export async function renderInvoicePdf(inv: InvoiceRecord): Promise<Buffer> {
   const items = parseLines(inv.items);
@@ -68,7 +74,7 @@ export async function renderInvoicePdf(inv: InvoiceRecord): Promise<Buffer> {
     company.email,
     company.phone,
   ].filter(Boolean) as string[];
-  companyLines.forEach((ln) => doc.text(ln, L, undefined, { width: 280 }));
+  companyLines.forEach((ln) => doc.text(clean(ln), L, undefined, { width: 280 }));
 
   // Right meta
   doc.font("Helvetica-Bold").fontSize(22).fillColor(DARK).text("INVOICE", 320, 50, { width: 225, align: "right" });
@@ -89,7 +95,7 @@ export async function renderInvoicePdf(inv: InvoiceRecord): Promise<Buffer> {
   doc.fillColor(MUTED).font("Helvetica").fontSize(8).text("BILLED TO", L + 12, y + 10);
   doc.fillColor("#222").font("Helvetica-Bold").fontSize(11).text(inv.customerName, L + 12, y + 22, { width: W - 24 });
   doc.font("Helvetica").fontSize(9).fillColor(MUTED).text(inv.customerEmail, L + 12, y + 37, { width: W - 24 });
-  if (inv.customerAddress) doc.text(inv.customerAddress, L + 12, undefined, { width: W - 24 });
+  if (inv.customerAddress) doc.text(clean(inv.customerAddress), L + 12, undefined, { width: W - 24 });
   y += 74;
 
   // ---- Items table ----
@@ -166,12 +172,20 @@ export async function renderInvoicePdf(inv: InvoiceRecord): Promise<Buffer> {
   // ---- Notes ----
   if (inv.notes) {
     y += 14;
-    doc.font("Helvetica").fontSize(9).fillColor(MUTED).text(inv.notes, L, y, { width: W });
+    doc.font("Helvetica").fontSize(9).fillColor(MUTED).text(clean(inv.notes), L, y, { width: W });
   }
 
-  // ---- Footer ----
-  doc.font("Helvetica").fontSize(8).fillColor("#aab4ad");
-  doc.text("GreenGene Pharma · Empower Your Wellness, Live Better", L, 812, { width: W, align: "center" });
+  // ---- Footer (kept on the same page; skipped if content reached the bottom) ----
+  if (doc.y <= 800) {
+    // Zero the bottom margin so drawing at y=812 doesn't trigger an auto page-break.
+    doc.page.margins.bottom = 0;
+    doc.font("Helvetica").fontSize(8).fillColor("#aab4ad");
+    doc.text("GreenGene Pharma · Empower Your Wellness, Live Better", L, 812, {
+      width: W,
+      align: "center",
+      lineBreak: false,
+    });
+  }
 
   doc.end();
   return done;
