@@ -33,6 +33,23 @@ function cell(v: unknown): string {
   return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }
 
+// Bob Go rejects imports where a text field exceeds 250 characters.
+const MAX_CELL = 250;
+
+/** Trim to Bob Go's field limit, marking the cut with an ellipsis. */
+function clip(s: string, max = MAX_CELL): string {
+  return s.length <= max ? s : s.slice(0, max - 1).trimEnd() + "…";
+}
+
+/** Short form of a product name: drop "(...)" pack info and any " — tagline". */
+function compactName(name: string): string {
+  const short = name
+    .replace(/\s*\([^)]*\)\s*/g, " ")
+    .split(/\s+[—–-]\s+/)[0]
+    .trim();
+  return short || clip(name.trim(), 60);
+}
+
 export async function GET(req: Request) {
   if (!(await isAuthed())) {
     return new Response("Unauthorized", { status: 401 });
@@ -76,9 +93,18 @@ export async function GET(req: Request) {
     // Bob Go treats each ROW as a separate order, so emit exactly ONE row per
     // order and fold all line items into the single item-summary columns.
     const subtotal = items.reduce((n, it) => n + it.price * it.quantity, 0); // cents
-    const itemSummary = items
-      .map((it) => (it.quantity > 1 ? `${it.name} (x${it.quantity})` : it.name))
-      .join("; ");
+    // Full names when they fit; compact names when too long; hard-clipped as a
+    // last resort — the cell must never exceed Bob Go's 250-character limit.
+    const summarize = (nameOf: (n: string) => string) =>
+      items
+        .map((it) => {
+          const n = nameOf(it.name);
+          return it.quantity > 1 ? `${n} (x${it.quantity})` : n;
+        })
+        .join("; ");
+    let itemSummary = summarize((n) => n);
+    if (itemSummary.length > MAX_CELL) itemSummary = summarize(compactName);
+    itemSummary = clip(itemSummary);
 
     rows.push(
       [
@@ -94,7 +120,7 @@ export async function GET(req: Request) {
         cell(addr.postalCode ?? ""),
         cell(payStatus),
         cell(""), // collection address name
-        cell(o.notes ?? ""), // delivery instructions
+        cell(clip(o.notes ?? "")), // delivery instructions (Bob Go caps text fields at 250)
         cell((o.shipping / 100).toFixed(2)), // buyer shipping charge
         cell(itemSummary), // item name — all products + quantities combined
         cell(""), // weight
