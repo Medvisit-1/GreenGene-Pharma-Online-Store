@@ -137,10 +137,12 @@ export async function GET(req: Request) {
   const csv = rows.join("\r\n") + "\r\n";
   const date = new Date().toISOString().slice(0, 10);
   const safe = (s: string) => s.replace(/[^a-zA-Z0-9-_]/g, "");
+  // "-v2" marks files produced by the 250-char-capped export, so a download's
+  // filename shows at a glance whether the running deployment has the fix.
   const filename =
     id && orders[0]
-      ? `bobgo-${safe(orders[0].orderNumber)}.csv`
-      : `bobgo-orders-${date}.csv`;
+      ? `bobgo-${safe(orders[0].orderNumber)}-v2.csv`
+      : `bobgo-orders-${date}-v2.csv`;
 
   return new Response(csv, {
     headers: {
