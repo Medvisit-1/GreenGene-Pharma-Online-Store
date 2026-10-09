@@ -38,6 +38,7 @@ export default function CheckoutPage() {
   // Saved customer details (browser, no login needed)
   const [saved, setSaved] = useState<Record<string, string>>({});
   const [saveDetails, setSaveDetails] = useState(true);
+  const [newsletter, setNewsletter] = useState(false);
 
   // Signed-in customer's reward codes (auto-applied, switchable)
   const [rewardCodes, setRewardCodes] = useState<RewardCode[]>([]);
@@ -148,6 +149,7 @@ export default function CheckoutPage() {
       notes: String(fd.get("notes") || ""),
       discountCode: discount?.valid ? discount.code : undefined,
       paymentMethod: payMethod,
+      newsletter,
       items: items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
     };
 
@@ -273,6 +275,15 @@ export default function CheckoutPage() {
                 className="h-4 w-4 accent-brand-600"
               />
               Save my details on this device for faster checkout next time
+            </label>
+            <label className="mt-2 flex cursor-pointer items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={newsletter}
+                onChange={(e) => setNewsletter(e.target.checked)}
+                className="h-4 w-4 accent-brand-600"
+              />
+              Email me news, launches and offers (unsubscribe anytime)
             </label>
           </section>
 

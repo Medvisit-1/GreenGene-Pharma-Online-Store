@@ -36,4 +36,8 @@ export async function finalizePaidOrder(orderId: string): Promise<void> {
           .catch(() => {})
       : Promise.resolve(),
   ]);
+
+  // Update the customer's rewards (milestones, referrals) and tell them what they unlocked.
+  const { afterOrderPaid } = await import("@/lib/rewards");
+  await afterOrderPaid(order.id);
 }

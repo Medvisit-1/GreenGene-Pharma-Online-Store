@@ -4,17 +4,27 @@ import type { Customer, Reward } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { formatPrice } from "@/lib/utils";
 
-export const REWARD_TYPES = ["milestone", "review", "birthday", "newsletter"] as const;
+export const REWARD_TYPES = ["milestone", "review", "referral", "birthday", "newsletter"] as const;
 export type RewardType = (typeof REWARD_TYPES)[number];
 
 export const REWARD_TYPE_LABELS: Record<RewardType, string> = {
   milestone: "Order milestone",
   review: "Product review",
+  referral: "Refer a friend",
   birthday: "Birthday month",
   newsletter: "Newsletter sign-up",
 };
 
 type RewardSeed = Omit<Reward, "id" | "createdAt" | "updatedAt">;
+
+const REFERRAL_DEFAULT: RewardSeed = {
+  title: "Refer a friend",
+  description: "Share your personal link. When a friend places their first order through it, you get R50 off.",
+  type: "referral", threshold: 0, discountType: "fixed", discountValue: 5000,
+  minSpend: 0, validDays: 90, active: true, sortOrder: 45,
+};
+const OLD_REVIEW_DESCRIPTION =
+  "Share an honest review of a product you've bought. Earn a reward for every product you review once it's published.";
 
 /** The starter programme, created the first time rewards are used. Fully editable in admin. */
 const DEFAULT_REWARDS: RewardSeed[] = [
@@ -38,10 +48,11 @@ const DEFAULT_REWARDS: RewardSeed[] = [
   },
   {
     title: "Review a product",
-    description: "Share an honest review of a product you've bought. Earn a reward for every product you review once it's published.",
+    description: "Share an honest review of a product you've bought. Earn a reward for every product you review.",
     type: "review", threshold: 0, discountType: "percent", discountValue: 5,
     minSpend: 0, validDays: 90, active: true, sortOrder: 40,
   },
+  REFERRAL_DEFAULT,
   {
     title: "Birthday treat",
     description: "Happy birthday! Add your birthday to your details and claim this during your birthday month.",
@@ -58,17 +69,35 @@ const DEFAULT_REWARDS: RewardSeed[] = [
 
 /** Seed the starter rewards exactly once (atomic flag in the Setting table). */
 export async function ensureDefaultRewards(): Promise<void> {
+  await runOnce("rewardsSeeded", async () => {
+    if ((await prisma.reward.count()) === 0) {
+      await prisma.reward.createMany({ data: DEFAULT_REWARDS });
+    }
+  });
+  // v2: stores seeded before refer-a-friend existed get it too, and the review
+  // description loses "once it's published" (only if the admin hasn't edited it).
+  await runOnce("rewardsSeededV2", async () => {
+    if ((await prisma.reward.count({ where: { type: "referral" } })) === 0) {
+      await prisma.reward.create({ data: REFERRAL_DEFAULT });
+    }
+    await prisma.reward.updateMany({
+      where: { type: "review", description: OLD_REVIEW_DESCRIPTION },
+      data: { description: DEFAULT_REWARDS.find((r) => r.type === "review")!.description },
+    });
+  });
+}
+
+/** Run a one-time setup step, guarded by an atomic flag in the Setting table. */
+async function runOnce(flag: string, fn: () => Promise<void>): Promise<void> {
   try {
     // Cheap check first so normal page views never hit (and log) a unique-constraint error.
-    if (await prisma.setting.findUnique({ where: { key: "rewardsSeeded" } })) return;
+    if (await prisma.setting.findUnique({ where: { key: flag } })) return;
     // The create is the atomic guard if two requests race on the very first visit.
-    await prisma.setting.create({ data: { key: "rewardsSeeded", value: "1" } });
+    await prisma.setting.create({ data: { key: flag, value: "1" } });
   } catch {
-    return; // already seeded by a concurrent request (or DB unavailable)
+    return; // done by a concurrent request (or DB unavailable)
   }
-  if ((await prisma.reward.count()) === 0) {
-    await prisma.reward.createMany({ data: DEFAULT_REWARDS });
-  }
+  await fn();
 }
 
 export async function rewardsEnabled(): Promise<boolean> {
@@ -91,7 +120,9 @@ export function describeRequirement(r: Pick<Reward, "type" | "threshold">): stri
     case "milestone":
       return `Place ${r.threshold} paid order${r.threshold === 1 ? "" : "s"}`;
     case "review":
-      return "Review a product you've bought (once published)";
+      return "Review a product you've bought";
+    case "referral":
+      return "A friend places their first order through your link";
     case "birthday":
       return "Claim during your birthday month";
     case "newsletter":
@@ -142,11 +173,13 @@ type Context = {
   paidCount: number;
   purchased: Set<string>;
   reviewedProducts: string[];
+  /** One entry per friend whose paid first order came through this customer's link */
+  referredFriends: string[];
   claimsByReward: Map<string, Set<string>>;
 };
 
 async function loadContext(customer: Customer): Promise<Context> {
-  const [orders, reviews, claims] = await Promise.all([
+  const [orders, reviews, claims, referred] = await Promise.all([
     prisma.order.findMany({
       where: {
         paymentStatus: "paid",
@@ -161,6 +194,10 @@ async function loadContext(customer: Customer): Promise<Context> {
     prisma.rewardClaim.findMany({
       where: { customerId: customer.id },
       select: { rewardId: true, period: true },
+    }),
+    prisma.order.findMany({
+      where: { referrerId: customer.id, paymentStatus: "paid" },
+      select: { customerId: true, email: true },
     }),
   ]);
 
@@ -177,6 +214,7 @@ async function loadContext(customer: Customer): Promise<Context> {
     paidCount: orders.length,
     purchased,
     reviewedProducts: [...new Set(reviews.map((r) => r.productId))],
+    referredFriends: [...new Set(referred.map((o) => `ref:${o.customerId ?? o.email}`))],
     claimsByReward,
   };
 }
@@ -189,6 +227,8 @@ function earnedPeriods(reward: Reward, customer: Customer, ctx: Context): string
     case "review":
       // Only verified buyers: the reviewed product must be in one of their paid orders.
       return ctx.reviewedProducts.filter((pid) => ctx.purchased.has(pid));
+    case "referral":
+      return ctx.referredFriends;
     case "birthday": {
       if (!customer.birthday) return [];
       const { year, month } = saNow();
@@ -225,6 +265,15 @@ function evaluate(reward: Reward, customer: Customer, ctx: Context): CustomerRew
         : ctx.purchased.size === 0
           ? "Place an order, then review what you bought."
           : "Leave a review on a product page while signed in.",
+    };
+  }
+  if (reward.type === "referral") {
+    return {
+      ...base,
+      status: "locked",
+      hint: claimed.size > 0
+        ? "Refer another friend to earn this again."
+        : "Share your link below — you earn this when a friend's first order is paid.",
     };
   }
   if (reward.type === "birthday") {
@@ -368,4 +417,153 @@ export async function claimReward(customerId: string, rewardId: string): Promise
     }
   }
   return { ok: false, error: "Could not create your code. Please try again." };
+}
+
+/* ---------------- Refer a friend ---------------- */
+
+/** Cookie set by a /r/<code> referral link (30 days). */
+export const REF_COOKIE = "gg_ref";
+
+const REF_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
+/** The customer's personal referral code, created on first use (e.g. CLAIR7K3P). */
+export async function ensureReferralCode(customer: Customer): Promise<string> {
+  if (customer.referralCode) return customer.referralCode;
+  const prefix = (customer.name ?? "").split(" ")[0].toUpperCase().replace(/[^A-Z]/g, "").slice(0, 6) || "GG";
+  for (let attempt = 0; attempt < 6; attempt++) {
+    let suffix = "";
+    for (const b of crypto.randomBytes(4)) suffix += REF_ALPHABET[b % REF_ALPHABET.length];
+    const code = `${prefix}${suffix}`;
+    try {
+      const updated = await prisma.customer.updateMany({
+        where: { id: customer.id, referralCode: null },
+        data: { referralCode: code },
+      });
+      if (updated.count === 1) return code;
+      // Set concurrently by another request — use that one.
+      const fresh = await prisma.customer.findUnique({ where: { id: customer.id } });
+      if (fresh?.referralCode) return fresh.referralCode;
+    } catch {
+      // code collision with another customer — retry with a new suffix
+    }
+  }
+  throw new Error("Could not create a referral code");
+}
+
+const norm = (s: unknown) => String(s ?? "").toLowerCase().replace(/[^a-z0-9]/g, "");
+const phoneKey = (s: unknown) => String(s ?? "").replace(/\D/g, "").slice(-9);
+
+/**
+ * Who referred this new order, if the referral counts. A referral only counts
+ * for a genuinely new customer: a different email from the referrer, no earlier
+ * paid order, and not the referrer's own phone number or delivery address.
+ */
+export async function resolveReferrer(
+  referralCode: string | undefined | null,
+  order: { email: string; phone?: string | null; address: { line1?: string; postalCode?: string } }
+): Promise<string | null> {
+  if (!referralCode) return null;
+  try {
+    const referrer = await prisma.customer.findUnique({
+      where: { referralCode: referralCode.trim().toUpperCase() },
+    });
+    if (!referrer) return null;
+    const email = order.email.trim().toLowerCase();
+    if (email === referrer.email.toLowerCase()) return null;
+
+    const priorPaid = await prisma.order.count({ where: { email, paymentStatus: "paid" } });
+    if (priorPaid > 0) return null;
+
+    const theirOrders = await prisma.order.findMany({
+      where: { OR: [{ customerId: referrer.id }, { email: referrer.email }] },
+      select: { phone: true, shippingAddress: true },
+    });
+    let saved: Record<string, string> = {};
+    try {
+      saved = JSON.parse(referrer.shippingDetails || "{}");
+    } catch {
+      saved = {};
+    }
+    const addrKey = norm(order.address.line1) + norm(order.address.postalCode);
+    const phone = phoneKey(order.phone);
+    const referrerAddrs = new Set<string>([norm(saved.line1) + norm(saved.postalCode)]);
+    const referrerPhones = new Set<string>([phoneKey(referrer.phone)]);
+    for (const o of theirOrders) {
+      referrerPhones.add(phoneKey(o.phone));
+      try {
+        const a = JSON.parse(o.shippingAddress || "{}");
+        referrerAddrs.add(norm(a.line1) + norm(a.postalCode));
+      } catch {
+        /* ignore */
+      }
+    }
+    if (addrKey && referrerAddrs.has(addrKey)) return null;
+    if (phone.length >= 9 && referrerPhones.has(phone)) return null;
+    return referrer.id;
+  } catch {
+    return null;
+  }
+}
+
+/** Referral link stats for the account page. */
+export async function referralStats(customerId: string) {
+  const orders = await prisma.order.findMany({
+    where: { referrerId: customerId, paymentStatus: "paid" },
+    select: { customerId: true, email: true },
+  });
+  return { friendsOrdered: new Set(orders.map((o) => o.customerId ?? o.email)).size };
+}
+
+/* ---------------- After an order is paid ---------------- */
+
+/**
+ * Runs once per order when it first becomes paid (from finalizePaidOrder):
+ * emails the customer if this order unlocked a milestone, and the referrer if
+ * this was a referred friend's first paid order. Never throws.
+ */
+export async function afterOrderPaid(orderId: string): Promise<void> {
+  try {
+    if (!(await rewardsEnabled())) return;
+    const order = await prisma.order.findUnique({ where: { id: orderId } });
+    if (!order) return;
+    const { sendRewardUnlocked } = await import("@/lib/email");
+
+    const customer = order.customerId
+      ? await prisma.customer.findUnique({ where: { id: order.customerId } })
+      : await prisma.customer.findUnique({ where: { email: order.email } });
+    if (customer) {
+      const { rewards, paidOrders } = await getCustomerRewards(customer);
+      const unlocked = rewards.filter(
+        (r) => r.reward.type === "milestone" && r.reward.threshold === paidOrders && r.status === "available"
+      );
+      for (const r of unlocked) {
+        await sendRewardUnlocked({
+          to: customer.email,
+          title: r.reward.title,
+          discount: r.discount,
+          reason: `You've placed ${paidOrders} orders with us — thank you!`,
+        });
+      }
+    }
+
+    const friendPaidOrders = order.referrerId
+      ? await prisma.order.count({
+          where: { referrerId: order.referrerId, email: order.email, paymentStatus: "paid" },
+        })
+      : 0;
+    if (order.referrerId && friendPaidOrders === 1) {
+      const referrer = await prisma.customer.findUnique({ where: { id: order.referrerId } });
+      const reward = await prisma.reward.findFirst({ where: { type: "referral", active: true } });
+      if (referrer && reward) {
+        await sendRewardUnlocked({
+          to: referrer.email,
+          title: reward.title,
+          discount: describeDiscount(reward),
+          reason: "A friend you referred just placed their first order.",
+        });
+      }
+    }
+  } catch (e) {
+    console.error("[rewards] afterOrderPaid failed:", (e as Error).message);
+  }
 }

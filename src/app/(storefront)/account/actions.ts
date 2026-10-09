@@ -14,6 +14,7 @@ import {
 } from "@/lib/customer-auth";
 import { claimReward, describeDiscount } from "@/lib/rewards";
 import { sendLoginLink, sendRewardCode } from "@/lib/email";
+import { subscribe, unsubscribe } from "@/lib/newsletter";
 
 export type LoginState = { status: "idle" | "sent" | "error"; message?: string; email?: string };
 
@@ -62,7 +63,6 @@ export async function saveDetails(formData: FormData) {
   const data: Parameters<typeof prisma.customer.update>[0]["data"] = {
     name: s(formData, "name") || null,
     phone: s(formData, "phone", 30) || null,
-    newsletter: formData.get("newsletter") === "on",
     shippingDetails: JSON.stringify({
       line1: s(formData, "line1"),
       line2: s(formData, "line2"),
@@ -84,6 +84,12 @@ export async function saveDetails(formData: FormData) {
   }
 
   await prisma.customer.update({ where: { id: customer.id }, data });
+
+  // Newsletter opt-in/out goes through the newsletter service (consent date + welcome email).
+  const wantsNews = formData.get("newsletter") === "on";
+  if (wantsNews && !customer.newsletter) await subscribe(customer.email, customer.name);
+  if (!wantsNews && customer.newsletter) await unsubscribe(customer.email);
+
   revalidatePath("/account");
   redirect("/account?tab=details&saved=1");
 }

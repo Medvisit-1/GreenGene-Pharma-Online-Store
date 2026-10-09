@@ -216,6 +216,11 @@ function esc(s: string): string {
   return String(s ?? "").replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]!));
 }
 
+/** Escape for use inside an HTML attribute value (adds quotes). */
+function escAttr(s: string): string {
+  return esc(s).replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
 /**
  * Render + email an invoice to the customer from info@greengenepharma.co.za.
  * Returns true if the email was accepted for delivery.
@@ -521,4 +526,69 @@ export async function sendRewardCode(d: {
     <p style="font-size:12px;color:#6b7c73;line-height:1.6">${conditions.map(esc).join(" · ")}</p>
     <p style="margin-top:18px"><a href="${APP_URL}/products" style="background:#155640;color:#fff;padding:10px 18px;border-radius:999px;text-decoration:none;font-size:14px">Shop now</a></p>`;
   return sendMail({ to: d.to, subject: `Your reward: ${d.discount}`, html: layout("Reward unlocked!", body) });
+}
+
+export async function sendRewardUnlocked(d: {
+  to: string;
+  title: string;
+  discount: string;
+  reason: string;
+}): Promise<boolean> {
+  const body = `
+    <p style="font-size:14px;line-height:1.6">${esc(d.reason)}</p>
+    <div style="margin:18px 0;padding:16px;background:#eef7e3;border-radius:12px;text-align:center">
+      <div style="font-size:12px;color:#4a5a51;text-transform:uppercase;letter-spacing:1px">${esc(d.title)}</div>
+      <div style="font-size:22px;font-weight:800;color:#104536;margin-top:4px">${esc(d.discount)}</div>
+    </div>
+    <p style="font-size:14px;line-height:1.6">Claim it in your account and it's applied at your next checkout.</p>
+    <p style="margin-top:18px"><a href="${APP_URL}/account?tab=rewards" style="background:#155640;color:#fff;padding:10px 18px;border-radius:999px;text-decoration:none;font-size:14px">Claim my reward</a></p>`;
+  return sendMail({ to: d.to, subject: `🎁 You've unlocked ${d.discount}`, html: layout("You've unlocked a reward!", body) });
+}
+
+/* ---------- Newsletter ---------- */
+function newsletterFooter(unsubUrl: string) {
+  return `<p style="margin-top:22px;border-top:1px solid #e3e9e5;padding-top:12px;font-size:11px;color:#8a978f;line-height:1.6">
+    You're receiving this because you subscribed to GreenGene Pharma news & offers.
+    <a href="${unsubUrl}" style="color:#6b7c73">Unsubscribe</a></p>`;
+}
+
+export async function sendNewsletterWelcome(to: string, unsubUrl: string): Promise<boolean> {
+  const { rewardsEnabled, describeDiscount, ensureDefaultRewards } = await import("@/lib/rewards");
+  await ensureDefaultRewards(); // a footer signup may be the very first rewards activity
+  const reward = (await rewardsEnabled())
+    ? await prisma.reward.findFirst({ where: { type: "newsletter", active: true } })
+    : null;
+  const body = `
+    <p style="font-size:14px;line-height:1.6">Thanks for subscribing! You'll be first to hear about new products, wellness tips and member-only offers.</p>
+    ${reward ? `
+    <div style="margin:18px 0;padding:16px;background:#eef7e3;border-radius:12px">
+      <strong style="color:#104536">Your welcome gift: ${esc(describeDiscount(reward))}</strong>
+      <div style="font-size:13px;color:#4a5a51;margin-top:4px">Sign in to your account with this email address to claim it.</div>
+    </div>
+    <p><a href="${APP_URL}/account?tab=rewards" style="background:#155640;color:#fff;padding:10px 18px;border-radius:999px;text-decoration:none;font-size:14px">Claim my welcome gift</a></p>` : `
+    <p><a href="${APP_URL}/products" style="background:#155640;color:#fff;padding:10px 18px;border-radius:999px;text-decoration:none;font-size:14px">Browse our range</a></p>`}
+    ${newsletterFooter(unsubUrl)}`;
+  return sendMail({ to, subject: "Welcome to GreenGene Pharma 🌿", html: layout("Welcome to the GreenGene family", body) });
+}
+
+export async function sendNewsletterEmail(
+  c: { subject: string; heading: string | null; body: string; imageUrl: string | null; buttonLabel: string | null; buttonLink: string | null },
+  to: string,
+  unsubUrl: string
+): Promise<boolean> {
+  const paragraphs = c.body
+    .replace(/\r\n?/g, "\n")
+    .split(/\n{2,}/)
+    .map((p) => `<p style="font-size:14px;line-height:1.7;margin:0 0 12px">${esc(p).replace(/\n/g, "<br>")}</p>`)
+    .join("");
+  const link = c.buttonLink
+    ? c.buttonLink.startsWith("http") ? c.buttonLink : `${APP_URL}${c.buttonLink.startsWith("/") ? "" : "/"}${c.buttonLink}`
+    : null;
+  const image = c.imageUrl
+    ? `<img src="${escAttr(c.imageUrl.startsWith("http") ? c.imageUrl : `${APP_URL}${c.imageUrl}`)}" alt="" style="width:100%;border-radius:12px;margin-bottom:16px;display:block">`
+    : "";
+  const body = `${image}${paragraphs}
+    ${c.buttonLabel && link ? `<p style="margin-top:18px"><a href="${escAttr(link)}" style="background:#155640;color:#fff;padding:11px 20px;border-radius:999px;text-decoration:none;font-size:14px;font-weight:700">${esc(c.buttonLabel)}</a></p>` : ""}
+    ${newsletterFooter(unsubUrl)}`;
+  return sendMail({ to, subject: c.subject, html: layout(esc(c.heading || c.subject), body) });
 }

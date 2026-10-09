@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
+import { REF_COOKIE, resolveReferrer } from "@/lib/rewards";
 import { buildOrderTotals, generateOrderNumber } from "@/lib/orders";
 
 type Body = {
@@ -19,6 +21,7 @@ type Body = {
   discountCode?: string;
   notes?: string;
   paymentMethod?: string;
+  newsletter?: boolean;
 };
 
 export async function POST(req: Request) {
@@ -48,6 +51,34 @@ export async function POST(req: Request) {
     );
   }
 
+  // Single-use codes (e.g. reward codes) are only counted as used once an order
+  // is paid, so also block reuse while another recent order with it awaits payment.
+  if (discount.valid && discount.code) {
+    const promo = await prisma.promotion.findUnique({ where: { code: discount.code } });
+    if (promo?.usageLimit != null) {
+      const pending = await prisma.order.count({
+        where: {
+          discountCode: promo.code,
+          paymentStatus: "unpaid",
+          createdAt: { gt: new Date(Date.now() - 30 * 60_000) },
+        },
+      });
+      if (promo.usageCount + pending >= promo.usageLimit) {
+        return NextResponse.json(
+          { error: `The code ${promo.code} is already being used on another order that's awaiting payment. Please complete that order, or try again in 30 minutes.` },
+          { status: 409 }
+        );
+      }
+    }
+  }
+
+  // Refer-a-friend: credit the referrer only for a genuinely new customer.
+  const referrerId = await resolveReferrer((await cookies()).get(REF_COOKIE)?.value, {
+    email: body.email,
+    phone: body.phone,
+    address: body.address,
+  });
+
   // Upsert customer by email
   const customer = await prisma.customer.upsert({
     where: { email: body.email.toLowerCase() },
@@ -74,6 +105,7 @@ export async function POST(req: Request) {
       shipping,
       discount: discount.amount,
       discountCode: discount.valid ? discount.code : null,
+      referrerId,
       total,
       shippingAddress: JSON.stringify({ ...body.address, country: body.address.country ?? "South Africa" }),
       notes: body.notes,
@@ -92,6 +124,11 @@ export async function POST(req: Request) {
   // Stock + promo usage are NOT touched here — they are applied only when the
   // order is confirmed paid (see finalizePaidOrder), so failed/abandoned
   // payments never reduce stock.
+
+  if (body.newsletter) {
+    const { subscribe } = await import("@/lib/newsletter");
+    await subscribe(body.email, body.name).catch(() => false);
+  }
 
   return NextResponse.json({ orderNumber: order.orderNumber, total });
 }

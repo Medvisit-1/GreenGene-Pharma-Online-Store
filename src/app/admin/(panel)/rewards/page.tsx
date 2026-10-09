@@ -202,25 +202,10 @@ export default async function AdminRewards() {
         </div>
       </section>
 
-      {/* Newsletter */}
-      <section className="rounded-2xl border border-border bg-surface px-5 py-4">
-        <details>
-          <summary className="cursor-pointer list-none font-bold">
-            Newsletter subscribers ({subscribers.length}) <span className="text-sm font-normal text-brand-700">— show list</span>
-          </summary>
-          {subscribers.length === 0 ? (
-            <p className="mt-3 text-sm text-muted-foreground">No subscribers yet.</p>
-          ) : (
-            <textarea
-              readOnly
-              rows={Math.min(12, subscribers.length + 1)}
-              className={cn(input, "mt-3 font-mono text-xs")}
-              defaultValue={subscribers.map((s) => s.email).join("\n")}
-            />
-          )}
-          <p className="mt-2 text-xs text-muted-foreground">Copy these into your email marketing tool.</p>
-        </details>
-      </section>
+      <p className="text-sm text-muted-foreground">
+        Newsletter subscribers and campaigns are managed on the{" "}
+        <a href="/admin/newsletter" className="font-semibold text-brand-700 hover:underline">Newsletter page</a>.
+      </p>
     </div>
   );
 }

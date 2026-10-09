@@ -11,13 +11,21 @@ import {
   Truck,
   UserCircle2,
   AlertTriangle,
+  Users,
 } from "lucide-react";
 import type { Customer } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { cn, formatPrice } from "@/lib/utils";
 import { SA_PROVINCES } from "@/lib/constants";
 import { getCurrentCustomer } from "@/lib/customer-auth";
-import { getCustomerRewards, rewardsEnabled, type CustomerReward } from "@/lib/rewards";
+import {
+  ensureReferralCode,
+  getCustomerRewards,
+  referralStats,
+  rewardsEnabled,
+  type CustomerReward,
+} from "@/lib/rewards";
+import { appUrl } from "@/lib/email";
 import { Button } from "@/components/ui/button";
 import { LoginForm } from "@/components/account/login-form";
 import { CopyCode } from "@/components/account/copy-code";
@@ -82,6 +90,16 @@ export default async function AccountPage({ searchParams }: { searchParams: Sear
     programOn ? getCustomerRewards(customer) : Promise.resolve(null),
   ]);
 
+  // Refer-a-friend link (only while the referral reward is switched on)
+  const referralOn = !!rewardsData?.rewards.some((r) => r.reward.type === "referral");
+  const referral = referralOn
+    ? {
+        link: `${appUrl()}/r/${await ensureReferralCode(customer)}`,
+        ...(await referralStats(customer.id)),
+        reward: rewardsData!.rewards.find((r) => r.reward.type === "referral")!.discount,
+      }
+    : null;
+
   const tabs = [
     { id: "overview", label: "Overview" },
     { id: "orders", label: "My orders" },
@@ -137,7 +155,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Sear
         )}
         {tab === "orders" && <Orders orders={orders} />}
         {tab === "rewards" && rewardsData && (
-          <Rewards data={rewardsData} claimed={sp.claimed} error={sp.error} />
+          <Rewards data={rewardsData} claimed={sp.claimed} error={sp.error} referral={referral} />
         )}
         {tab === "details" && <Details customer={customer} saved={!!sp.saved} programOn={programOn} />}
       </div>
@@ -256,7 +274,19 @@ function OrderList({ orders }: { orders: OrderWithItems[] }) {
   );
 }
 
-function Rewards({ data, claimed, error }: { data: RewardsData; claimed?: string; error?: string }) {
+type Referral = { link: string; friendsOrdered: number; reward: string } | null;
+
+function Rewards({
+  data,
+  claimed,
+  error,
+  referral,
+}: {
+  data: RewardsData;
+  claimed?: string;
+  error?: string;
+  referral: Referral;
+}) {
   const active = data.codes.filter((c) => !c.used && !c.expired);
   const past = data.codes.filter((c) => c.used || c.expired);
 
@@ -298,6 +328,32 @@ function Rewards({ data, claimed, error }: { data: RewardsData; claimed?: string
         </section>
       )}
 
+      {referral && (
+        <section className="rounded-2xl border border-brand-200 bg-gradient-to-br from-brand-50 to-card p-5">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2 className="flex items-center gap-2 font-bold text-brand-800">
+                <Users className="h-5 w-5 text-brand-600" /> Refer a friend, get {referral.reward}
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Share your personal link. When a friend places their <strong>first order</strong> through
+                it, you get {referral.reward} — for every friend.
+              </p>
+            </div>
+            <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-brand-700">
+              {referral.friendsOrdered} friend{referral.friendsOrdered === 1 ? "" : "s"} ordered
+            </span>
+          </div>
+          <div className="mt-4 flex flex-wrap items-center gap-2 rounded-xl border border-brand-200 bg-white p-2 pl-3">
+            <span className="min-w-0 flex-1 truncate font-mono text-sm text-brand-800">{referral.link}</span>
+            <CopyCode code={referral.link} />
+          </div>
+          <p className="mt-2 text-xs text-muted-foreground">
+            Your friend must use the link before buying, with their own email and delivery address.
+          </p>
+        </section>
+      )}
+
       <section>
         <h2 className="mb-3 font-bold">Ways to earn</h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -322,7 +378,7 @@ function Rewards({ data, claimed, error }: { data: RewardsData; claimed?: string
   );
 }
 
-const TYPE_ICON = { milestone: Package, review: Star, birthday: PartyPopper, newsletter: Sparkles } as const;
+const TYPE_ICON = { milestone: Package, review: Star, referral: Users, birthday: PartyPopper, newsletter: Sparkles } as const;
 
 function RewardCard({ r }: { r: CustomerReward }) {
   const Icon = TYPE_ICON[r.reward.type as keyof typeof TYPE_ICON] ?? Gift;
