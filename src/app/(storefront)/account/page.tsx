@@ -25,6 +25,7 @@ import {
   rewardsEnabled,
   type CustomerReward,
 } from "@/lib/rewards";
+import { headers } from "next/headers";
 import { appUrl } from "@/lib/email";
 import { Button } from "@/components/ui/button";
 import { LoginForm } from "@/components/account/login-form";
@@ -45,6 +46,14 @@ type Search = Promise<{
 const input =
   "w-full rounded-xl border border-border bg-white px-4 py-2.5 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100";
 const label = "mb-1.5 block text-sm font-medium";
+
+/** The domain the customer is actually browsing (falls back to APP_URL). */
+async function siteOrigin() {
+  const h = await headers();
+  const host = (h.get("x-forwarded-host") ?? h.get("host") ?? "").split(",")[0].trim();
+  const proto = (h.get("x-forwarded-proto") ?? "https").split(",")[0].trim();
+  return host && !host.startsWith("localhost") && !/^\d+\.\d+\.\d+\.\d+/.test(host) ? `${proto}://${host}` : appUrl();
+}
 
 export default async function AccountPage({ searchParams }: { searchParams: Search }) {
   const sp = await searchParams;
@@ -94,7 +103,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Sear
   const referralOn = !!rewardsData?.rewards.some((r) => r.reward.type === "referral");
   const referral = referralOn
     ? {
-        link: `${appUrl()}/r/${await ensureReferralCode(customer)}`,
+        link: `${await siteOrigin()}/r/${await ensureReferralCode(customer)}`,
         ...(await referralStats(customer.id)),
         reward: rewardsData!.rewards.find((r) => r.reward.type === "referral")!.discount,
       }
