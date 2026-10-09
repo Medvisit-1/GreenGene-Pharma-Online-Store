@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Mail, MapPin, Phone } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { getSettings } from "@/lib/settings";
+import { NewsletterSignup } from "@/components/newsletter-signup";
 
 export async function SiteFooter() {
   const settings = await getSettings();
@@ -15,6 +16,10 @@ export async function SiteFooter() {
             of natural health products — empowering your journey to holistic
             well-being.
           </p>
+          <div className="max-w-xs pt-2">
+            <div className="mb-2 text-sm font-semibold text-accent">Join our newsletter</div>
+            <NewsletterSignup />
+          </div>
         </div>
 
         <div>

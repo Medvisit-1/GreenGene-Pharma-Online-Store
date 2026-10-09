@@ -14,6 +14,7 @@ import {
   FileText,
   Boxes,
   Gift,
+  Mail,
   ExternalLink,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -26,6 +27,7 @@ const LINKS = [
   { href: "/admin/wholesale", label: "Wholesale", icon: Boxes },
   { href: "/admin/promotions", label: "Promotions", icon: Tag },
   { href: "/admin/rewards", label: "Rewards", icon: Gift },
+  { href: "/admin/newsletter", label: "Newsletter", icon: Mail },
   { href: "/admin/reviews", label: "Reviews", icon: Star },
   { href: "/admin/front-shop", label: "Front Shop", icon: LayoutTemplate },
   { href: "/admin/payments", label: "Payment Gateways", icon: CreditCard },

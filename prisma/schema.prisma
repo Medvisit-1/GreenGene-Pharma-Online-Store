@@ -146,6 +146,10 @@ model Customer {
   // Only month/day are used (birthday reward). Locked once set.
   birthday        DateTime?
   newsletter      Boolean              @default(false)
+  // When they opted in to the newsletter (consent record)
+  newsletterAt    DateTime?
+  // Personal refer-a-friend code (link: /r/<code>)
+  referralCode    String?              @unique
   lastLoginAt     DateTime?
   orders          Order[]
   loginTokens     CustomerLoginToken[]
@@ -232,9 +236,13 @@ model Order {
   bobgoOrderId    String?
   trackingNumber  String?
   trackingUrl     String?
+  // Customer whose refer-a-friend link this (first) order came through
+  referrerId      String?
   items           OrderItem[]
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
+
+  @@index([referrerId])
 }
 
 model OrderItem {
@@ -274,4 +282,18 @@ model AdminUser {
   passwordHash String
   name         String?
   createdAt    DateTime @default(now())
+}
+
+// A newsletter email campaign sent from admin.
+model NewsletterCampaign {
+  id          String   @id @default(cuid())
+  subject     String
+  heading     String?
+  body        String
+  imageUrl    String?
+  buttonLabel String?
+  buttonLink  String?
+  sentCount   Int      @default(0)
+  failedCount Int      @default(0)
+  createdAt   DateTime @default(now())
 }
