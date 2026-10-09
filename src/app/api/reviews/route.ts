@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getCurrentCustomer } from "@/lib/customer-auth";
 
 export async function POST(req: Request) {
   let body;
@@ -24,11 +25,15 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Product not found." }, { status: 404 });
   }
 
+  // Signed-in customers' reviews are tied to their account email (powers the review reward).
+  const customer = await getCurrentCustomer();
+  const reviewEmail = customer?.email ?? (email ? String(email).trim().toLowerCase().slice(0, 120) : null);
+
   await prisma.review.create({
     data: {
       productId,
       author: String(author).slice(0, 80),
-      email: email ? String(email).slice(0, 120) : null,
+      email: reviewEmail,
       rating: ratingNum,
       title: title ? String(title).slice(0, 120) : null,
       body: String(text).slice(0, 2000),

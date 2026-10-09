@@ -1,15 +1,16 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Loader2, Lock, Tag, X } from "lucide-react";
+import { Gift, Loader2, Lock, Tag, X } from "lucide-react";
 import { useCart } from "@/lib/cart-store";
 import { formatPrice } from "@/lib/utils";
 import { shippingFor, SA_PROVINCES, FLAT_SHIPPING, FREE_SHIPPING_THRESHOLD } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 
-type Discount = { valid: boolean; code?: string; amount: number; message?: string };
+type Discount = { valid: boolean; code?: string; amount: number; message?: string; freeShipping?: boolean };
+type RewardCode = { code: string; label: string };
 
 const PAYMENT_LOGOS: Record<string, { src: string; dark?: boolean }> = {
   yoco: { src: "/payment/yoco.svg" },
@@ -38,15 +39,39 @@ export default function CheckoutPage() {
   const [saved, setSaved] = useState<Record<string, string>>({});
   const [saveDetails, setSaveDetails] = useState(true);
 
+  // Signed-in customer's reward codes (auto-applied, switchable)
+  const [rewardCodes, setRewardCodes] = useState<RewardCode[]>([]);
+  const [signedIn, setSignedIn] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
+  const autoApplied = useRef(false);
+
   const [ship, setShip] = useState({ flat: FLAT_SHIPPING, threshold: FREE_SHIPPING_THRESHOLD });
   useEffect(() => {
-    setMounted(true);
+    let local: Record<string, string> = {};
     try {
       const s = localStorage.getItem("greengene-customer");
-      if (s) setSaved(JSON.parse(s));
+      if (s) local = JSON.parse(s);
     } catch {
       /* ignore */
     }
+    // Account details (when signed in) win over device-saved ones; render once both are known.
+    fetch("/api/account/me")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.customer) {
+          setSignedIn(true);
+          const acct = Object.fromEntries(
+            Object.entries(d.customer as Record<string, string>).filter(([, v]) => v)
+          );
+          local = { ...local, ...acct };
+          setRewardCodes(d.rewardCodes ?? []);
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        setSaved(local);
+        setMounted(true);
+      });
     fetch("/api/shipping").then((r) => r.json()).then(setShip).catch(() => {});
     fetch("/api/payments/methods")
       .then((r) => r.json())
@@ -62,19 +87,42 @@ export default function CheckoutPage() {
     [items]
   );
   const shipping = shippingFor(subtotal, ship.flat, ship.threshold);
-  const discountAmount = discount?.valid ? discount.amount : 0;
-  const total = Math.max(0, subtotal - discountAmount) + shipping;
+  const freeShipping = !!(discount?.valid && discount.freeShipping);
+  const discountAmount = discount?.valid && !freeShipping ? discount.amount : 0;
+  const shippingDue = freeShipping ? 0 : shipping;
+  const total = Math.max(0, subtotal - discountAmount) + shippingDue;
 
-  async function applyCode() {
-    if (!codeInput.trim()) return;
+  async function applyCode(code = codeInput) {
+    if (!code.trim()) return;
     setApplying(true);
+    // Reward codes are locked to an email, so send the one entered in the form.
+    const email = String(new FormData(formRef.current ?? undefined).get("email") ?? "");
     const res = await fetch(
-      `/api/promo?code=${encodeURIComponent(codeInput)}&subtotal=${subtotal}`
+      `/api/promo?code=${encodeURIComponent(code)}&subtotal=${subtotal}&email=${encodeURIComponent(email)}`
     );
     const data: Discount = await res.json();
     setDiscount(data);
     setApplying(false);
   }
+
+  // Auto-apply whichever of the customer's reward codes saves them the most.
+  useEffect(() => {
+    if (!mounted || autoApplied.current || discount || !rewardCodes.length || subtotal <= 0) return;
+    autoApplied.current = true;
+    const email = String(new FormData(formRef.current ?? undefined).get("email") ?? "");
+    Promise.all(
+      rewardCodes.map((r) =>
+        fetch(`/api/promo?code=${encodeURIComponent(r.code)}&subtotal=${subtotal}&email=${encodeURIComponent(email)}`)
+          .then((res) => res.json() as Promise<Discount>)
+          .catch(() => null)
+      )
+    ).then((results) => {
+      const best = results
+        .filter((d): d is Discount => !!d?.valid)
+        .sort((a, b) => b.amount - a.amount)[0];
+      if (best) setDiscount((cur) => cur ?? best);
+    });
+  }, [mounted, rewardCodes, subtotal, discount]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -168,7 +216,14 @@ export default function CheckoutPage() {
     <div className="mx-auto max-w-7xl px-4 py-10">
       <h1 className="mb-8 text-3xl font-semibold tracking-tight">Checkout</h1>
 
-      <form onSubmit={handleSubmit} className="grid gap-8 lg:grid-cols-[1fr_380px]">
+      {!signedIn && (
+        <p className="-mt-4 mb-6 text-sm text-muted-foreground">
+          Have an account?{" "}
+          <Link href="/account" className="font-semibold text-brand-700 hover:underline">Sign in</Link>{" "}
+          to fill in your details and use your rewards.
+        </p>
+      )}
+      <form ref={formRef} onSubmit={handleSubmit} className="grid gap-8 lg:grid-cols-[1fr_380px]">
         {/* Left: details */}
         <div className="space-y-8">
           <section className="rounded-2xl border border-border bg-card p-6">
@@ -303,6 +358,31 @@ export default function CheckoutPage() {
             ))}
           </ul>
 
+          {/* Signed-in customer's reward codes */}
+          {rewardCodes.length > 0 && (
+            <div className="mt-5 rounded-xl border border-brand-200 bg-brand-50/60 p-3">
+              <div className="mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-brand-700">
+                <Gift className="h-3.5 w-3.5" /> Your rewards
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {rewardCodes.map((r) => (
+                  <button
+                    key={r.code}
+                    type="button"
+                    onClick={() => applyCode(r.code)}
+                    className={`rounded-lg border px-2.5 py-1 text-left text-xs font-semibold transition ${
+                      discount?.valid && discount.code === r.code
+                        ? "border-brand-500 bg-brand-600 text-white"
+                        : "border-brand-200 bg-white text-brand-700 hover:bg-brand-50"
+                    }`}
+                  >
+                    {r.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Promo */}
           <div className="mt-5">
             {discount?.valid ? (
@@ -327,7 +407,7 @@ export default function CheckoutPage() {
                     placeholder="Promo code"
                     className="w-full rounded-xl border border-border bg-white px-3 py-2 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
                   />
-                  <Button type="button" variant="secondary" onClick={applyCode} disabled={applying}>
+                  <Button type="button" variant="secondary" onClick={() => applyCode()} disabled={applying}>
                     {applying ? <Loader2 className="h-4 w-4 animate-spin" /> : "Apply"}
                   </Button>
                 </div>
@@ -351,7 +431,11 @@ export default function CheckoutPage() {
             )}
             <div className="flex justify-between">
               <dt className="text-muted-foreground">Shipping</dt>
-              <dd className="font-medium">{shipping === 0 ? "Free" : formatPrice(shipping)}</dd>
+              <dd className="font-medium">
+                {freeShipping && shipping > 0 ? (
+                  <><s className="mr-1.5 text-muted-foreground">{formatPrice(shipping)}</s><span className="text-brand-600">Free</span></>
+                ) : shipping === 0 ? "Free" : formatPrice(shipping)}
+              </dd>
             </div>
             <div className="flex justify-between border-t border-border pt-3 text-base font-bold">
               <dt>Total</dt>

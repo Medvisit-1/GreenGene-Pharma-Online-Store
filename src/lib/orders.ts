@@ -9,6 +9,7 @@ export type DiscountResult = {
   code?: string;
   amount: number; // cents discounted
   message?: string;
+  freeShipping?: boolean;
 };
 
 /** Generate a human-readable, unique order number like GG-7K3F2A. */
@@ -17,10 +18,14 @@ export function generateOrderNumber(): string {
   return `GG-${rand}`;
 }
 
-/** Validate a promo code against a given subtotal (cents). Pure server logic. */
+/**
+ * Validate a promo code against a given subtotal (cents). Pure server logic.
+ * `email` is required for codes locked to a customer (reward codes).
+ */
 export async function evaluateDiscount(
   code: string | undefined | null,
-  subtotal: number
+  subtotal: number,
+  email?: string | null
 ): Promise<DiscountResult> {
   if (!code) return { valid: false, amount: 0 };
   const promo = await prisma.promotion.findUnique({
@@ -35,7 +40,18 @@ export async function evaluateDiscount(
   if (promo.endsAt && promo.endsAt < now)
     return { valid: false, amount: 0, message: "This code has expired" };
   if (promo.usageLimit != null && promo.usageCount >= promo.usageLimit)
-    return { valid: false, amount: 0, message: "This code has reached its limit" };
+    return {
+      valid: false,
+      amount: 0,
+      message: promo.source === "reward" ? "This reward code has already been used" : "This code has reached its limit",
+    };
+  if (promo.customerEmail) {
+    const who = (email ?? "").trim().toLowerCase();
+    if (!who)
+      return { valid: false, amount: 0, message: "Enter your email above (or sign in) to use this reward code" };
+    if (who !== promo.customerEmail.toLowerCase())
+      return { valid: false, amount: 0, message: "This reward code belongs to a different account email" };
+  }
   if (subtotal < promo.minSpend)
     return {
       valid: false,
@@ -43,12 +59,18 @@ export async function evaluateDiscount(
       message: `Spend at least ${(promo.minSpend / 100).toFixed(2)} to use this code`,
     };
 
-  const amount =
-    promo.type === "percent"
-      ? Math.round((subtotal * promo.value) / 100)
-      : Math.min(promo.value, subtotal);
+  let amount: number;
+  if (promo.type === "freeship") {
+    // Discount equals the shipping that would otherwise be charged.
+    const { flat, threshold } = await getShippingConfig();
+    amount = shippingFor(subtotal, flat, threshold);
+  } else if (promo.type === "percent") {
+    amount = Math.round((subtotal * promo.value) / 100);
+  } else {
+    amount = Math.min(promo.value, subtotal);
+  }
 
-  return { valid: true, code: promo.code, amount };
+  return { valid: true, code: promo.code, amount, freeShipping: promo.type === "freeship" };
 }
 
 /**
@@ -57,7 +79,8 @@ export async function evaluateDiscount(
  */
 export async function buildOrderTotals(
   items: CheckoutItemInput[],
-  discountCode?: string
+  discountCode?: string,
+  email?: string
 ) {
   const ids = items.map((i) => i.productId);
   const products = await prisma.product.findMany({
@@ -87,10 +110,12 @@ export async function buildOrderTotals(
     .filter((x): x is NonNullable<typeof x> => x !== null);
 
   const subtotal = lineItems.reduce((n, i) => n + i.price * i.quantity, 0);
-  const discount = await evaluateDiscount(discountCode, subtotal);
+  const discount = await evaluateDiscount(discountCode, subtotal, email);
   const { flat, threshold } = await getShippingConfig();
   const shipping = shippingFor(subtotal, flat, threshold);
-  const total = Math.max(0, subtotal - discount.amount) + shipping;
+  // A free-shipping code's discount offsets shipping, so it never reduces the goods total.
+  const goodsDiscount = discount.freeShipping ? 0 : discount.amount;
+  const total = Math.max(0, subtotal - goodsDiscount) + shipping - (discount.freeShipping ? discount.amount : 0);
 
   return { lineItems, subtotal, discount, shipping, total };
 }

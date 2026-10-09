@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 
 export default async function PromotionsPage() {
   const [promos, onSale] = await Promise.all([
-    prisma.promotion.findMany({ where: { active: true } }),
+    prisma.promotion.findMany({ where: { active: true, source: "manual" } }),
     prisma.product.findMany({
       where: { active: true, compareAtPrice: { not: null } },
       orderBy: { createdAt: "desc" },

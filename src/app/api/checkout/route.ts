@@ -39,7 +39,7 @@ export async function POST(req: Request) {
 
   // Recompute everything server-side from DB prices
   const { lineItems, subtotal, discount, shipping, total } =
-    await buildOrderTotals(body.items, body.discountCode);
+    await buildOrderTotals(body.items, body.discountCode, body.email);
 
   if (lineItems.length === 0) {
     return NextResponse.json(

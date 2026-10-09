@@ -11,7 +11,10 @@ const input =
   "w-full rounded-xl border border-border bg-white px-4 py-2.5 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100";
 
 export default async function AdminPromotions() {
-  const promos = await prisma.promotion.findMany({ orderBy: { createdAt: "desc" } });
+  const promos = await prisma.promotion.findMany({
+    where: { source: "manual" },
+    orderBy: { createdAt: "desc" },
+  });
 
   return (
     <div className="space-y-6">

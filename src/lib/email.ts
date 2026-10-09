@@ -484,3 +484,41 @@ export async function sendQuotationEmail(quoteId: string): Promise<boolean> {
   }
   return ok;
 }
+
+/* ---------- Customer accounts & rewards ---------- */
+export function appUrl() {
+  return APP_URL;
+}
+
+export async function sendLoginLink(to: string, token: string): Promise<boolean> {
+  const url = `${APP_URL}/account/verify?token=${encodeURIComponent(token)}`;
+  const body = `
+    <p style="font-size:14px;line-height:1.6">Click the button below to sign in to your GreenGene Pharma account.</p>
+    <p style="margin:22px 0"><a href="${url}" style="background:#155640;color:#fff;padding:12px 22px;border-radius:999px;text-decoration:none;font-size:15px;font-weight:700">Sign in to GreenGene</a></p>
+    <p style="font-size:12px;color:#6b7c73;line-height:1.6">This link works once and expires in 15 minutes. If you didn't ask to sign in, you can safely ignore this email.</p>`;
+  return sendMail({ to, subject: "Your GreenGene sign-in link", html: layout("Sign in to your account", body) });
+}
+
+export async function sendRewardCode(d: {
+  to: string;
+  rewardTitle: string;
+  discount: string;
+  code: string;
+  minSpend: number;
+  expiresAt: Date | null;
+}): Promise<boolean> {
+  const conditions = [
+    d.minSpend > 0 ? `Minimum spend ${formatPrice(d.minSpend)}` : "",
+    d.expiresAt ? `Valid until ${d.expiresAt.toLocaleDateString("en-ZA", { dateStyle: "long" })}` : "",
+    "Single use · linked to your account email",
+  ].filter(Boolean);
+  const body = `
+    <p style="font-size:14px;line-height:1.6">You've claimed <strong>${esc(d.rewardTitle)}</strong> — <strong>${esc(d.discount)}</strong> on your next order. 🎉</p>
+    <div style="margin:18px 0;padding:16px;border:2px dashed #155640;border-radius:12px;text-align:center">
+      <div style="font-size:12px;color:#6b7c73;text-transform:uppercase;letter-spacing:1px">Your code</div>
+      <div style="font-size:24px;font-weight:800;color:#104536;letter-spacing:2px;margin-top:4px">${esc(d.code)}</div>
+    </div>
+    <p style="font-size:12px;color:#6b7c73;line-height:1.6">${conditions.map(esc).join(" · ")}</p>
+    <p style="margin-top:18px"><a href="${APP_URL}/products" style="background:#155640;color:#fff;padding:10px 18px;border-radius:999px;text-decoration:none;font-size:14px">Shop now</a></p>`;
+  return sendMail({ to: d.to, subject: `Your reward: ${d.discount}`, html: layout("Reward unlocked!", body) });
+}
