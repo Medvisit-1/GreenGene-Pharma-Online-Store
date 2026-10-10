@@ -20,17 +20,19 @@ export default async function VerifyPage({
 
   return (
     <div className="mx-auto flex max-w-7xl justify-center px-4 py-20">
-      <div className="w-full max-w-md rounded-3xl border border-border bg-card p-8 text-center shadow-sm">
+      <div className="w-full max-w-md overflow-hidden rounded-3xl border border-border bg-card text-center shadow-sm">
+        <div className="h-1.5 bg-gradient-to-r from-plum-700 via-plum-500 to-grape" />
+        <div className="p-8">
         {valid ? (
           <>
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-brand-50">
-              <ShieldCheck className="h-7 w-7 text-brand-600" />
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-plum-600 to-grape text-white shadow-md shadow-plum-700/25">
+              <ShieldCheck className="h-7 w-7" />
             </div>
             <h1 className="mt-4 text-2xl font-bold text-brand-800">Almost there</h1>
             <p className="mt-2 text-sm text-muted-foreground">Tap below to finish signing in.</p>
             <form action={confirmLogin} className="mt-6">
               <input type="hidden" name="token" value={token} />
-              <Button type="submit" size="lg" className="w-full">Sign in to my account</Button>
+              <Button type="submit" size="lg" variant="plum" className="w-full">Sign in to my account</Button>
             </form>
           </>
         ) : (
@@ -43,10 +45,11 @@ export default async function VerifyPage({
               Sign-in links work once and last 15 minutes. Request a fresh one below.
             </p>
             <Link href="/account" className="mt-6 inline-block">
-              <Button size="lg">Get a new link</Button>
+              <Button size="lg" variant="plum">Get a new link</Button>
             </Link>
           </>
         )}
+        </div>
       </div>
     </div>
   );

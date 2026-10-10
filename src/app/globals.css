@@ -27,6 +27,19 @@
   --brand-800: #0c382b;
   --brand-900: #0a2c22;
 
+  /* Burgundy-plum scale + deep grape: customer account / rewards accents */
+  --plum-50: #faf1f5;
+  --plum-100: #f3dde8;
+  --plum-200: #e6bccf;
+  --plum-300: #d08fae;
+  --plum-400: #b36088;
+  --plum-500: #943d6a;
+  --plum-600: #7a2a55;
+  --plum-700: #632146;
+  --plum-800: #4b1a37;
+  --plum-900: #33122a;
+  --grape: #3b1c4f;
+
   --accent: #8cc63f;   /* lime green (logo "Pharma") */
   --teal: #1b8c8f;     /* teal (logo cross) */
   --ring: var(--brand-500);
@@ -52,6 +65,18 @@
   --color-brand-700: var(--brand-700);
   --color-brand-800: var(--brand-800);
   --color-brand-900: var(--brand-900);
+
+  --color-plum-50: var(--plum-50);
+  --color-plum-100: var(--plum-100);
+  --color-plum-200: var(--plum-200);
+  --color-plum-300: var(--plum-300);
+  --color-plum-400: var(--plum-400);
+  --color-plum-500: var(--plum-500);
+  --color-plum-600: var(--plum-600);
+  --color-plum-700: var(--plum-700);
+  --color-plum-800: var(--plum-800);
+  --color-plum-900: var(--plum-900);
+  --color-grape: var(--grape);
 
   --color-accent: var(--accent);
   --color-teal: var(--teal);

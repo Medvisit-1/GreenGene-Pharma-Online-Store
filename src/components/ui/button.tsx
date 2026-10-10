@@ -16,6 +16,7 @@ const buttonVariants = cva(
         ghost: "text-foreground hover:bg-muted",
         accent: "bg-accent text-brand-900 hover:brightness-105 shadow-sm",
         danger: "bg-red-600 text-white hover:bg-red-700",
+        plum: "bg-plum-700 text-white hover:bg-plum-800 shadow-sm shadow-plum-700/25",
       },
       size: {
         sm: "h-9 px-4",
