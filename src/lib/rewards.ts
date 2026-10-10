@@ -567,3 +567,26 @@ export async function afterOrderPaid(orderId: string): Promise<void> {
     console.error("[rewards] afterOrderPaid failed:", (e as Error).message);
   }
 }
+
+export function cleanReferralCode(raw: string | undefined | null): string {
+  return String(raw ?? "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 20);
+}
+
+/**
+ * Who a referral code belongs to — first name only, for the welcome banner
+ * and checkout confirmation. Null if the code doesn't exist or the referral
+ * reward is switched off.
+ */
+export async function lookupReferral(raw: string | undefined | null): Promise<{ code: string; name: string } | null> {
+  const code = cleanReferralCode(raw);
+  if (!code) return null;
+  try {
+    if (!(await rewardsEnabled())) return null;
+    if (!(await prisma.reward.count({ where: { type: "referral", active: true } }))) return null;
+    const c = await prisma.customer.findUnique({ where: { referralCode: code }, select: { name: true } });
+    if (!c) return null;
+    return { code, name: (c.name ?? "").trim().split(/\s+/)[0] || "a friend" };
+  } catch {
+    return null;
+  }
+}

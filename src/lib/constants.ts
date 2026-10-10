@@ -29,3 +29,6 @@ export const SA_PROVINCES = [
   "North West",
   "Western Cape",
 ];
+
+/** Cookie set when a visitor closes the referral welcome banner (read by the server, so no flash). */
+export const REF_BANNER_HIDE_COOKIE = "gg_ref_banner_hidden";

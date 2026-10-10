@@ -376,8 +376,15 @@ function Rewards({
             <span className="min-w-0 flex-1 truncate font-mono text-sm text-plum-800">{referral.link}</span>
             <CopyCode code={referral.link} />
           </div>
+          <p className="relative mt-3 text-sm text-plum-50">
+            Or tell them your code{" "}
+            <span className="rounded-md bg-white/15 px-2 py-0.5 font-mono font-bold tracking-wider text-white ring-1 ring-white/20">
+              {referral.link.split("/r/")[1]}
+            </span>{" "}
+            — they can enter it at checkout.
+          </p>
           <p className="relative mt-2 text-xs text-plum-100">
-            Your friend must use the link before buying, with their own email and delivery address.
+            It counts on your friend&apos;s first order, placed with their own email and delivery address.
           </p>
         </section>
       )}

@@ -22,6 +22,7 @@ type Body = {
   notes?: string;
   paymentMethod?: string;
   newsletter?: boolean;
+  referralCode?: string;
 };
 
 export async function POST(req: Request) {
@@ -73,7 +74,9 @@ export async function POST(req: Request) {
   }
 
   // Refer-a-friend: credit the referrer only for a genuinely new customer.
-  const referrerId = await resolveReferrer((await cookies()).get(REF_COOKIE)?.value, {
+  // The code shown at checkout (auto-filled from the link, or typed in after
+  // switching devices) wins; the link cookie is the fallback.
+  const referrerId = await resolveReferrer(body.referralCode || (await cookies()).get(REF_COOKIE)?.value, {
     email: body.email,
     phone: body.phone,
     address: body.address,
