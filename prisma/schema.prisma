@@ -157,10 +157,12 @@ model Customer {
   createdAt       DateTime             @default(now())
 }
 
-// Single-use, short-lived magic sign-in links. Only a hash of the token is stored.
+// Single-use, short-lived email sign-in codes. Only a keyed hash of the code is stored.
 model CustomerLoginToken {
   id         String    @id @default(cuid())
   tokenHash  String    @unique
+  // Wrong guesses against this code; it is burned after 5
+  attempts   Int       @default(0)
   customer   Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
   customerId String
   expiresAt  DateTime

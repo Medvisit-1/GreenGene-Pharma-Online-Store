@@ -495,13 +495,14 @@ export function appUrl() {
   return APP_URL;
 }
 
-export async function sendLoginLink(to: string, token: string): Promise<boolean> {
-  const url = `${APP_URL}/account/verify?token=${encodeURIComponent(token)}`;
+export async function sendLoginCode(to: string, code: string): Promise<boolean> {
   const body = `
-    <p style="font-size:14px;line-height:1.6">Click the button below to sign in to your GreenGene Pharma account.</p>
-    <p style="margin:22px 0"><a href="${url}" style="background:#155640;color:#fff;padding:12px 22px;border-radius:999px;text-decoration:none;font-size:15px;font-weight:700">Sign in to GreenGene</a></p>
-    <p style="font-size:12px;color:#6b7c73;line-height:1.6">This link works once and expires in 15 minutes. If you didn't ask to sign in, you can safely ignore this email.</p>`;
-  return sendMail({ to, subject: "Your GreenGene sign-in link", html: layout("Sign in to your account", body) });
+    <p style="font-size:14px;line-height:1.6">Enter this code on the sign-in page to access your GreenGene Pharma account:</p>
+    <div style="margin:20px 0;padding:18px;background:#faf1f5;border:1px solid #e6bccf;border-radius:14px;text-align:center">
+      <div style="font-size:34px;font-weight:800;letter-spacing:10px;color:#4b1a37;font-family:'Courier New',monospace">${esc(code)}</div>
+    </div>
+    <p style="font-size:12px;color:#6b7c73;line-height:1.6">The code expires in 10 minutes and can only be used once. If you didn't try to sign in, you can safely ignore this email — nobody can access your account without this code.</p>`;
+  return sendMail({ to, subject: `${code} is your GreenGene sign-in code`, html: layout("Your sign-in code", body) });
 }
 
 export async function sendRewardCode(d: {

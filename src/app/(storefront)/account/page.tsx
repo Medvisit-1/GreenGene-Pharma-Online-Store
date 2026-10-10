@@ -38,7 +38,6 @@ export const metadata = { title: "My Account" };
 
 type Search = Promise<{
   tab?: string;
-  link?: string;
   saved?: string;
   claimed?: string;
   error?: string;
@@ -76,11 +75,6 @@ export default async function AccountPage({ searchParams }: { searchParams: Sear
                 Track your orders and unlock rewards.
               </p>
             </div>
-            {sp.link === "expired" && (
-              <p className="mt-5 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">
-                That sign-in link has expired or was already used. Request a new one below.
-              </p>
-            )}
             <div className="mt-6">
               <LoginForm />
             </div>
