@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Gift, Loader2, Lock, Tag, X } from "lucide-react";
+import { CheckCircle2, Gift, Loader2, Lock, Tag, Users, X } from "lucide-react";
 import { useCart } from "@/lib/cart-store";
 import { formatPrice } from "@/lib/utils";
 import { shippingFor, SA_PROVINCES, FLAT_SHIPPING, FREE_SHIPPING_THRESHOLD } from "@/lib/constants";
@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 
 type Discount = { valid: boolean; code?: string; amount: number; message?: string; freeShipping?: boolean };
 type RewardCode = { code: string; label: string };
+type Referral = { valid: boolean; code?: string; name?: string };
 
 const PAYMENT_LOGOS: Record<string, { src: string; dark?: boolean }> = {
   yoco: { src: "/payment/yoco.svg" },
@@ -44,6 +45,12 @@ export default function CheckoutPage() {
   const [rewardCodes, setRewardCodes] = useState<RewardCode[]>([]);
   const [signedIn, setSignedIn] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
+
+  // Refer-a-friend: filled in automatically from the link, or typed in (switched devices)
+  const [referral, setReferral] = useState<Referral | null>(null);
+  const [refInput, setRefInput] = useState("");
+  const [refChecking, setRefChecking] = useState(false);
+  const [refError, setRefError] = useState<string | null>(null);
   const autoApplied = useRef(false);
 
   const [ship, setShip] = useState({ flat: FLAT_SHIPPING, threshold: FREE_SHIPPING_THRESHOLD });
@@ -74,6 +81,10 @@ export default function CheckoutPage() {
         setMounted(true);
       });
     fetch("/api/shipping").then((r) => r.json()).then(setShip).catch(() => {});
+    fetch("/api/referral")
+      .then((r) => r.json())
+      .then((d: Referral) => d.valid && setReferral(d))
+      .catch(() => {});
     fetch("/api/payments/methods")
       .then((r) => r.json())
       .then((d) => {
@@ -125,6 +136,21 @@ export default function CheckoutPage() {
     });
   }, [mounted, rewardCodes, subtotal, discount]);
 
+  async function applyReferral() {
+    const code = refInput.trim();
+    if (!code) return;
+    setRefChecking(true);
+    setRefError(null);
+    try {
+      const d: Referral = await (await fetch(`/api/referral?code=${encodeURIComponent(code)}`)).json();
+      if (d.valid) setReferral(d);
+      else setRefError("We couldn't find that referral code. Check it with your friend.");
+    } catch {
+      setRefError("Couldn't check the code. Please try again.");
+    }
+    setRefChecking(false);
+  }
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
@@ -150,6 +176,7 @@ export default function CheckoutPage() {
       discountCode: discount?.valid ? discount.code : undefined,
       paymentMethod: payMethod,
       newsletter,
+      referralCode: referral?.valid ? referral.code : undefined,
       items: items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
     };
 
@@ -368,6 +395,49 @@ export default function CheckoutPage() {
               </li>
             ))}
           </ul>
+
+          {/* Refer-a-friend code */}
+          <div className="mt-5">
+            {referral?.valid ? (
+              <div className="flex items-center gap-2.5 rounded-xl border border-plum-200 bg-plum-50 px-3 py-2.5 text-sm">
+                <CheckCircle2 className="h-4 w-4 shrink-0 text-plum-600" />
+                <span className="min-w-0 flex-1 text-plum-800">
+                  Invited by <strong>{referral.name}</strong>
+                  <span className="ml-1.5 rounded bg-white px-1.5 py-0.5 font-mono text-[11px] font-bold tracking-wider text-plum-700 ring-1 ring-plum-200">
+                    {referral.code}
+                  </span>
+                </span>
+                <button
+                  type="button"
+                  aria-label="Remove referral code"
+                  onClick={() => { setReferral(null); setRefInput(""); }}
+                  className="text-plum-400 hover:text-red-600"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            ) : (
+              <div>
+                <div className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
+                  <Users className="h-3.5 w-3.5" /> Referred by a friend? Enter their code
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    value={refInput}
+                    onChange={(e) => { setRefInput(e.target.value.toUpperCase()); setRefError(null); }}
+                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); applyReferral(); } }}
+                    placeholder="Referral code"
+                    autoCapitalize="characters"
+                    className="w-full rounded-xl border border-border bg-white px-3 py-2 font-mono text-sm uppercase outline-none focus:border-plum-400 focus:ring-2 focus:ring-plum-100"
+                  />
+                  <Button type="button" variant="secondary" onClick={applyReferral} disabled={refChecking}>
+                    {refChecking ? <Loader2 className="h-4 w-4 animate-spin" /> : "Add"}
+                  </Button>
+                </div>
+                {refError && <p className="mt-1.5 text-xs text-red-600">{refError}</p>}
+              </div>
+            )}
+          </div>
 
           {/* Signed-in customer's reward codes */}
           {rewardCodes.length > 0 && (
