@@ -5,47 +5,73 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import {
   clearCustomerSession,
-  consumeLoginToken,
-  createLoginToken,
+  createLoginCode,
   getCurrentCustomer,
   isValidEmail,
   normalizeEmail,
   setCustomerSession,
+  verifyLoginCode,
 } from "@/lib/customer-auth";
 import { claimReward, describeDiscount } from "@/lib/rewards";
-import { sendLoginLink, sendRewardCode } from "@/lib/email";
+import { sendLoginCode, sendRewardCode } from "@/lib/email";
 import { subscribe, unsubscribe } from "@/lib/newsletter";
 
-export type LoginState = { status: "idle" | "sent" | "error"; message?: string; email?: string };
+export type LoginState = {
+  step: "email" | "code";
+  email?: string;
+  message?: string;
+  error?: string;
+};
 
-export async function requestLoginLink(_prev: LoginState, formData: FormData): Promise<LoginState> {
-  const email = normalizeEmail(String(formData.get("email") ?? ""));
-  if (!isValidEmail(email)) {
-    return { status: "error", message: "Please enter a valid email address." };
-  }
+async function sendCode(email: string): Promise<LoginState> {
   try {
-    const token = await createLoginToken(email);
-    if (!token) {
+    const code = await createLoginCode(email);
+    if (!code) {
       return {
-        status: "error",
-        message: "We've just sent you a few links — please check your inbox (and spam), or try again in 15 minutes.",
+        step: "code",
+        email,
+        error: "We've sent you a few codes already — use the latest one from your inbox (check spam), or try again in 15 minutes.",
       };
     }
-    const sent = await sendLoginLink(email, token);
-    if (!sent) {
-      return { status: "error", message: "We couldn't send the email right now. Please try again shortly." };
+    if (!(await sendLoginCode(email, code))) {
+      return { step: "email", email, error: "We couldn't send the email right now. Please try again shortly." };
     }
   } catch {
-    return { status: "error", message: "Something went wrong. Please try again." };
+    return { step: "email", email, error: "Something went wrong. Please try again." };
   }
-  return { status: "sent", email };
+  return { step: "code", email, message: `We sent a 6-digit code to ${email}.` };
 }
 
-export async function confirmLogin(formData: FormData) {
-  const token = String(formData.get("token") ?? "");
-  const customerId = await consumeLoginToken(token);
-  if (!customerId) redirect("/account?link=expired");
-  await setCustomerSession(customerId);
+/** One form, two steps: email → code. `intent` picks the action. */
+export async function loginAction(prev: LoginState, formData: FormData): Promise<LoginState> {
+  const intent = String(formData.get("intent") ?? "send");
+
+  if (intent === "change") return { step: "email", email: prev.email };
+
+  if (intent === "send" || intent === "resend") {
+    const email = normalizeEmail(String(formData.get("email") ?? prev.email ?? ""));
+    if (!isValidEmail(email)) return { step: "email", email, error: "Please enter a valid email address." };
+    const res = await sendCode(email);
+    if (intent === "resend" && res.step === "code" && !res.error) res.message = `New code sent to ${email}.`;
+    return res;
+  }
+
+  // intent === "verify"
+  const email = normalizeEmail(prev.email ?? String(formData.get("email") ?? ""));
+  const code = String(formData.get("code") ?? "").replace(/\D/g, "");
+  if (code.length !== 6) return { step: "code", email, error: "Enter the 6-digit code from the email." };
+
+  const result = await verifyLoginCode(email, code);
+  if (!result.ok) {
+    const error =
+      result.reason === "invalid"
+        ? "That code isn't right. Check the latest email and try again."
+        : result.reason === "locked"
+          ? "Too many wrong attempts. Tap “Send a new code” to get a fresh one."
+          : "That code has expired. Tap “Send a new code” to get a fresh one.";
+    return { step: "code", email, error };
+  }
+  await setCustomerSession(result.customerId);
   redirect("/account");
 }
 

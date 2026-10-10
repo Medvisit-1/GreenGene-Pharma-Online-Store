@@ -6,10 +6,12 @@ export const dynamic = "force-dynamic";
 
 // Refer-a-friend link: remember who referred this visitor for 30 days, then
 // send them to the shop. The referral is credited when their first order is paid.
-export async function GET(req: Request, { params }: { params: Promise<{ code: string }> }) {
+export async function GET(_req: Request, { params }: { params: Promise<{ code: string }> }) {
   const { code } = await params;
   const clean = code.trim().toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 20);
-  const res = NextResponse.redirect(new URL("/?ref=1", req.url));
+  // Relative redirect: behind Railway's proxy `req.url` carries the internal
+  // host (e.g. localhost:8080), so an absolute URL built from it breaks.
+  const res = new NextResponse(null, { status: 307, headers: { Location: "/?ref=1" } });
   try {
     const exists = clean && (await prisma.customer.findUnique({ where: { referralCode: clean }, select: { id: true } }));
     if (exists) {
