@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { Truck, ShieldCheck, RotateCcw, Check, BadgeCheck } from "lucide-react";
+import { Truck, ShieldCheck, RotateCcw, Check, BadgeCheck, Info } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatPrice, parseImages } from "@/lib/utils";
 import { ProductGallery } from "@/components/product-gallery";
@@ -11,6 +11,7 @@ import { MarketplaceLinks } from "@/components/marketplace-links";
 import { Stars } from "@/components/stars";
 import { ReviewForm } from "@/components/review-form";
 import { getRatingMap } from "@/lib/reviews";
+import { getSettings } from "@/lib/settings";
 
 export const dynamic = "force-dynamic";
 
@@ -63,6 +64,20 @@ export default async function ProductPage({ params }: { params: Params }) {
     where: { productId: product.id, status: "approved" },
     orderBy: { createdAt: "desc" },
   });
+  // "Verified buyer" only for reviewers whose email has a paid order containing this product.
+  const reviewerEmails = reviews.map((r) => r.email?.toLowerCase()).filter((e): e is string => !!e);
+  const buyers = reviewerEmails.length
+    ? await prisma.order.findMany({
+        where: {
+          paymentStatus: "paid",
+          email: { in: reviewerEmails, mode: "insensitive" },
+          items: { some: { productId: product.id } },
+        },
+        select: { email: true },
+      })
+    : [];
+  const verified = new Set(buyers.map((o) => o.email.toLowerCase()));
+  const { productDisclaimer } = await getSettings();
   const reviewCount = reviews.length;
   const avgRating =
     reviewCount > 0
@@ -179,6 +194,16 @@ export default async function ProductPage({ params }: { params: Params }) {
           {product.sku && (
             <p className="mt-6 text-xs text-muted-foreground">SKU: {product.sku}</p>
           )}
+
+          {productDisclaimer && (
+            <div className="mt-6 flex gap-2.5 rounded-xl border border-border bg-surface/70 p-4 text-xs leading-relaxed text-muted-foreground">
+              <Info className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" />
+              <p>
+                <span className="font-semibold text-foreground">Important: </span>
+                {productDisclaimer}
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
@@ -192,7 +217,14 @@ export default async function ProductPage({ params }: { params: Params }) {
       {/* Reviews */}
       <section id="reviews" className="mt-16 scroll-mt-24">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-2xl font-semibold tracking-tight">Customer reviews</h2>
+          <div>
+            <h2 className="text-2xl font-semibold tracking-tight">Customer reviews</h2>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Verified buyers may receive a reward for reviewing a product they bought — the reward is the
+              same whatever the rating.{" "}
+              <Link href="/rewards-terms" className="underline hover:text-brand-700">T&amp;Cs apply</Link>
+            </p>
+          </div>
           {reviewCount > 0 && (
             <div className="flex items-center gap-2">
               <Stars rating={avgRating} size={20} />
@@ -222,9 +254,11 @@ export default async function ProductPage({ params }: { params: Params }) {
                   <p className="mt-1 text-sm text-foreground/80">{r.body}</p>
                   <div className="mt-3 flex items-center gap-2">
                     <p className="text-xs font-medium text-brand-700">— {r.author}</p>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2 py-0.5 text-[11px] font-semibold text-brand-700">
-                      <BadgeCheck className="h-3.5 w-3.5" /> Verified
-                    </span>
+                    {r.email && verified.has(r.email.toLowerCase()) && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2 py-0.5 text-[11px] font-semibold text-brand-700">
+                        <BadgeCheck className="h-3.5 w-3.5" /> Verified buyer
+                      </span>
+                    )}
                   </div>
                 </div>
               ))

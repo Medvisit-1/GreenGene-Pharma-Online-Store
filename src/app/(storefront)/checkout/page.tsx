@@ -177,6 +177,7 @@ export default function CheckoutPage() {
       paymentMethod: payMethod,
       newsletter,
       referralCode: referral?.valid ? referral.code : undefined,
+      acceptTerms: fd.get("acceptTerms") === "on",
       items: items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
     };
 
@@ -310,7 +311,8 @@ export default function CheckoutPage() {
                 onChange={(e) => setNewsletter(e.target.checked)}
                 className="h-4 w-4 accent-brand-600"
               />
-              Email me news, launches and offers (unsubscribe anytime)
+              Email me news, launches and offers (unsubscribe anytime —{" "}
+              <Link href="/privacy-policy" target="_blank" className="underline hover:text-brand-700">Privacy Policy</Link>)
             </label>
           </section>
 
@@ -528,7 +530,24 @@ export default function CheckoutPage() {
             <p className="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
           )}
 
-          <Button type="submit" size="lg" disabled={submitting} className="mt-5 w-full">
+          <label className="mt-5 flex cursor-pointer items-start gap-2.5 text-xs leading-relaxed text-muted-foreground">
+            <input
+              type="checkbox"
+              name="acceptTerms"
+              required
+              className="mt-0.5 h-4 w-4 shrink-0 accent-brand-600"
+            />
+            <span>
+              I have read and agree to the{" "}
+              <Link href="/terms-of-service" target="_blank" className="font-semibold underline hover:text-brand-700">Terms of Service</Link>,{" "}
+              <Link href="/refund-policy" target="_blank" className="font-semibold underline hover:text-brand-700">Refund Policy</Link> and{" "}
+              <Link href="/shipping-policy" target="_blank" className="font-semibold underline hover:text-brand-700">Shipping Policy</Link>, and confirm I am 18 or older. My
+              information is handled as set out in the{" "}
+              <Link href="/privacy-policy" target="_blank" className="underline hover:text-brand-700">Privacy Policy</Link>.
+            </span>
+          </label>
+
+          <Button type="submit" size="lg" disabled={submitting} className="mt-4 w-full">
             {submitting ? (
               <><Loader2 className="h-5 w-5 animate-spin" /> Redirecting to payment…</>
             ) : (
@@ -536,7 +555,7 @@ export default function CheckoutPage() {
             )}
           </Button>
           <p className="mt-3 text-center text-xs text-muted-foreground">
-            Secure payment · you&apos;ll be redirected to your chosen gateway.
+            Secure payment · you&apos;ll be redirected to your chosen gateway. Prices in ZAR, incl. VAT where applicable.
           </p>
         </aside>
       </form>

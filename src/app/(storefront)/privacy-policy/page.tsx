@@ -1,77 +1,99 @@
 import type { Metadata } from "next";
 import { LegalLayout } from "@/components/legal-layout";
+import { getBusinessIdentity, h, LEGAL_UPDATED } from "@/lib/legal";
 
+export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Privacy Policy" };
 
-const html = `
-<p>This Privacy Policy describes how GreenGene Pharma (the "Site", "we", "us", or "our") collects, uses, and discloses your personal information when you visit, use our services, or make a purchase from www.greengenepharma.co.za (the "Site") or otherwise communicate with us regarding the Site (collectively, the "Services"). For purposes of this Privacy Policy, "you" and "your" means you as the user of the Services, whether you are a customer, website visitor, or another individual whose information we have collected pursuant to this Privacy Policy.</p>
-<p>Please read this Privacy Policy carefully. By using and accessing any of the Services, you agree to the collection, use, and disclosure of your information as described in this Privacy Policy. If you do not agree to this Privacy Policy, please do not use or access any of the Services.</p>
+export default async function PrivacyPolicyPage() {
+  const id = await getBusinessIdentity();
 
-<h2>Changes to This Privacy Policy</h2>
-<p>We may update this Privacy Policy from time to time, including to reflect changes to our practices or for other operational, legal, or regulatory reasons. We will post the revised Privacy Policy on the Site, update the "Last updated" date and take any other steps required by applicable law.</p>
+  const html = `
+<p>This policy explains how ${h(id.legalName)} (<strong>"GreenGene Pharma"</strong>, <strong>"we"</strong>) collects, uses, shares and protects your personal information when you visit ${h(id.website)}, create an account or buy from us, in line with the Protection of Personal Information Act, 2013 (<strong>POPIA</strong>).</p>
 
-<h2>How We Collect and Use Your Personal Information</h2>
-<p>To provide the Services, we collect personal information about you from a variety of sources, as set out below. The information that we collect and use varies depending on how you interact with us.</p>
-<p>In addition to the specific uses set out below, we may use information we collect about you to communicate with you, provide or improve the Services, comply with any applicable legal obligations, enforce any applicable terms of service, and to protect or defend the Services, our rights, and the rights of our users or others.</p>
+<h2>1. Who is responsible for your information</h2>
+<table><tbody>
+  <tr><th>Responsible party</th><td>${h(id.legalName)}${id.regNo ? ` (registration number ${h(id.regNo)})` : ""}</td></tr>
+  <tr><th>Address</th><td>${h(id.address)}</td></tr>
+  <tr><th>Information Officer</th><td>${id.infoOfficer ? `${h(id.infoOfficer)} — ` : ""}<a href="mailto:${h(id.email)}">${h(id.email)}</a>${id.phone ? `, ${h(id.phone)}` : ""}</td></tr>
+</tbody></table>
 
-<h3>What Personal Information We Collect</h3>
-<p>The types of personal information we obtain about you depends on how you interact with our Site and use our Services. When we use the term "personal information", we are referring to information that identifies, relates to, describes or can be associated with you.</p>
-
-<h3>Information We Collect Directly from You</h3>
+<h2>2. What we collect</h2>
 <ul>
-  <li><strong>Contact details</strong> including your name, address, phone number, and email.</li>
-  <li><strong>Order information</strong> including your name, billing address, shipping address, payment confirmation, email address, and phone number.</li>
-  <li><strong>Account information</strong> including your username, password, security questions and other information used for account security purposes.</li>
-  <li><strong>Shopping information</strong> including the items you view, put in your cart, or purchases.</li>
-  <li><strong>Customer support information</strong> including the information you choose to include in communications with us.</li>
+  <li><strong>Contact and delivery details</strong> — your name, email address, phone number and delivery address, when you order, create an account or contact us.</li>
+  <li><strong>Order information</strong> — what you bought, prices, discounts, delivery details, any order notes, and the payment status and reference from the payment provider. <strong>We never receive or store your card details</strong>; payments are processed by the payment gateway.</li>
+  <li><strong>Account information</strong> — if you create an account: your saved details, and, if you choose to add them, your birthday (day and month) and newsletter preference. We do not use passwords: you sign in with a one-time code sent to your email, which we keep only in scrambled form for 10 minutes.</li>
+  <li><strong>Rewards information</strong> — rewards you have earned and claimed, your reward codes, your referral code, and whether an order was placed through someone's referral link or code.</li>
+  <li><strong>Reviews and messages</strong> — the name, email, rating and text of reviews you submit, and messages you send us.</li>
+  <li><strong>Technical information</strong> — the essential cookies listed in section 7, and standard server logs (such as IP address and browser type) kept by our hosting provider for security.</li>
+</ul>
+<p>We do not use advertising trackers, social-media pixels or third-party analytics on this website.</p>
+
+<h2>3. Why we use it</h2>
+<ul>
+  <li><strong>To process and deliver your orders</strong>, send order and delivery emails, and handle returns — necessary to perform our contract with you.</li>
+  <li><strong>To run your account and the rewards programme</strong>, including milestones, review and referral rewards, and your birthday reward — at your request when you use these features.</li>
+  <li><strong>To send our newsletter</strong> — <strong>only if you have opted in</strong>. You can unsubscribe at any time using the link in every newsletter email or in your account.</li>
+  <li><strong>To keep our store secure</strong> and prevent fraud and abuse — our legitimate interest.</li>
+  <li><strong>To meet legal obligations</strong>, such as keeping tax and accounting records.</li>
+</ul>
+<p>We do not sell your personal information. Where we would like to use your information for a new purpose, we will ask for your consent first where the law requires it.</p>
+
+<h2>4. Who we share it with</h2>
+<p>We share only what is needed, with service providers ("operators") who must keep it confidential and secure:</p>
+<ul>
+  <li><strong>Payment gateways</strong> (such as Yoco, Bob Pay and Paystack) — to take your payment.</li>
+  <li><strong>Couriers and our fulfilment platform</strong> (Bob Go and its courier partners) — your name, phone number and delivery address, to deliver your order.</li>
+  <li><strong>Email delivery provider</strong> (Brevo) — your email address and the content of our emails to you.</li>
+  <li><strong>Hosting provider</strong> (Railway) — which hosts our website and database.</li>
+  <li><strong>Authorities</strong> — where the law requires it.</li>
+</ul>
+<p>If you were referred by a friend, the friend who referred you only sees how many people they referred who placed an order — not your name or any other details. If you refer someone, they see only your first name.</p>
+
+<h2>5. Information stored outside South Africa</h2>
+<p>Some of our service providers, including our hosting and email providers, store information on servers outside South Africa (for example in the United States and the European Union). We use providers that are bound by data-protection laws, agreements or binding rules that give your information a level of protection substantially similar to POPIA, as required by section 72 of POPIA.</p>
+
+<h2>6. How long we keep it</h2>
+<ul>
+  <li>Order and invoice records: for at least five years, as required by tax law.</li>
+  <li>Account, rewards and newsletter information: for as long as your account is active, or until you ask us to delete it.</li>
+  <li>Sign-in codes: 10 minutes. Reviews: while they are published.</li>
 </ul>
 
-<h3>Information We Collect about Your Usage</h3>
-<p>We may also automatically collect certain information about your interaction with the Services ("Usage Data"). To do this, we may use cookies, pixels and similar technologies ("Cookies"). Usage Data may include information about how you access and use our Site and your account, including device information, browser information, information about your network connection, your IP address and other information regarding your interaction with the Services.</p>
+<h2>7. Cookies and browser storage</h2>
+<p>We only use cookies and storage that make the website work. They do not track you across other websites.</p>
+<table><thead><tr><th>Name</th><th>Purpose</th><th>How long</th></tr></thead><tbody>
+  <tr><td>gg_customer</td><td>Keeps you signed in to your account</td><td>30 days, or until you sign out</td></tr>
+  <tr><td>gg_ref</td><td>Remembers which friend's referral link you used</td><td>30 days</td></tr>
+  <tr><td>gg_ref_banner_hidden</td><td>Remembers that you closed the referral welcome banner</td><td>Until you close your browser</td></tr>
+  <tr><td>greengene-cart (browser storage)</td><td>Remembers the contents of your cart</td><td>Until you clear it or check out</td></tr>
+  <tr><td>greengene-customer (browser storage)</td><td>Saves your checkout details on your device, only if you tick "Save my details"</td><td>Until you untick it or clear your browser</td></tr>
+</tbody></table>
+<p>You can block or delete cookies in your browser settings, but parts of the website (such as signing in) will not work without them.</p>
 
-<h3>Information We Obtain from Third Parties</h3>
-<p>We may obtain information about you from third parties, including from vendors and service providers who may collect information on our behalf, such as companies who support our Site and Services and our payment processors, who collect payment information to process your payment in order to fulfill your orders.</p>
-
-<h3>How We Use Your Personal Information</h3>
+<h2>8. Your rights</h2>
+<p>Under POPIA you have the right to:</p>
 <ul>
-  <li><strong>Providing Products and Services.</strong> To process your payments, fulfill your orders, send notifications related to your account and purchases, manage your account, arrange shipping, and facilitate returns and exchanges.</li>
-  <li><strong>Marketing and Advertising.</strong> To send marketing and promotional communications and to show you advertisements for products or services.</li>
-  <li><strong>Security and Fraud Prevention.</strong> To detect, investigate or take action regarding possible fraudulent, illegal or malicious activity.</li>
-  <li><strong>Communicating with You and Service Improvement.</strong> To provide you with customer support and improve our Services.</li>
+  <li>ask what personal information we hold about you, and get a copy of it — signed-in customers can download their data from <a href="/account?tab=details">My account → My details</a>;</li>
+  <li>ask us to correct or update it — most details can be edited in your account;</li>
+  <li>ask us to delete it, or object to how we use it — you can request deletion from your account, or email us (we may need to keep some records, such as invoices, where the law requires);</li>
+  <li>withdraw your consent to marketing at any time; and</li>
+  <li>complain to the Information Regulator.</li>
 </ul>
+<p>To exercise these rights, contact our Information Officer at <a href="mailto:${h(id.email)}">${h(id.email)}</a>. We may need to confirm your identity first.</p>
 
-<h2>Cookies</h2>
-<p>Like many websites, we use Cookies on our Site. We use Cookies to power and improve our Site and our Services (including to remember your actions and preferences), to run analytics and better understand user interaction with the Services. Most browsers automatically accept Cookies by default, but you can choose to set your browser to remove or reject Cookies. Removing or blocking Cookies can negatively impact your user experience and may cause some of the Services to work incorrectly or no longer be available.</p>
+<h2>9. Security</h2>
+<p>We protect your information with measures such as encrypted connections (HTTPS), signed sign-in sessions, scrambled sign-in codes, access controls and reputable service providers. No system is completely secure, but if a breach affects your information we will notify you and the Information Regulator as POPIA requires.</p>
 
-<h2>How We Disclose Personal Information</h2>
-<p>In certain circumstances, we may disclose your personal information to third parties for contract fulfillment purposes, legitimate purposes and other reasons subject to this Privacy Policy. Such circumstances may include:</p>
-<ul>
-  <li>With vendors or other third parties who perform services on our behalf (e.g., IT management, payment processing, data analytics, customer support, cloud storage, fulfillment and shipping).</li>
-  <li>With business and marketing partners to provide services and advertise to you.</li>
-  <li>When you direct, request us or otherwise consent to our disclosure of certain information to third parties.</li>
-  <li>With our affiliates or otherwise within our corporate group.</li>
-  <li>In connection with a business transaction, to comply with legal obligations, to enforce terms of service, and to protect or defend the Services, our rights, and the rights of our users or others.</li>
-</ul>
+<h2>10. Children</h2>
+<p>Our website and products are intended for adults. We do not knowingly collect personal information from anyone under 18.</p>
 
-<h2>Third Party Websites and Links</h2>
-<p>Our Site may provide links to websites or other online platforms operated by third parties. If you follow links to sites not affiliated or controlled by us, you should review their privacy and security policies. We do not guarantee and are not responsible for the privacy or security of such sites.</p>
+<h2>11. Complaints</h2>
+<p>If you are unhappy with how we handle your information, please contact us first. You may also lodge a complaint with the <strong>Information Regulator (South Africa)</strong>: <a href="https://inforegulator.org.za" target="_blank" rel="noopener noreferrer">inforegulator.org.za</a> · <a href="mailto:POPIAComplaints@inforegulator.org.za">POPIAComplaints@inforegulator.org.za</a>.</p>
 
-<h2>Children's Data</h2>
-<p>The Services are not intended to be used by children, and we do not knowingly collect any personal information about children. If you are the parent or guardian of a child who has provided us with their personal information, you may contact us using the contact details set out below to request that it be deleted.</p>
-
-<h2>Security and Retention of Your Information</h2>
-<p>Please be aware that no security measures are perfect or impenetrable, and we cannot guarantee "perfect security." How long we retain your personal information depends on different factors, such as whether we need the information to maintain your account, to provide the Services, comply with legal obligations, resolve disputes or enforce other applicable contracts and policies.</p>
-
-<h2>Your Rights</h2>
-<p>Depending on where you live, you may have some or all of the following rights in relation to your personal information: the right to access/know, to delete, to correct, to portability, to restrict processing, to withdraw consent, to appeal, and to manage communication preferences. You may exercise any of these rights where indicated on our Site or by contacting us using the contact details provided below. We will not discriminate against you for exercising any of these rights.</p>
-
-<h2>Complaints</h2>
-<p>If you have complaints about how we process your personal information, please contact us using the contact details provided below. If you are not satisfied with our response, depending on where you live you may have the right to appeal our decision or lodge your complaint with your local data protection authority.</p>
-
-<h2>Contact</h2>
-<p>Should you have any questions about our privacy practices or this Privacy Policy, or if you would like to exercise any of the rights available to you, please email us at <a href="mailto:info@greengenepharma.co.za">info@greengenepharma.co.za</a> or contact us at Duncan Drive, Westville, Westville, NL, 3629, ZA.</p>
+<h2>12. Changes to this policy</h2>
+<p>We may update this policy from time to time. The latest version will always be on this page, with the date it was last updated.</p>
 `;
 
-export default function PrivacyPolicyPage() {
-  return <LegalLayout title="Privacy Policy" updated="9 May 2026" html={html} />;
+  return <LegalLayout title="Privacy Policy" updated={LEGAL_UPDATED} html={html} />;
 }

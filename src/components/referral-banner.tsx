@@ -22,7 +22,8 @@ export function ReferralBanner({ name, code }: { name: string; code: string }) {
             <span className="rounded bg-white/15 px-1.5 py-0.5 font-mono text-xs font-bold tracking-wider text-white">
               {code}
             </span>{" "}
-            is added for you automatically at checkout.
+            is added for you automatically at checkout.{" "}
+            <a href="/rewards-terms" className="underline hover:text-white">T&amp;Cs apply</a>
           </span>
         </p>
       </div>

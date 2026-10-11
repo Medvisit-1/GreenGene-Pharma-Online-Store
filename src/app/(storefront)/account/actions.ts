@@ -13,7 +13,7 @@ import {
   verifyLoginCode,
 } from "@/lib/customer-auth";
 import { claimReward, describeDiscount } from "@/lib/rewards";
-import { sendLoginCode, sendRewardCode } from "@/lib/email";
+import { sendDeletionRequest, sendLoginCode, sendRewardCode } from "@/lib/email";
 import { subscribe, unsubscribe } from "@/lib/newsletter";
 
 export type LoginState = {
@@ -73,6 +73,18 @@ export async function loginAction(prev: LoginState, formData: FormData): Promise
   }
   await setCustomerSession(result.customerId);
   redirect("/account");
+}
+
+/** POPIA: record a deletion request and notify the store and the customer. */
+export async function requestDeletion() {
+  const customer = await getCurrentCustomer();
+  if (!customer) redirect("/account");
+  if (!customer.deletionRequestedAt) {
+    await prisma.customer.update({ where: { id: customer.id }, data: { deletionRequestedAt: new Date() } });
+    await sendDeletionRequest({ email: customer.email, name: customer.name }).catch(() => false);
+  }
+  revalidatePath("/account");
+  redirect("/account?tab=details&deletion=1");
 }
 
 export async function signOut() {

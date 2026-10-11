@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
 import { getSettings } from "@/lib/settings";
 import { saveSettings } from "@/app/admin/actions";
@@ -82,6 +83,38 @@ export default async function AdminSettings({
             <div>
               <label className={label}>Business hours (separate lines with “ · ”)</label>
               <input name="contactHours" defaultValue={s.contactHours} className={input} />
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-border bg-surface p-6">
+          <h2 className="mb-1 font-bold">Legal &amp; compliance</h2>
+          <p className="mb-4 text-xs text-muted-foreground">
+            Your company name, registration number, VAT number and address on the Terms, Privacy Policy and
+            footer come from <Link href="/admin/invoices" className="font-semibold text-brand-700 underline">Invoicing → business details</Link> — keep them accurate.
+          </p>
+          <div className="grid gap-4">
+            <div>
+              <label className={label}>POPIA Information Officer (name and/or role)</label>
+              <input
+                name="legalInfoOfficer"
+                defaultValue={s.legalInfoOfficer}
+                placeholder="e.g. Jane Doe, Director"
+                className={input}
+              />
+              <p className="mt-1 text-xs text-muted-foreground">
+                Shown in the Privacy Policy. By default this is the company&apos;s head (e.g. a director); register them with
+                the Information Regulator.
+              </p>
+            </div>
+            <div>
+              <label className={label}>Health-product disclaimer (shown on every product page)</label>
+              <textarea
+                name="productDisclaimer"
+                rows={4}
+                defaultValue={s.productDisclaimer}
+                className={input}
+              />
             </div>
           </div>
         </div>

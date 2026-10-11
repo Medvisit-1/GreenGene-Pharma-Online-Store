@@ -23,7 +23,8 @@ export default async function ContactPage() {
       <div className="mb-10 text-center">
         <h1 className="text-3xl font-semibold tracking-tight md:text-4xl">Contact Us</h1>
         <p className="mx-auto mt-2 max-w-lg text-muted-foreground">
-          Questions about a product, an order, or your health? Our friendly team is here to help.
+          Questions about a product or an order? Our friendly team is here to help. We can&apos;t give
+          medical advice — for health questions, please speak to your healthcare practitioner.
         </p>
       </div>
 

@@ -219,6 +219,8 @@ export async function saveSettings(formData: FormData) {
     announcement: String(formData.get("announcement") ?? ""),
     shippingFlat: String(randsToCents(formData.get("shippingFlat"))),
     freeShippingThreshold: String(randsToCents(formData.get("freeShippingThreshold"))),
+    legalInfoOfficer: String(formData.get("legalInfoOfficer") ?? "").trim(),
+    productDisclaimer: String(formData.get("productDisclaimer") ?? "").trim(),
   });
   revalidatePath("/", "layout");
   redirect("/admin/settings?saved=1");

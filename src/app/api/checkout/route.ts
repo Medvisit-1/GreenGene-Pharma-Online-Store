@@ -23,6 +23,7 @@ type Body = {
   paymentMethod?: string;
   newsletter?: boolean;
   referralCode?: string;
+  acceptTerms?: boolean;
 };
 
 export async function POST(req: Request) {
@@ -31,6 +32,13 @@ export async function POST(req: Request) {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  }
+
+  if (body.acceptTerms !== true) {
+    return NextResponse.json(
+      { error: "Please accept the Terms of Service, Refund and Shipping policies to place your order." },
+      { status: 400 }
+    );
   }
 
   // Basic validation

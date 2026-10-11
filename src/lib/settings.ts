@@ -83,6 +83,10 @@ export type SiteSettings = {
   wholesaleValidityDays: string; // quote validity window in days
   wholesaleIntro: string; // intro blurb shown on the quotation
   wholesaleRrpMarginPct: string; // RRP sits this % below the online platform selling price (ex. delivery)
+
+  // ---- Legal & compliance ----
+  legalInfoOfficer: string; // POPIA Information Officer (name / role)
+  productDisclaimer: string; // health-product disclaimer shown on every product page
 };
 
 export const DEFAULT_SETTINGS: SiteSettings = {
@@ -160,6 +164,10 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   wholesaleIntro:
     "Thank you for your interest in reselling GreenGene Pharma products. Our wholesale pricing rewards larger orders — the more units you order, the lower your per-unit cost. Review the tiers below to choose the volume that works best for your business.",
   wholesaleRrpMarginPct: "20",
+
+  legalInfoOfficer: "",
+  productDisclaimer:
+    "This unregistered medicine has not been evaluated by the SAHPRA for its quality, safety or intended use. It is not intended to diagnose, treat, cure or prevent any disease. Do not exceed the recommended dose. Consult your healthcare practitioner before use if you are pregnant or breastfeeding, taking medication or have a medical condition. Keep out of reach of children.",
 };
 
 /** Parse shipping settings into cents numbers for calculations. */
