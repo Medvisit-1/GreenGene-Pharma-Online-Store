@@ -49,6 +49,8 @@ type Search = Promise<{
   claimed?: string;
   error?: string;
   deletion?: string;
+  next?: string;
+  save?: string;
 }>;
 
 const input =
@@ -68,6 +70,12 @@ export default async function AccountPage({ searchParams }: { searchParams: Sear
   const customer = await getCurrentCustomer();
 
   if (!customer) {
+    // Come back to where they were (or the tab they asked for) after signing in
+    const next = sp.next?.startsWith("/") && !sp.next.startsWith("//") ? sp.next : sp.tab ? `/account?tab=${encodeURIComponent(sp.tab)}` : undefined;
+    const saving = sp.save
+      ? await prisma.product.findUnique({ where: { id: sp.save }, select: { id: true, name: true } })
+      : null;
+    const wishlistIntent = !!saving || sp.tab === "wishlist";
     return (
       <div className="mx-auto flex max-w-7xl justify-center px-4 py-16 sm:py-20">
         <div className="w-full max-w-md">
@@ -78,13 +86,19 @@ export default async function AccountPage({ searchParams }: { searchParams: Sear
               <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-plum-600 to-grape text-white shadow-md shadow-plum-700/25">
                 <UserCircle2 className="h-8 w-8" />
               </div>
-              <h1 className="mt-4 text-2xl font-bold tracking-tight text-brand-800">Sign in to your account</h1>
+              <h1 className="mt-4 text-2xl font-bold tracking-tight text-brand-800">
+                {wishlistIntent ? "Sign in to use your wishlist" : "Sign in to your account"}
+              </h1>
               <p className="mt-1.5 text-sm text-muted-foreground">
-                Track your orders and unlock rewards.
+                {saving
+                  ? <>We&apos;ll save <strong className="text-foreground">{saving.name.split(/ [-—–(]/)[0]}</strong> to your wishlist as soon as you&apos;re signed in.</>
+                  : wishlistIntent
+                    ? "Your saved products are kept in your account, on any device."
+                    : "Track your orders and unlock rewards."}
               </p>
             </div>
             <div className="mt-6">
-              <LoginForm />
+              <LoginForm next={next} save={saving?.id} />
             </div>
             </div>
           </div>

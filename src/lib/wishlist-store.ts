@@ -6,7 +6,8 @@ type WishlistState = {
   status: "idle" | "loading" | "ready";
   signedIn: boolean;
   ids: string[];
-  load: () => void;
+  /** Fetch once; `signedIn` (from the server) forces a re-fetch after signing in or out. */
+  load: (signedIn?: boolean) => void;
   set: (productId: string, saved: boolean) => Promise<{ ok: boolean; error?: string; signedOut?: boolean }>;
 };
 
@@ -15,8 +16,10 @@ export const useWishlist = create<WishlistState>()((set, get) => ({
   status: "idle",
   signedIn: false,
   ids: [],
-  load: () => {
-    if (get().status !== "idle") return;
+  load: (signedIn) => {
+    const st = get();
+    if (st.status === "loading") return;
+    if (st.status === "ready" && (signedIn === undefined || signedIn === st.signedIn)) return;
     set({ status: "loading" });
     fetch("/api/wishlist", { cache: "no-store" })
       .then((r) => r.json())

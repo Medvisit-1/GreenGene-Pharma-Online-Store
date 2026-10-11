@@ -32,7 +32,7 @@ export default async function StorefrontLayout({
         <MarqueeBar text={settings.marqueeText} speed={Number(settings.marqueeSpeed)} />
       )}
       {showReferral && <ReferralBanner name={referral.name} code={referral.code} />}
-      <SiteHeader announcement={settings.announcement} />
+      <SiteHeader announcement={settings.announcement} signedIn={jar.has(CUSTOMER_COOKIE)} />
       <main className="flex-1">{children}</main>
       <SiteFooter />
       <CartDrawer />
