@@ -7,20 +7,30 @@ import { Button } from "@/components/ui/button";
 export function ContactForm() {
   const [sent, setSent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setSubmitting(true);
+    setError("");
     const form = e.currentTarget;
     const data = Object.fromEntries(new FormData(form));
     try {
-      await fetch("/api/contact", {
+      const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
+      const out = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(out.error ?? "Your message couldn't be sent. Please try again.");
+        setSubmitting(false);
+        return;
+      }
     } catch {
-      /* non-blocking */
+      setError("Network error — please check your connection and try again.");
+      setSubmitting(false);
+      return;
     }
     setSubmitting(false);
     setSent(true);
@@ -44,6 +54,13 @@ export function ContactForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Spam trap: hidden from people, bots fill it in */}
+      <div aria-hidden="true" className="absolute -left-[9999px] h-px w-px overflow-hidden">
+        <label>
+          Leave this empty
+          <input type="text" name="website" tabIndex={-1} autoComplete="off" />
+        </label>
+      </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Full name" name="name" required />
         <Field label="Email" name="email" type="email" required />
@@ -61,6 +78,7 @@ export function ContactForm() {
           className="w-full rounded-xl border border-border bg-white px-4 py-3 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
         />
       </div>
+      {error && <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
       <Button type="submit" size="lg" disabled={submitting} className="w-full">
         <Send className="h-4 w-4" />
         {submitting ? "Sending…" : "Send message"}

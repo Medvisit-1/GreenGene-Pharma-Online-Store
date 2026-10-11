@@ -87,6 +87,9 @@ export async function saveProduct(formData: FormData) {
     active: formData.get("active") === "on",
     isCombo: formData.get("isCombo") === "on",
     supplyDays: Math.min(365, parseInt(String(formData.get("supplyDays") ?? ""), 10) || 0) || null,
+    howToUse: String(formData.get("howToUse") ?? "").trim().slice(0, 5000) || null,
+    warnings: String(formData.get("warnings") ?? "").trim().slice(0, 5000) || null,
+    faqs: String(formData.get("faqs") ?? "").trim().slice(0, 20000) || null,
   };
 
   if (id) {
@@ -97,6 +100,29 @@ export async function saveProduct(formData: FormData) {
   revalidatePath("/admin/products");
   revalidatePath("/products");
   redirect("/admin/products?saved=1");
+}
+
+/**
+ * One-off helper: move the "Suggested Use / How to use / Dosage" section and ⚠
+ * warning lines out of each description into their own product-page sections.
+ * Only touches products whose "How to use" and "Warnings" are still empty.
+ */
+export async function splitProductDescriptions() {
+  await requireAdmin();
+  const { splitDescription } = await import("@/lib/product-info");
+  const products = await prisma.product.findMany({ where: { howToUse: null, warnings: null, description: { not: null } } });
+  let changed = 0;
+  for (const p of products) {
+    const r = splitDescription(p.description!);
+    if (!r.howToUse && !r.warnings) continue;
+    await prisma.product.update({
+      where: { id: p.id },
+      data: { description: r.description, howToUse: r.howToUse || null, warnings: r.warnings || null },
+    });
+    changed++;
+  }
+  revalidatePath("/admin/products");
+  redirect(`/admin/products?split=${changed}`);
 }
 
 export async function deleteProduct(formData: FormData) {

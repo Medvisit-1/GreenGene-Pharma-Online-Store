@@ -23,6 +23,9 @@ export async function POST(req: Request) {
 
   const order = await prisma.order.findUnique({ where: { orderNumber } });
   if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 });
+  if (order.paymentStatus !== "unpaid" && order.paymentStatus !== "failed") {
+    return NextResponse.json({ error: "This order has already been paid or closed." }, { status: 400 });
+  }
 
   // Record the chosen method on the order
   await prisma.order.update({

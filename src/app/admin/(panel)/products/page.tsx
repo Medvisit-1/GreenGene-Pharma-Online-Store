@@ -1,19 +1,27 @@
 import Link from "next/link";
-import { Plus, Pencil, Layers } from "lucide-react";
+import { Plus, Pencil, Layers, Wand2 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatPrice, parseImages } from "@/lib/utils";
-import { deleteProduct } from "@/app/admin/actions";
+import { deleteProduct, splitProductDescriptions } from "@/app/admin/actions";
+import { splitDescription } from "@/lib/product-info";
 import { Button } from "@/components/ui/button";
 import { ConfirmSubmit } from "@/components/admin/confirm-submit";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Products" };
 
-export default async function AdminProducts() {
+export default async function AdminProducts({ searchParams }: { searchParams: Promise<{ split?: string }> }) {
+  const { split } = await searchParams;
   const products = await prisma.product.findMany({
     orderBy: { createdAt: "desc" },
     include: { category: true },
   });
+  // Products whose description still holds a dosage section or ⚠ warnings
+  const splittable = products.filter((p) => {
+    if (p.howToUse || p.warnings || !p.description) return false;
+    const r = splitDescription(p.description);
+    return !!(r.howToUse || r.warnings);
+  }).length;
 
   return (
     <div className="space-y-6">
@@ -28,6 +36,29 @@ export default async function AdminProducts() {
           </Link>
         </div>
       </div>
+
+      {split !== undefined && (
+        <p role="status" className="rounded-2xl border border-brand-200 bg-brand-50 px-4 py-3 text-sm font-medium text-brand-800">
+          {split === "0" ? "Nothing to move." : `Done — ${split} product${split === "1" ? "" : "s"} now have their own "How to use" and "Warnings" sections. Open a product to check or edit them.`}
+        </p>
+      )}
+
+      {splittable > 0 && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-dashed border-brand-300 bg-white px-4 py-3 text-sm">
+          <p>
+            <strong>{splittable} product{splittable === 1 ? "" : "s"}</strong> have dosage instructions or ⚠ warnings inside
+            the description. Move them into the new <em>How to use</em> and <em>Warnings</em> sections on the product page?
+          </p>
+          <form action={splitProductDescriptions}>
+            <ConfirmSubmit
+              message={`Move the dosage and warning text of ${splittable} products into their own sections? You can edit each product afterwards.`}
+              className="inline-flex h-9 items-center gap-2 rounded-full bg-brand-600 px-4 text-sm font-semibold text-white hover:bg-brand-700"
+            >
+              <Wand2 className="h-4 w-4" /> Move them now
+            </ConfirmSubmit>
+          </form>
+        </div>
+      )}
 
       <div className="overflow-hidden rounded-2xl border border-border bg-surface">
         <table className="w-full text-sm">

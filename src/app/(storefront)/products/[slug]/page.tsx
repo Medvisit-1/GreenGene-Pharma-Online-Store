@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { Truck, ShieldCheck, RotateCcw, Check, BadgeCheck, Info } from "lucide-react";
+import { Truck, ShieldCheck, RotateCcw, Check, BadgeCheck, Info, Pill, TriangleAlert, CircleHelp, ChevronDown } from "lucide-react";
+import { parseFaqs } from "@/lib/product-info";
 import { prisma } from "@/lib/prisma";
 import { formatPrice, parseImages } from "@/lib/utils";
 import { ProductGallery } from "@/components/product-gallery";
@@ -68,6 +69,7 @@ export default async function ProductPage({ params }: { params: Params }) {
     orderBy: { createdAt: "desc" },
   });
   const { productDisclaimer } = await getSettings();
+  const faqs = parseFaqs(product.faqs);
   const customer = product.stock <= 0 ? await getCurrentCustomer() : null;
   const reviewCount = reviews.length;
   const avgRating =
@@ -186,6 +188,33 @@ export default async function ProductPage({ params }: { params: Params }) {
             </div>
           )}
 
+          {(product.howToUse || product.warnings || faqs.length > 0) && (
+            <div className="mt-8 divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card">
+              {product.howToUse && (
+                <InfoSection title="How to use" icon={<Pill className="h-4 w-4" />} open>
+                  <p className="whitespace-pre-line">{product.howToUse}</p>
+                </InfoSection>
+              )}
+              {product.warnings && (
+                <InfoSection title="Warnings & precautions" icon={<TriangleAlert className="h-4 w-4" />}>
+                  <p className="whitespace-pre-line">{product.warnings}</p>
+                </InfoSection>
+              )}
+              {faqs.length > 0 && (
+                <InfoSection title={`Questions & answers (${faqs.length})`} icon={<CircleHelp className="h-4 w-4" />}>
+                  <dl className="space-y-4">
+                    {faqs.map((f) => (
+                      <div key={f.q}>
+                        <dt className="font-semibold text-foreground">{f.q}</dt>
+                        <dd className="mt-1 whitespace-pre-line">{f.a}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </InfoSection>
+              )}
+            </div>
+          )}
+
           {product.sku && (
             <p className="mt-6 text-xs text-muted-foreground">SKU: {product.sku}</p>
           )}
@@ -273,5 +302,19 @@ export default async function ProductPage({ params }: { params: Params }) {
         </section>
       )}
     </div>
+  );
+}
+
+/** Collapsible product-info section (works without JavaScript). */
+function InfoSection({ title, icon, open, children }: { title: string; icon: React.ReactNode; open?: boolean; children: React.ReactNode }) {
+  return (
+    <details open={open} className="group">
+      <summary className="flex cursor-pointer list-none items-center gap-2.5 px-5 py-4 font-semibold text-brand-800 hover:bg-muted/50 [&::-webkit-details-marker]:hidden">
+        <span className="text-brand-600">{icon}</span>
+        <span className="flex-1">{title}</span>
+        <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180" />
+      </summary>
+      <div className="px-5 pb-5 text-sm leading-relaxed text-foreground/80">{children}</div>
+    </details>
   );
 }

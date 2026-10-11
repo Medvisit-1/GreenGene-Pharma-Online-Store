@@ -1,6 +1,7 @@
 import "server-only";
 import type { Order } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { orderUrl } from "@/lib/order-access";
 
 export type PaymentMethodInfo = {
   id: string;
@@ -190,9 +191,9 @@ async function initiateYoco(order: Order): Promise<InitiateResult> {
       body: JSON.stringify({
         amount: order.total, // already in cents
         currency: "ZAR",
-        successUrl: `${appUrl()}/orders/${order.orderNumber}?paid=1`,
+        successUrl: orderUrl(order.orderNumber, "paid=1"),
         cancelUrl: `${appUrl()}/checkout?cancelled=1`,
-        failureUrl: `${appUrl()}/orders/${order.orderNumber}?failed=1`,
+        failureUrl: orderUrl(order.orderNumber, "failed=1"),
         // externalId + metadata let us map the webhook/payment back to this order
         externalId: order.orderNumber,
         metadata: { orderNumber: order.orderNumber },
@@ -285,9 +286,9 @@ async function initiateBobPay(order: Order): Promise<InitiateResult> {
     item_name: `Order ${order.orderNumber}`,
     item_description: "GreenGene Pharma order",
     notify_url: `${appUrl()}/api/payments/bobpay/webhook`,
-    success_url: `${appUrl()}/orders/${order.orderNumber}?paid=1`,
-    pending_url: `${appUrl()}/orders/${order.orderNumber}?paid=1`,
-    cancel_url: `${appUrl()}/orders/${order.orderNumber}?failed=1`,
+    success_url: orderUrl(order.orderNumber, "paid=1"),
+    pending_url: orderUrl(order.orderNumber, "paid=1"),
+    cancel_url: orderUrl(order.orderNumber, "failed=1"),
     short_url: false,
   };
   if (process.env.BOBPAY_ACCOUNT_CODE) {
@@ -330,7 +331,7 @@ async function initiatePaystack(order: Order): Promise<InitiateResult> {
         amount: order.total, // subunit (cents), same as we store
         currency: "ZAR",
         reference: order.orderNumber,
-        callback_url: `${appUrl()}/orders/${order.orderNumber}?paid=1`,
+        callback_url: orderUrl(order.orderNumber, "paid=1"),
         metadata: { orderNumber: order.orderNumber },
       }),
     });
