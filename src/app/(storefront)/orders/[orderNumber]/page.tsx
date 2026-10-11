@@ -6,6 +6,7 @@ import { formatPrice } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { PaymentPoller } from "@/components/payment-poller";
 import { confirmPayment } from "@/lib/payments";
+import { OrderTimeline } from "@/components/order-timeline";
 
 export const dynamic = "force-dynamic";
 
@@ -82,6 +83,12 @@ export default async function OrderPage({
           </p>
         </div>
       ) : null}
+
+      {!failed && (
+        <div className="mb-6 rounded-2xl border border-border bg-surface px-4 py-5">
+          <OrderTimeline order={order} />
+        </div>
+      )}
 
       {order.trackingNumber && (
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-brand-200 bg-brand-50 px-5 py-4">

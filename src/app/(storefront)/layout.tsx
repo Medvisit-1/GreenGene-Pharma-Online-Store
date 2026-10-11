@@ -8,6 +8,8 @@ import { getSettings } from "@/lib/settings";
 import { REF_COOKIE, lookupReferral } from "@/lib/rewards";
 import { ReferralBanner } from "@/components/referral-banner";
 import { REF_BANNER_HIDE_COOKIE } from "@/lib/constants";
+import { CUSTOMER_COOKIE } from "@/lib/customer-auth";
+import { CartSync } from "@/components/cart-sync";
 
 // Storefront reads live settings from the DB, so render at request time
 // (not at build, where the database isn't reachable).
@@ -34,6 +36,7 @@ export default async function StorefrontLayout({
       <main className="flex-1">{children}</main>
       <SiteFooter />
       <CartDrawer />
+      {jar.has(CUSTOMER_COOKIE) && <CartSync />}
       <Toaster position="bottom-right" richColors closeButton />
     </div>
   );

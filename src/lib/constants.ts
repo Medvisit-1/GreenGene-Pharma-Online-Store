@@ -32,3 +32,38 @@ export const SA_PROVINCES = [
 
 /** Cookie set when a visitor closes the referral welcome banner (read by the server, so no flash). */
 export const REF_BANNER_HIDE_COOKIE = "gg_ref_banner_hidden";
+
+/** Shown under every wellness article (web + email). */
+export const WELLNESS_DISCLAIMER =
+  "This article is for general information only and is not medical advice. Our products are not intended to diagnose, treat, cure or prevent any disease, and individual results vary. Speak to your doctor or pharmacist before starting a supplement, especially if you are pregnant or breastfeeding, take medication or have a medical condition.";
+
+/** Parse an article body into blocks: paragraphs, "## " headings and "- " bullet lists. */
+export type ArticleBlock = { type: "p" | "h"; text: string } | { type: "ul"; items: string[] };
+export function parseArticleBody(body: string): ArticleBlock[] {
+  const blocks: ArticleBlock[] = [];
+  for (const chunk of body.replace(/\r\n?/g, "\n").split(/\n{2,}/)) {
+    const lines = chunk.split("\n").map((l) => l.trim()).filter(Boolean);
+    let para: string[] = [];
+    let list: string[] = [];
+    const flush = () => {
+      if (para.length) blocks.push({ type: "p", text: para.join(" ") });
+      if (list.length) blocks.push({ type: "ul", items: list });
+      para = [];
+      list = [];
+    };
+    for (const line of lines) {
+      if (line.startsWith("## ")) {
+        flush();
+        blocks.push({ type: "h", text: line.slice(3) });
+      } else if (/^[-•*] /.test(line)) {
+        if (para.length) { blocks.push({ type: "p", text: para.join(" ") }); para = []; }
+        list.push(line.slice(2));
+      } else {
+        if (list.length) { blocks.push({ type: "ul", items: list }); list = []; }
+        para.push(line);
+      }
+    }
+    flush();
+  }
+  return blocks;
+}

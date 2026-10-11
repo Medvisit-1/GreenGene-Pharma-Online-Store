@@ -15,11 +15,14 @@ import {
   Ticket,
   Download,
   Trash2,
+  RotateCcw,
+  Heart,
 } from "lucide-react";
 import { ConfirmSubmit } from "@/components/admin/confirm-submit";
 import type { Customer } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { cn, formatPrice } from "@/lib/utils";
+import { cn, formatPrice, parseImages, reorderHref } from "@/lib/utils";
+import { OrderTimeline } from "@/components/order-timeline";
 import { SA_PROVINCES } from "@/lib/constants";
 import { getCurrentCustomer } from "@/lib/customer-auth";
 import {
@@ -34,6 +37,7 @@ import { appUrl } from "@/lib/email";
 import { Button } from "@/components/ui/button";
 import { LoginForm } from "@/components/account/login-form";
 import { CopyCode } from "@/components/account/copy-code";
+import { WishlistButton } from "@/components/wishlist-button";
 import { claim, requestDeletion, saveDetails, signOut } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -114,6 +118,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Sear
   const tabs = [
     { id: "overview", label: "Overview" },
     { id: "orders", label: "My orders" },
+    { id: "wishlist", label: "Wishlist" },
     ...(programOn ? [{ id: "rewards", label: "Rewards" }] : []),
     { id: "details", label: "My details" },
   ];
@@ -185,6 +190,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Sear
           <Overview orders={orders} rewardsData={rewardsData} readyCount={readyCount} />
         )}
         {tab === "orders" && <Orders orders={orders} />}
+        {tab === "wishlist" && <Wishlist customerId={customer.id} />}
         {tab === "rewards" && rewardsData && (
           <Rewards data={rewardsData} claimed={sp.claimed} error={sp.error} referral={referral} />
         )}
@@ -276,8 +282,10 @@ function OrderList({ orders }: { orders: OrderWithItems[] }) {
       {orders.map((o) => {
         const count = o.items.reduce((n, i) => n + i.quantity, 0);
         const paid = o.paymentStatus === "paid";
+        const buyAgain = reorderHref(o.items);
         return (
-          <li key={o.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 py-3">
+          <li key={o.id} className="py-3">
+           <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
             <div className="min-w-0 basis-full sm:flex-1 sm:basis-0">
               <Link href={`/orders/${o.orderNumber}`} className="whitespace-nowrap font-semibold text-plum-700 hover:underline">
                 {o.orderNumber}
@@ -290,7 +298,7 @@ function OrderList({ orders }: { orders: OrderWithItems[] }) {
               "rounded-full px-2.5 py-0.5 text-xs font-semibold",
               paid ? "bg-brand-100 text-brand-700" : "bg-amber-100 text-amber-700"
             )}>
-              {paid ? (o.status === "fulfilled" ? "Shipped" : "Paid · preparing") : o.paymentStatus === "refunded" ? "Refunded" : "Awaiting payment"}
+              {paid ? (o.deliveredAt ? "Delivered" : o.status === "fulfilled" ? "Shipped" : "Paid · preparing") : o.paymentStatus === "refunded" ? "Refunded" : "Awaiting payment"}
             </span>
             {o.trackingUrl && (
               <a href={o.trackingUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs font-semibold text-plum-700 hover:underline">
@@ -298,10 +306,81 @@ function OrderList({ orders }: { orders: OrderWithItems[] }) {
               </a>
             )}
             <span className="ml-auto w-24 text-right text-sm font-semibold">{formatPrice(o.total)}</span>
+           </div>
+            {(paid || o.paymentStatus === "refunded") && (
+              <div className="mt-3 flex flex-wrap items-center gap-3">
+                <div className="min-w-0 flex-1 basis-64">
+                  <OrderTimeline order={o} compact />
+                </div>
+                {buyAgain && (
+                  <Link
+                    href={buyAgain}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-plum-200 bg-plum-50 px-3.5 py-1.5 text-xs font-semibold text-plum-700 transition hover:bg-plum-100"
+                  >
+                    <RotateCcw className="h-3.5 w-3.5" /> Buy again
+                  </Link>
+                )}
+              </div>
+            )}
           </li>
         );
       })}
     </ul>
+  );
+}
+
+async function Wishlist({ customerId }: { customerId: string }) {
+  const saved = await prisma.wishlistItem.findMany({
+    where: { customerId, product: { active: true } },
+    include: { product: true },
+    orderBy: { createdAt: "desc" },
+  });
+  if (!saved.length) {
+    return (
+      <div className="rounded-2xl border border-dashed border-plum-200 bg-plum-50/40 p-10 text-center">
+        <Heart className="mx-auto h-8 w-8 text-plum-400" />
+        <p className="mt-3 font-semibold text-brand-800">Your wishlist is empty</p>
+        <p className="mt-1 text-sm text-muted-foreground">Tap the heart on any product to save it here for later.</p>
+        <Link href="/products" className="mt-5 inline-block"><Button variant="plum">Browse products</Button></Link>
+      </div>
+    );
+  }
+  return (
+    <div className="rounded-2xl border border-border bg-card p-5">
+      <SectionTitle className="mb-3">Saved for later</SectionTitle>
+      <ul className="grid gap-3 sm:grid-cols-2">
+        {saved.map(({ product: p }) => {
+          const img = parseImages(p.images)[0];
+          return (
+            <li key={p.id} className="flex items-center gap-3 rounded-xl border border-border p-3">
+              <Link href={`/products/${p.slug}`} className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-surface">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                {img && <img src={img} alt="" className="h-full w-full object-contain" />}
+              </Link>
+              <div className="min-w-0 flex-1">
+                <Link href={`/products/${p.slug}`} className="block truncate font-semibold text-brand-800 hover:underline">{p.name}</Link>
+                <div className="text-sm font-semibold">{formatPrice(p.price)}</div>
+                <div className={cn("text-xs", p.stock > 0 ? "text-brand-700" : "text-amber-700")}>
+                  {p.stock > 0 ? "In stock" : "Out of stock"}
+                </div>
+              </div>
+              <div className="flex flex-col items-end gap-2">
+                {p.stock > 0 ? (
+                  <Link href={`/reorder?items=${p.id}:1`} className="rounded-full bg-plum-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-plum-800">
+                    Add to cart
+                  </Link>
+                ) : (
+                  <Link href={`/products/${p.slug}#notify`} className="rounded-full border border-plum-200 px-3 py-1.5 text-xs font-semibold text-plum-700 hover:bg-plum-50">
+                    Notify me
+                  </Link>
+                )}
+                <WishlistButton productId={p.id} initial variant="text" />
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
   );
 }
 
@@ -607,6 +686,18 @@ function Details({ customer, saved, programOn }: { customer: Customer; saved: bo
                 <Link href="/rewards-terms" className="underline">T&amp;Cs apply</Link>.
               </span>
             )}
+          </span>
+        </label>
+        <label className="mt-4 flex cursor-pointer items-start gap-3 border-t border-border pt-4 text-sm">
+          <input
+            type="checkbox"
+            name="reminders"
+            defaultChecked={!customer.remindersOptOut}
+            className="mt-0.5 h-4 w-4 accent-plum-600"
+          />
+          <span>
+            <span className="font-semibold">Helpful reminders</span> — email me when a product I bought is about to
+            run out, or when I leave items in my cart. No more than one reminder per order or cart.
           </span>
         </label>
       </section>

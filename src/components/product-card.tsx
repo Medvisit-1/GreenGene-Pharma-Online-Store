@@ -2,6 +2,7 @@ import Link from "next/link";
 import { formatPrice, parseImages } from "@/lib/utils";
 import { QuickAddButton } from "@/components/quick-add-button";
 import { Stars } from "@/components/stars";
+import { WishlistButton } from "@/components/wishlist-button";
 
 export type ProductCardData = {
   id: string;
@@ -25,7 +26,8 @@ export function ProductCard({ product }: { product: ProductCardData }) {
   const outOfStock = product.stock <= 0;
 
   return (
-    <div className="animate-fade-in-up group flex h-full flex-col">
+    <div className="animate-fade-in-up group relative flex h-full flex-col">
+      <WishlistButton productId={product.id} className="absolute right-2 top-2 z-10" />
       {/* Transparent image — sits directly on the page background */}
       <Link href={`/products/${product.slug}`} className="relative block aspect-square">
         {cover ? (

@@ -109,6 +109,8 @@ export async function saveDetails(formData: FormData) {
       province: s(formData, "province", 40),
       postalCode: s(formData, "postalCode", 10),
     }),
+    // Service reminders (refills, saved cart) — on unless the customer turns them off
+    remindersOptOut: formData.get("reminders") !== "on",
   };
 
   // Birthday can only be set once (prevents moving it to claim the birthday reward again).

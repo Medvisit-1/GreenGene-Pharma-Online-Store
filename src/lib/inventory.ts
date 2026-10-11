@@ -12,7 +12,7 @@ import { prisma } from "@/lib/prisma";
 export async function finalizePaidOrder(orderId: string): Promise<void> {
   const claim = await prisma.order.updateMany({
     where: { id: orderId, stockDeducted: false },
-    data: { stockDeducted: true },
+    data: { stockDeducted: true, paidAt: new Date() },
   });
   if (claim.count !== 1) return; // already deducted by another path
 

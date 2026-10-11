@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { isValidEmail, normalizeEmail } from "@/lib/customer-auth";
-import { subscribe, unsubscribe, verifyUnsubscribe } from "@/lib/newsletter";
+import { optOutOfReminders, subscribe, unsubscribe, verifyUnsubscribe } from "@/lib/newsletter";
 
 export type SubscribeState = { status: "idle" | "done" | "already" | "error"; message?: string };
 
@@ -20,7 +20,10 @@ export async function subscribeAction(_prev: SubscribeState, formData: FormData)
 export async function confirmUnsubscribe(formData: FormData) {
   const email = String(formData.get("e") ?? "");
   const token = String(formData.get("t") ?? "");
-  if (!verifyUnsubscribe(email, token)) redirect("/newsletter/unsubscribe?invalid=1");
-  await unsubscribe(email);
-  redirect("/newsletter/unsubscribe?done=1");
+  const kind = formData.get("k") === "reminders" ? "reminders" : "newsletter";
+  const q = kind === "reminders" ? "&k=reminders" : "";
+  if (!verifyUnsubscribe(email, token, kind)) redirect(`/newsletter/unsubscribe?invalid=1${q}`);
+  if (kind === "reminders") await optOutOfReminders(email);
+  else await unsubscribe(email);
+  redirect(`/newsletter/unsubscribe?done=1${q}`);
 }

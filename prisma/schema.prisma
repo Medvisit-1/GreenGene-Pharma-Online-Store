@@ -23,9 +23,9 @@ model Category {
 }
 
 model Product {
-  id               String      @id @default(cuid())
+  id               String         @id @default(cuid())
   name             String
-  slug             String      @unique
+  slug             String         @unique
   description      String?
   shortDescription String?
   // Price in cents (ZAR). Avoids float rounding issues.
@@ -37,24 +37,28 @@ model Product {
   unitCost         Int?
   rrp              Int?
   sku              String?
-  stock            Int         @default(0)
+  stock            Int            @default(0)
   // JSON-encoded array of image URLs
-  images           String      @default("[]")
+  images           String         @default("[]")
   brand            String?
   // External marketplace product links (optional)
   takealotUrl      String?
   amazonUrl        String?
   bobshopUrl       String?
   // Show under the "Combos" section
-  isCombo          Boolean     @default(false)
-  featured         Boolean     @default(false)
-  active           Boolean     @default(true)
-  category         Category?   @relation(fields: [categoryId], references: [id])
+  isCombo          Boolean        @default(false)
+  // How many days one unit lasts (for refill reminders). Blank = store default.
+  supplyDays       Int?
+  featured         Boolean        @default(false)
+  active           Boolean        @default(true)
+  category         Category?      @relation(fields: [categoryId], references: [id])
   categoryId       String?
   orderItems       OrderItem[]
   reviews          Review[]
-  createdAt        DateTime    @default(now())
-  updatedAt        DateTime    @updatedAt
+  wishlistedBy     WishlistItem[]
+  stockAlerts      StockAlert[]
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
 }
 
 model Review {
@@ -153,7 +157,11 @@ model Customer {
   // POPIA: when the customer asked us to delete their data
   deletionRequestedAt DateTime?
   lastLoginAt         DateTime?
+  // Opted out of service reminders (refills, saved cart)
+  remindersOptOut     Boolean              @default(false)
   orders              Order[]
+  wishlist            WishlistItem[]
+  savedCart           SavedCart?
   loginTokens         CustomerLoginToken[]
   rewardClaims        RewardClaim[]
   createdAt           DateTime             @default(now())
@@ -242,6 +250,10 @@ model Order {
   trackingUrl     String?
   // Customer whose refer-a-friend link this (first) order came through
   referrerId      String?
+  // Order timeline
+  paidAt          DateTime?
+  shippedAt       DateTime?
+  deliveredAt     DateTime?
   items           OrderItem[]
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
@@ -250,15 +262,17 @@ model Order {
 }
 
 model OrderItem {
-  id        String   @id @default(cuid())
-  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  orderId   String
-  product   Product? @relation(fields: [productId], references: [id])
-  productId String?
-  name      String
-  image     String?
-  price     Int
-  quantity  Int
+  id               String    @id @default(cuid())
+  order            Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId          String
+  product          Product?  @relation(fields: [productId], references: [id])
+  productId        String?
+  name             String
+  image            String?
+  price            Int
+  quantity         Int
+  // When we emailed the refill reminder for this line
+  refillReminderAt DateTime?
 }
 
 model Promotion {
@@ -297,7 +311,66 @@ model NewsletterCampaign {
   imageUrl    String?
   buttonLabel String?
   buttonLink  String?
+  // Automated programme: one campaign per scheduled slot (e.g. "2026-10-13"), never sent twice
+  slot        String?  @unique
+  articleId   String?
   sentCount   Int      @default(0)
   failedCount Int      @default(0)
   createdAt   DateTime @default(now())
+}
+
+// Products a signed-in customer saved for later.
+model WishlistItem {
+  id         String   @id @default(cuid())
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  customerId String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId  String
+  createdAt  DateTime @default(now())
+
+  @@unique([customerId, productId])
+}
+
+// "Email me when it's back in stock" requests.
+model StockAlert {
+  id         String    @id @default(cuid())
+  product    Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId  String
+  email      String
+  notifiedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@unique([productId, email])
+  @@index([notifiedAt])
+}
+
+// Last known cart of a signed-in customer (for the saved-cart reminder).
+model SavedCart {
+  id             String    @id @default(cuid())
+  customer       Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  customerId     String    @unique
+  // JSON: [{ productId, quantity }]
+  items          String    @default("[]")
+  updatedAt      DateTime  @updatedAt
+  reminderSentAt DateTime?
+}
+
+// Wellness articles used by the automated newsletter and the /wellness pages.
+model NewsletterArticle {
+  id              String    @id @default(cuid())
+  slug            String    @unique
+  title           String
+  // Email subject line
+  subject         String
+  excerpt         String
+  // Paragraphs separated by a blank line. Lines starting with "- " become bullets, "## " a sub-heading.
+  body            String
+  // Comma-separated words used to find matching products (e.g. "green tea, estrolean")
+  productKeywords String    @default("")
+  published       Boolean   @default(true)
+  sortOrder       Int       @default(0)
+  timesSent       Int       @default(0)
+  lastSentAt      DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 }

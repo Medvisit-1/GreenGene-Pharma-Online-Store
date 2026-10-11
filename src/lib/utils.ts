@@ -35,3 +35,9 @@ export function parseImages(images: string | null | undefined): string[] {
     return [];
   }
 }
+
+/** Link that puts these products back in the cart ("Buy again", refill emails). */
+export function reorderHref(items: { productId: string | null; quantity: number }[]): string | null {
+  const parts = items.filter((i) => i.productId).map((i) => `${i.productId}:${i.quantity}`);
+  return parts.length ? `/reorder?items=${parts.join(",")}` : null;
+}

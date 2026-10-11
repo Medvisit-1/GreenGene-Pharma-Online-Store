@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, FileText, Truck, Download, ExternalLink } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatPrice } from "@/lib/utils";
-import { updateOrder, saveTracking, setFulfillment } from "@/app/admin/actions";
+import { updateOrder, saveTracking, setFulfillment, setDelivered } from "@/app/admin/actions";
 import { Button } from "@/components/ui/button";
 
 export const dynamic = "force-dynamic";
@@ -152,6 +152,21 @@ export default async function AdminOrderDetail({
                 <input type="hidden" name="id" value={order.id} />
                 <input type="hidden" name="status" value="fulfilled" />
                 <Button type="submit" className="w-full">Fulfill order</Button>
+              </form>
+            )}
+            {order.status === "fulfilled" && (
+              <form action={setDelivered} className="mt-3 border-t border-border pt-3">
+                <input type="hidden" name="id" value={order.id} />
+                <input type="hidden" name="delivered" value={order.deliveredAt ? "0" : "1"} />
+                {order.deliveredAt && (
+                  <p className="mb-2 text-xs text-muted-foreground">
+                    Delivered {order.deliveredAt.toLocaleDateString("en-ZA", { dateStyle: "medium", timeZone: "Africa/Johannesburg" })}
+                  </p>
+                )}
+                <Button type="submit" variant={order.deliveredAt ? "outline" : "secondary"} className="w-full">
+                  {order.deliveredAt ? "Undo delivered" : "Mark delivered"}
+                </Button>
+                <p className="mt-1.5 text-xs text-muted-foreground">Updates the customer&apos;s order timeline.</p>
               </form>
             )}
           </aside>

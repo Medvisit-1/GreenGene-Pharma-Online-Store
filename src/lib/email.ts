@@ -3,6 +3,7 @@ import nodemailer from "nodemailer";
 import { prisma } from "@/lib/prisma";
 import { getSettings } from "@/lib/settings";
 import { formatPrice } from "@/lib/utils";
+import { WELLNESS_DISCLAIMER, parseArticleBody } from "@/lib/constants";
 
 const APP_URL = process.env.APP_URL || "https://greengene-store-production.up.railway.app";
 
@@ -599,6 +600,127 @@ export async function sendNewsletterEmail(
     ${c.buttonLabel && link ? `<p style="margin-top:18px"><a href="${escAttr(link)}" style="background:#155640;color:#fff;padding:11px 20px;border-radius:999px;text-decoration:none;font-size:14px;font-weight:700">${esc(c.buttonLabel)}</a></p>` : ""}
     ${await newsletterFooter(unsubUrl)}`;
   return sendMail({ to, subject: c.subject, html: layout(esc(c.heading || c.subject), body) });
+}
+
+/* ---------- Wellness programme, reminders & alerts ---------- */
+export type EmailProduct = { name: string; slug: string; price: number; image?: string | null; quantity?: number };
+
+const BTN = "background:#155640;color:#fff;padding:11px 20px;border-radius:999px;text-decoration:none;font-size:14px;font-weight:700;display:inline-block";
+
+function absUrl(u: string) {
+  return u.startsWith("http") ? u : `${APP_URL}${u.startsWith("/") ? "" : "/"}${u}`;
+}
+
+function articleHtml(body: string) {
+  return parseArticleBody(body)
+    .map((b) =>
+      b.type === "h"
+        ? `<h3 style="margin:20px 0 8px;font-size:16px;color:#104536">${esc(b.text)}</h3>`
+        : b.type === "ul"
+          ? `<ul style="margin:0 0 12px;padding-left:20px">${b.items.map((i) => `<li style="font-size:14px;line-height:1.7;margin-bottom:4px">${esc(i)}</li>`).join("")}</ul>`
+          : `<p style="font-size:14px;line-height:1.7;margin:0 0 12px">${esc(b.text)}</p>`
+    )
+    .join("");
+}
+
+/** Product cards for emails (a simple 1-column table that works in every mail app). */
+function productCardsHtml(products: EmailProduct[], cta = "Shop now") {
+  return products
+    .map((p) => `<table role="presentation" style="width:100%;border:1px solid #e3e9e5;border-radius:12px;margin:0 0 10px;border-collapse:separate"><tr>
+      <td style="width:76px;padding:10px">${p.image ? `<img src="${escAttr(absUrl(p.image))}" alt="" width="64" height="64" style="width:64px;height:64px;object-fit:contain;border-radius:8px;display:block">` : ""}</td>
+      <td style="padding:10px 10px 10px 0;font-size:14px">
+        <a href="${escAttr(`${APP_URL}/products/${p.slug}`)}" style="color:#104536;font-weight:700;text-decoration:none">${esc(p.name)}</a>
+        <div style="color:#4a5a51;margin-top:2px">${formatPrice(p.price)}${p.quantity ? ` · Qty ${p.quantity}` : ""}</div>
+      </td>
+      <td style="padding:10px;text-align:right;white-space:nowrap"><a href="${escAttr(`${APP_URL}/products/${p.slug}`)}" style="color:#155640;font-size:13px;font-weight:700">${esc(cta)} →</a></td>
+    </tr></table>`)
+    .join("");
+}
+
+async function senderIdentity() {
+  const s = await getSettings();
+  const name = s.invoiceCompanyName || "GreenGene Pharma";
+  const addr = s.invoiceCompanyAddress || s.contactAddress;
+  const email = s.invoiceCompanyEmail || s.contactEmail;
+  return `Sent by ${esc(name)}${s.invoiceRegNo ? ` (Reg. No. ${esc(s.invoiceRegNo)})` : ""} · ${esc(addr)} · <a href="mailto:${esc(email)}" style="color:#6b7c73">${esc(email)}</a>`;
+}
+
+/** Footer for service reminders (refill, saved cart): why they got it + one-click opt-out. */
+async function reminderFooter(optOutUrl: string, why: string) {
+  return `<p style="margin-top:22px;border-top:1px solid #e3e9e5;padding-top:12px;font-size:11px;color:#8a978f;line-height:1.6">
+    ${esc(why)} <a href="${optOutUrl}" style="color:#6b7c73">Stop these reminders</a> at any time, free of charge — or change your preferences under My details in your account.<br>
+    ${await senderIdentity()}<br>
+    <a href="${APP_URL}/privacy-policy" style="color:#6b7c73">Privacy Policy</a></p>`;
+}
+
+/** One issue of the automated wellness newsletter. */
+export async function sendArticleEmail(
+  a: { slug: string; title: string; subject: string; excerpt: string; body: string },
+  products: EmailProduct[],
+  to: string,
+  unsubUrl: string
+): Promise<boolean> {
+  const url = `${APP_URL}/wellness/${a.slug}`;
+  const body = `
+    <p style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#8a4a6d;margin:0 0 6px">GreenGene Wellness Notes</p>
+    <p style="font-size:15px;line-height:1.6;color:#4a5a51;margin:0 0 16px"><em>${esc(a.excerpt)}</em></p>
+    ${articleHtml(a.body)}
+    ${products.length ? `<h3 style="margin:24px 0 10px;font-size:16px;color:#104536">From our range</h3>${productCardsHtml(products)}` : ""}
+    <p style="margin-top:18px"><a href="${escAttr(url)}" style="${BTN}">Read on our website</a></p>
+    <p style="margin-top:18px;padding:12px;background:#f5f7f6;border-radius:10px;font-size:11px;color:#6b7c73;line-height:1.6">${esc(WELLNESS_DISCLAIMER)}</p>
+    ${await newsletterFooter(unsubUrl)}`;
+  return sendMail({ to, subject: a.subject, html: layout(esc(a.title), body) });
+}
+
+/** "Running low?" refill reminder for one-month supplies. */
+export async function sendRefillReminder(d: {
+  to: string;
+  name: string | null;
+  items: EmailProduct[];
+  reorderUrl: string;
+  optOutUrl: string;
+}): Promise<boolean> {
+  const first = (d.name ?? "").split(" ")[0];
+  const names = d.items.map((i) => i.name.split(/ [-—–(]/)[0].trim());
+  const body = `
+    <p style="font-size:14px;line-height:1.6">Hi${first ? ` ${esc(first)}` : ""}, your supply of <strong>${esc(names.join(", "))}</strong> should be running low soon. Re-order now so you don't miss a day — it takes one click to add ${d.items.length === 1 ? "it" : "them"} back to your cart.</p>
+    ${productCardsHtml(d.items, "View")}
+    <p style="margin-top:16px"><a href="${escAttr(absUrl(d.reorderUrl))}" style="${BTN}">Re-order in one click</a></p>
+    <p style="font-size:12px;color:#6b7c73;line-height:1.6">Already re-ordered or stocked up? Then you can ignore this email. Prices shown are today's prices; stock permitting.</p>
+    ${await reminderFooter(d.optOutUrl, "You're receiving this one-time reminder because you bought this product from us.")}`;
+  return sendMail({ to: d.to, subject: `Running low on ${names[0]}${names.length > 1 ? " and more" : ""}? 🌿`, html: layout("Time for a refill?", body) });
+}
+
+/** One reminder for a signed-in customer's cart that was left behind. */
+export async function sendCartReminder(d: {
+  to: string;
+  name: string | null;
+  items: EmailProduct[];
+  reorderUrl: string;
+  optOutUrl: string;
+}): Promise<boolean> {
+  const first = (d.name ?? "").split(" ")[0];
+  const total = d.items.reduce((n, i) => n + i.price * (i.quantity ?? 1), 0);
+  const body = `
+    <p style="font-size:14px;line-height:1.6">Hi${first ? ` ${esc(first)}` : ""}, you left a few things in your cart. We've saved them for you:</p>
+    ${productCardsHtml(d.items, "View")}
+    <p style="font-size:14px;margin:6px 0 0"><strong>Subtotal: ${formatPrice(total)}</strong></p>
+    <p style="margin-top:16px"><a href="${escAttr(absUrl(d.reorderUrl))}" style="${BTN}">Complete my order</a></p>
+    <p style="font-size:12px;color:#6b7c73;line-height:1.6">Prices and stock may change before you check out. Delivery costs are shown at checkout.</p>
+    ${await reminderFooter(d.optOutUrl, "You're receiving this because you added these items to your cart while signed in. We only send one reminder per cart.")}`;
+  return sendMail({ to: d.to, subject: "You left something in your cart 🛒", html: layout("Still thinking it over?", body) });
+}
+
+/** One-off "back in stock" alert the customer asked for. */
+export async function sendBackInStock(to: string, p: EmailProduct): Promise<boolean> {
+  const body = `
+    <p style="font-size:14px;line-height:1.6">Good news — <strong>${esc(p.name)}</strong> is back in stock. Popular products can sell out quickly, so grab yours while it's available.</p>
+    ${productCardsHtml([p])}
+    <p style="margin-top:16px"><a href="${escAttr(`${APP_URL}/products/${p.slug}`)}" style="${BTN}">Shop now</a></p>
+    <p style="margin-top:22px;border-top:1px solid #e3e9e5;padding-top:12px;font-size:11px;color:#8a978f;line-height:1.6">
+      You asked us to email you once when this product was back. This was a one-off alert — we won't email you about it again, and it hasn't signed you up to marketing.<br>
+      ${await senderIdentity()} · <a href="${APP_URL}/privacy-policy" style="color:#6b7c73">Privacy Policy</a></p>`;
+  return sendMail({ to, subject: `Back in stock: ${p.name.split(/ [-—–(]/)[0].trim()} ✨`, html: layout("It's back!", body) });
 }
 
 /* ---------- POPIA requests ---------- */
