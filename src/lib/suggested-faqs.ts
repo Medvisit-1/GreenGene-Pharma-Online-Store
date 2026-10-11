@@ -12,9 +12,6 @@
 
 type Faq = [question: string, answer: string];
 
-/** Hormone-related formulas get an explicit hormone-sensitive caution. */
-const HORMONE = /estrogene|estrolean|gynoshield|fertilitygene|mangene|anabolean/i;
-
 function shortName(name: string) {
   return PRODUCT_FAQS.find((p) => p.match.test(name))?.label ?? name.split(/ [-—–(]/)[0].trim();
 }
@@ -22,12 +19,9 @@ function shortName(name: string) {
 /** The generalised "I have a health condition" answer, for any product. */
 export function healthConditionFaq(name: string, contactEmail: string): Faq {
   const n = shortName(name);
-  const hormone = HORMONE.test(name)
-    ? " This is especially important with hormone-sensitive conditions (such as some cancers), or if you use hormone treatment, because some of the plant ingredients can act on the body's hormones."
-    : "";
   return [
     `I have a health condition or take medication. Can I use ${n}?`,
-    `Thank you for checking first — it's the right thing to do. ${n} is made from natural, plant-based ingredients, but natural doesn't automatically mean it suits everyone: some herbs can interact with medicines or may not be right with certain conditions.${hormone} For more information on ${n}, please email us at ${contactEmail} and we'll send you the full information pack, which you can share with your doctor or healthcare practitioner so they can advise you.`,
+    `For health-related questions, please email us at ${contactEmail} and we'll send you the full information pack on ${n}.`,
   ];
 }
 
@@ -39,7 +33,6 @@ const PRODUCT_FAQS: { match: RegExp; label: string; men?: boolean; faqs: Faq[] }
     faqs: [
       ["How long before I notice a difference?", "Everyone is different. Most people take Soul every day for at least 4–6 weeks to judge how it works for them."],
       ["Can I take Soul with antidepressants or anxiety medication?", "Please don't combine them without your doctor's advice. Some herbs can interact with these medicines. Never stop prescribed medication on your own."],
-      ["Who can I talk to if I'm struggling?", "If you're struggling with your mood, please reach out to your doctor, or call the SADAG helpline on 0800 567 567. You don't have to manage it alone."],
     ],
   },
   {
