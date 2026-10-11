@@ -1,17 +1,20 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CheckCircle2, FileText, Package, Clock, XCircle } from "lucide-react";
+import { CheckCircle2, FileText, Package, Clock, XCircle, Lock } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatPrice } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { PaymentPoller } from "@/components/payment-poller";
-import { confirmPayment } from "@/lib/payments";
+import { confirmPayment, getEnabledMethods } from "@/lib/payments";
+import { canViewOrder, orderToken } from "@/lib/order-access";
+import { PayNow } from "@/components/pay-now";
 import { OrderTimeline } from "@/components/order-timeline";
 
 export const dynamic = "force-dynamic";
+export const metadata = { title: "Your order", robots: { index: false } };
 
 type Params = Promise<{ orderNumber: string }>;
-type Search = Promise<{ new?: string; paid?: string; failed?: string }>;
+type Search = Promise<{ new?: string; paid?: string; failed?: string; t?: string }>;
 
 export default async function OrderPage({
   params,
@@ -21,7 +24,7 @@ export default async function OrderPage({
   searchParams: Search;
 }) {
   const { orderNumber } = await params;
-  const { new: isNew, paid, failed } = await searchParams;
+  const { new: isNew, paid, failed, t } = await searchParams;
 
   const order = await prisma.order.findUnique({
     where: { orderNumber },
@@ -37,7 +40,15 @@ export default async function OrderPage({
     }
   }
 
+  // Without the private link or the right sign-in, show the status only (POPIA)
+  if (!(await canViewOrder(order, t))) {
+    return <LimitedOrderView order={order} failed={!!failed} paid={!!paid} />;
+  }
+
   const address = JSON.parse(order.shippingAddress || "{}");
+  const token = orderToken(order.orderNumber);
+  const canPay = order.paymentStatus === "unpaid" || order.paymentStatus === "failed";
+  const methods = canPay && !paid ? await getEnabledMethods() : [];
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-12">
@@ -48,9 +59,7 @@ export default async function OrderPage({
           <p className="mt-2 text-muted-foreground">
             We couldn&apos;t complete payment for order <strong>{order.orderNumber}</strong>.
           </p>
-          <Link href="/checkout" className="mt-5">
-            <Button>Try again</Button>
-          </Link>
+          <p className="mt-1 text-sm text-muted-foreground">No money was taken. You can try again below.</p>
         </div>
       ) : order.paymentStatus === "paid" ? (
         <div className="mb-8 flex flex-col items-center text-center">
@@ -83,6 +92,12 @@ export default async function OrderPage({
           </p>
         </div>
       ) : null}
+
+      {methods.length > 0 && (
+        <div className="mb-6">
+          <PayNow orderNumber={order.orderNumber} total={order.total} methods={methods} />
+        </div>
+      )}
 
       {!failed && (
         <div className="mb-6 rounded-2xl border border-border bg-surface px-4 py-5">
@@ -187,7 +202,7 @@ export default async function OrderPage({
       </div>
 
       <div className="mt-6 flex flex-wrap justify-center gap-3">
-        <Link href={`/orders/${order.orderNumber}/invoice`}>
+        <Link href={`/orders/${order.orderNumber}/invoice?t=${token}`}>
           <Button variant="secondary" size="lg">
             <FileText className="h-4 w-4" /> View / print invoice
           </Button>
@@ -195,6 +210,52 @@ export default async function OrderPage({
         <Link href="/products">
           <Button size="lg">Continue shopping</Button>
         </Link>
+      </div>
+    </div>
+  );
+}
+
+/** What someone sees with only the order number: progress, nothing personal. */
+function LimitedOrderView({
+  order,
+  failed,
+  paid,
+}: {
+  order: Parameters<typeof OrderTimeline>[0]["order"] & { orderNumber: string };
+  failed: boolean;
+  paid: boolean;
+}) {
+  return (
+    <div className="mx-auto max-w-xl px-4 py-12">
+      <div className="text-center">
+        {failed ? (
+          <XCircle className="mx-auto h-14 w-14 text-red-500" />
+        ) : order.paymentStatus === "paid" ? (
+          <CheckCircle2 className="mx-auto h-14 w-14 text-brand-500" />
+        ) : (
+          <Clock className="mx-auto h-14 w-14 text-amber-500" />
+        )}
+        {paid && order.paymentStatus !== "paid" && <PaymentPoller />}
+        <h1 className="mt-4 text-2xl font-semibold tracking-tight">Order {order.orderNumber}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Placed {order.createdAt.toLocaleDateString("en-ZA", { dateStyle: "long", timeZone: "Africa/Johannesburg" })}
+        </p>
+      </div>
+      <div className="mt-6 rounded-2xl border border-border bg-surface px-4 py-5">
+        <OrderTimeline order={order} />
+      </div>
+      <div className="mt-6 flex gap-3 rounded-2xl border border-border bg-card p-5">
+        <Lock className="mt-0.5 h-5 w-5 shrink-0 text-brand-600" />
+        <div className="text-sm">
+          <p className="font-semibold">Order details are private</p>
+          <p className="mt-1 text-muted-foreground">
+            To protect your personal information, the items, address and contact details are only shown to the person
+            who placed the order. Use the link in your order email, or sign in with the email address you ordered with.
+          </p>
+          <Link href={`/account?next=${encodeURIComponent(`/orders/${order.orderNumber}`)}`} className="mt-3 inline-block">
+            <Button size="sm">Sign in to see full details</Button>
+          </Link>
+        </div>
       </div>
     </div>
   );

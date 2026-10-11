@@ -135,6 +135,13 @@ export async function WellnessAdmin({ settings, subscribers }: { settings: SiteS
               (only to newsletter subscribers or past customers, as POPIA allows).
             </span>
           </label>
+          <label className="flex items-start gap-2">
+            <input type="checkbox" name="paymentRemindersEnabled" defaultChecked={settings.paymentRemindersEnabled === "1"} className="mt-0.5 h-4 w-4 accent-brand-600" />
+            <span>
+              <strong>Complete-your-payment reminders</strong> — one email if someone starts an order but the payment
+              isn&apos;t completed within an hour, with a link to pay for that same order (discounts kept).
+            </span>
+          </label>
           <p className="text-xs text-muted-foreground">
             Back-in-stock alerts are always on: shoppers ask for them on sold-out products and get one email when stock is added.
           </p>

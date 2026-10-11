@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { getCurrentCustomer } from "@/lib/customer-auth";
 
 export async function POST(req: Request) {
+  if (!rateLimit(`review:${clientIp(req)}`, 5, 10 * 60_000)) {
+    return NextResponse.json({ error: "You've posted a few reviews already — please try again later." }, { status: 429 });
+  }
   let body;
   try {
     body = await req.json();

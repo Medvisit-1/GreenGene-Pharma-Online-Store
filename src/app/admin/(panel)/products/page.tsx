@@ -1,19 +1,33 @@
 import Link from "next/link";
-import { Plus, Pencil, Layers } from "lucide-react";
+import { Plus, Pencil, Layers, Wand2, CircleHelp } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatPrice, parseImages } from "@/lib/utils";
-import { deleteProduct } from "@/app/admin/actions";
+import { addSuggestedFaqs, deleteProduct, splitProductDescriptions } from "@/app/admin/actions";
+import { suggestedFaqs } from "@/lib/suggested-faqs";
+import { parseFaqs } from "@/lib/product-info";
+import { getSettings } from "@/lib/settings";
+import { splitDescription } from "@/lib/product-info";
 import { Button } from "@/components/ui/button";
 import { ConfirmSubmit } from "@/components/admin/confirm-submit";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Products" };
 
-export default async function AdminProducts() {
+export default async function AdminProducts({ searchParams }: { searchParams: Promise<{ split?: string; faqs?: string }> }) {
+  const { split, faqs } = await searchParams;
   const products = await prisma.product.findMany({
     orderBy: { createdAt: "desc" },
     include: { category: true },
   });
+  // Products whose description still holds a dosage section or ⚠ warnings
+  const splittable = products.filter((p) => {
+    if (p.howToUse || p.warnings || !p.description) return false;
+    const r = splitDescription(p.description);
+    return !!(r.howToUse || r.warnings);
+  }).length;
+  const noFaqs = products.filter((p) => !p.faqs?.trim());
+  const { contactEmail } = await getSettings();
+  const preview = noFaqs[0] ? parseFaqs(suggestedFaqs(noFaqs[0], contactEmail)) : [];
 
   return (
     <div className="space-y-6">
@@ -28,6 +42,67 @@ export default async function AdminProducts() {
           </Link>
         </div>
       </div>
+
+      {split !== undefined && (
+        <p role="status" className="rounded-2xl border border-brand-200 bg-brand-50 px-4 py-3 text-sm font-medium text-brand-800">
+          {split === "0" ? "Nothing to move." : `Done — ${split} product${split === "1" ? "" : "s"} now have their own "How to use" and "Warnings" sections. Open a product to check or edit them.`}
+        </p>
+      )}
+
+      {faqs !== undefined && (
+        <p role="status" className="rounded-2xl border border-brand-200 bg-brand-50 px-4 py-3 text-sm font-medium text-brand-800">
+          {faqs === "0" ? "Every product already has FAQs." : `Added suggested FAQs to ${faqs} product${faqs === "1" ? "" : "s"}. Open a product to read or edit them.`}
+        </p>
+      )}
+
+      {noFaqs.length > 0 && (
+        <div className="rounded-2xl border border-dashed border-brand-300 bg-white px-4 py-3 text-sm">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p>
+              <strong>{noFaqs.length} product{noFaqs.length === 1 ? "" : "s"}</strong> have no FAQs yet. Add our suggested
+              questions and answers (including a health-condition answer that points people to your information pack)?
+            </p>
+            <form action={addSuggestedFaqs}>
+              <ConfirmSubmit
+                message={`Add suggested FAQs to ${noFaqs.length} products? Products that already have FAQs are not changed. You can edit every answer afterwards.`}
+                className="inline-flex h-9 items-center gap-2 rounded-full bg-brand-600 px-4 text-sm font-semibold text-white hover:bg-brand-700"
+              >
+                <CircleHelp className="h-4 w-4" /> Add suggested FAQs
+              </ConfirmSubmit>
+            </form>
+          </div>
+          <details className="mt-2">
+            <summary className="cursor-pointer text-xs font-semibold text-brand-700">
+              Preview: {noFaqs[0].name.split(/ [-—–(]/)[0]} ({preview.length} questions)
+            </summary>
+            <dl className="mt-2 space-y-2 text-xs">
+              {preview.map((f) => (
+                <div key={f.q}>
+                  <dt className="font-semibold">{f.q}</dt>
+                  <dd className="text-muted-foreground">{f.a}</dd>
+                </div>
+              ))}
+            </dl>
+          </details>
+        </div>
+      )}
+
+      {splittable > 0 && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-dashed border-brand-300 bg-white px-4 py-3 text-sm">
+          <p>
+            <strong>{splittable} product{splittable === 1 ? "" : "s"}</strong> have dosage instructions or ⚠ warnings inside
+            the description. Move them into the new <em>How to use</em> and <em>Warnings</em> sections on the product page?
+          </p>
+          <form action={splitProductDescriptions}>
+            <ConfirmSubmit
+              message={`Move the dosage and warning text of ${splittable} products into their own sections? You can edit each product afterwards.`}
+              className="inline-flex h-9 items-center gap-2 rounded-full bg-brand-600 px-4 text-sm font-semibold text-white hover:bg-brand-700"
+            >
+              <Wand2 className="h-4 w-4" /> Move them now
+            </ConfirmSubmit>
+          </form>
+        </div>
+      )}
 
       <div className="overflow-hidden rounded-2xl border border-border bg-surface">
         <table className="w-full text-sm">

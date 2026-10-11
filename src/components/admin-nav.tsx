@@ -16,6 +16,8 @@ import {
   Gift,
   Mail,
   ExternalLink,
+  Users,
+  BarChart3,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -23,6 +25,8 @@ const LINKS = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { href: "/admin/products", label: "Products", icon: Package },
   { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
+  { href: "/admin/customers", label: "Customers", icon: Users },
+  { href: "/admin/reports", label: "Sales report", icon: BarChart3 },
   { href: "/admin/invoices", label: "Invoicing", icon: FileText },
   { href: "/admin/wholesale", label: "Wholesale", icon: Boxes },
   { href: "/admin/promotions", label: "Promotions", icon: Tag },

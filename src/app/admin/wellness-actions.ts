@@ -45,6 +45,7 @@ export async function saveReminderSettings(formData: FormData) {
     refillRemindersEnabled: formData.get("refillRemindersEnabled") === "on" ? "1" : "0",
     refillDefaultDays: String(days),
     cartRemindersEnabled: formData.get("cartRemindersEnabled") === "on" ? "1" : "0",
+    paymentRemindersEnabled: formData.get("paymentRemindersEnabled") === "on" ? "1" : "0",
   });
   done("Reminder settings saved.", "#reminders");
 }

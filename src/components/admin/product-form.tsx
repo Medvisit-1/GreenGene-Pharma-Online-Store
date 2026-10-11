@@ -53,6 +53,39 @@ export function ProductForm({
             <label className={label}>Full description</label>
             <textarea name="description" rows={8} defaultValue={product?.description ?? ""} className={input} />
           </div>
+          <div>
+            <label className={label}>How to use</label>
+            <textarea
+              name="howToUse"
+              rows={3}
+              defaultValue={product?.howToUse ?? ""}
+              placeholder="e.g. Adults (18+): take 2 capsules daily with water."
+              className={input}
+            />
+          </div>
+          <div>
+            <label className={label}>Warnings &amp; precautions</label>
+            <textarea
+              name="warnings"
+              rows={3}
+              defaultValue={product?.warnings ?? ""}
+              placeholder="e.g. Not suitable during pregnancy or breastfeeding."
+              className={input}
+            />
+          </div>
+          <div>
+            <label className={label}>FAQs</label>
+            <textarea
+              name="faqs"
+              rows={6}
+              defaultValue={product?.faqs ?? ""}
+              placeholder={"How long until I notice a difference?\nMost people use it daily for 4–6 weeks.\n\nCan I take it with other supplements?\nPlease check with your pharmacist first."}
+              className={input}
+            />
+            <p className="mt-1 text-xs text-muted-foreground">
+              One question per block: the question on the first line, the answer below it, and a blank line between questions.
+            </p>
+          </div>
         </div>
       </div>
 

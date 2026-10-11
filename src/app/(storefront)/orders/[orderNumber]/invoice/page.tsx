@@ -1,22 +1,27 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatPrice } from "@/lib/utils";
 import { getSettings } from "@/lib/settings";
 import { PrintButton } from "@/components/print-button";
+import { canViewOrder } from "@/lib/order-access";
 
 export const dynamic = "force-dynamic";
+export const metadata = { title: "Invoice", robots: { index: false } };
 
 type Params = Promise<{ orderNumber: string }>;
 
-export default async function InvoicePage({ params }: { params: Params }) {
+export default async function InvoicePage({ params, searchParams }: { params: Params; searchParams: Promise<{ t?: string }> }) {
   const { orderNumber } = await params;
+  const { t } = await searchParams;
   const [order, settings] = await Promise.all([
     prisma.order.findUnique({ where: { orderNumber }, include: { items: true } }),
     getSettings(),
   ]);
   if (!order) notFound();
+  // Invoices hold personal details: same rule as the order page
+  if (!(await canViewOrder(order, t))) redirect(`/orders/${order.orderNumber}`);
 
   const address = JSON.parse(order.shippingAddress || "{}");
 
@@ -25,7 +30,7 @@ export default async function InvoicePage({ params }: { params: Params }) {
       {/* Toolbar (hidden when printing) */}
       <div className="mb-6 flex items-center justify-between print:hidden">
         <Link
-          href={`/orders/${order.orderNumber}`}
+          href={`/orders/${order.orderNumber}${t ? `?t=${encodeURIComponent(t)}` : ""}`}
           className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-brand-700"
         >
           <ArrowLeft className="h-4 w-4" /> Back to order

@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { clientIp, rateLimit } from "@/lib/rate-limit";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 /** Register a one-off "back in stock" email for a sold-out product. */
 export async function POST(req: Request) {
+  if (!rateLimit(`stock:${clientIp(req)}`, 10, 10 * 60_000)) {
+    return NextResponse.json({ error: "Too many requests — please try again in a few minutes." }, { status: 429 });
+  }
   const body = await req.json().catch(() => null);
   const productId = typeof body?.productId === "string" ? body.productId : "";
   const email = String(body?.email ?? "").trim().toLowerCase().slice(0, 120);

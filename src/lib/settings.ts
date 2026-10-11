@@ -97,6 +97,7 @@ export type SiteSettings = {
   refillRemindersEnabled: string; // "1" | "0"
   refillDefaultDays: string; // how long one unit lasts when a product doesn't say
   cartRemindersEnabled: string; // "1" | "0"
+  paymentRemindersEnabled: string; // "1" | "0"
 };
 
 export const DEFAULT_SETTINGS: SiteSettings = {
@@ -186,6 +187,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   refillRemindersEnabled: "1",
   refillDefaultDays: "30",
   cartRemindersEnabled: "1",
+  paymentRemindersEnabled: "1",
 };
 
 /** Parse shipping settings into cents numbers for calculations. */

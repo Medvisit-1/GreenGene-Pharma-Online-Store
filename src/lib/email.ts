@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getSettings } from "@/lib/settings";
 import { formatPrice } from "@/lib/utils";
 import { WELLNESS_DISCLAIMER, articleTeaser } from "@/lib/constants";
+import { orderUrl as privateOrderUrl } from "@/lib/order-access";
 
 const APP_URL = process.env.APP_URL || "https://greengene-store-production.up.railway.app";
 
@@ -133,14 +134,15 @@ export async function sendContactMessage(d: {
 }) {
   const settings = await getSettings();
   const html = layout("New contact message", `
-    <p><strong>From:</strong> ${d.name || "—"} (${d.email || "no email"})</p>
-    <p><strong>Phone:</strong> ${d.phone || "—"}</p>
-    <p><strong>Subject:</strong> ${d.subject || "—"}</p>
-    <p style="white-space:pre-wrap;background:#f4f6f5;padding:12px;border-radius:8px">${(d.message || "").replace(/</g, "&lt;")}</p>
+    <p><strong>From:</strong> ${esc(d.name || "—")} (${esc(d.email || "no email")})</p>
+    <p><strong>Phone:</strong> ${esc(d.phone || "—")}</p>
+    <p><strong>Subject:</strong> ${esc(d.subject || "—")}</p>
+    <p style="white-space:pre-wrap;background:#f4f6f5;padding:12px;border-radius:8px">${esc(d.message || "")}</p>
   `);
   return sendMail({
     to: settings.contactEmail,
-    subject: `New enquiry from ${d.name || "website"}`,
+    // Strip line breaks so nothing can be injected into the email headers
+    subject: `New enquiry from ${(d.name || "website").replace(/[\r\n]+/g, " ").slice(0, 80)}`,
     html,
     replyTo: d.email,
   });
@@ -162,7 +164,7 @@ export async function sendOrderConfirmation(orderId: string) {
       <tr><td>Shipping</td><td style="text-align:right">${order.shipping === 0 ? "Free" : formatPrice(order.shipping)}</td></tr>
       <tr><td style="font-weight:700;padding-top:6px">Total</td><td style="text-align:right;font-weight:700;padding-top:6px">${formatPrice(order.total)}</td></tr>
     </table>`;
-  const orderUrl = `${APP_URL}/orders/${order.orderNumber}`;
+  const orderUrl = privateOrderUrl(order.orderNumber);
 
   // Customer confirmation
   await sendMail({
@@ -196,7 +198,7 @@ export async function sendOrderConfirmation(orderId: string) {
 export async function sendOrderShipped(orderId: string) {
   const order = await prisma.order.findUnique({ where: { id: orderId } });
   if (!order) return;
-  const orderUrl = `${APP_URL}/orders/${order.orderNumber}`;
+  const orderUrl = privateOrderUrl(order.orderNumber);
   const tracking = order.trackingNumber
     ? `<p><strong>Tracking number:</strong> ${order.trackingNumber}</p>
        ${order.trackingUrl ? `<p><a href="${order.trackingUrl}">Track your parcel →</a></p>` : ""}`
@@ -709,6 +711,27 @@ export async function sendCartReminder(d: {
     <p style="font-size:12px;color:#6b7c73;line-height:1.6">Prices and stock may change before you check out. Delivery costs are shown at checkout.</p>
     ${await reminderFooter(d.optOutUrl, "You're receiving this because you added these items to your cart while signed in. We only send one reminder per cart.")}`;
   return sendMail({ to: d.to, subject: "You left something in your cart 🛒", html: layout("Still thinking it over?", body) });
+}
+
+/** One reminder for an order that was started but not paid. */
+export async function sendPaymentReminder(d: {
+  to: string;
+  name: string | null;
+  orderNumber: string;
+  total: number;
+  items: EmailProduct[];
+  payUrl: string;
+  optOutUrl: string;
+}): Promise<boolean> {
+  const first = (d.name ?? "").split(" ")[0];
+  const body = `
+    <p style="font-size:14px;line-height:1.6">Hi${first ? ` ${esc(first)}` : ""}, it looks like the payment for your order <strong>${esc(d.orderNumber)}</strong> didn't go through. No money has been taken. Your order is saved, so you can finish in one click:</p>
+    ${productCardsHtml(d.items.filter((i) => i.slug), "View")}
+    <p style="font-size:14px;margin:6px 0 0"><strong>Order total: ${formatPrice(d.total)}</strong> (including delivery)</p>
+    <p style="margin-top:16px"><a href="${escAttr(d.payUrl)}" style="${BTN}">Complete my payment</a></p>
+    <p style="font-size:12px;color:#6b7c73;line-height:1.6">Having trouble paying? Just reply to this email and we'll help. If you've changed your mind, you can ignore this email — the order won't be processed without payment.</p>
+    ${await reminderFooter(d.optOutUrl, "You're receiving this one-time reminder because you started an order with us.")}`;
+  return sendMail({ to: d.to, subject: `Your order ${d.orderNumber} is waiting for payment`, html: layout("Finish your order?", body) });
 }
 
 /** One-off "back in stock" alert the customer asked for. */

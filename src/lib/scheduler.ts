@@ -2,7 +2,9 @@ import "server-only";
 import { prisma } from "@/lib/prisma";
 import { getSettings } from "@/lib/settings";
 import { parseImages, reorderHref } from "@/lib/utils";
-import { sendBackInStock, sendCartReminder, sendRefillReminder, type EmailProduct } from "@/lib/email";
+import { sendBackInStock, sendCartReminder, sendPaymentReminder, sendRefillReminder, type EmailProduct } from "@/lib/email";
+import { orderUrl } from "@/lib/order-access";
+import { getEnabledMethods } from "@/lib/payments";
 import { unsubscribeUrl } from "@/lib/newsletter";
 import { nextArticle, sendArticleCampaign } from "@/lib/wellness";
 
@@ -21,6 +23,8 @@ const REFILL_LEAD_DAYS = 5; // remind this many days before a supply runs out
 const REFILL_WINDOW_DAYS = 7; // ...and give up if we're more than a week late
 const CART_MIN_AGE = 2 * HOUR;
 const CART_MAX_AGE = 48 * HOUR;
+const PAY_MIN_AGE = 1 * HOUR; // give people time to finish paying first
+const PAY_MAX_AGE = 24 * HOUR;
 
 /** Current time in South Africa (UTC+2, no daylight saving). */
 export function sastNow(now = new Date()) {
@@ -41,6 +45,7 @@ export async function runScheduledJobs(now = new Date()): Promise<JobReport> {
     ["stockAlerts", () => stockAlertJob()],
     ["refills", () => refillJob(now)],
     ["carts", () => cartJob(now)],
+    ["payments", () => paymentJob(now)],
   ];
   try {
     for (const [name, job] of jobs) {
@@ -257,6 +262,55 @@ async function cartJob(now: Date) {
       })),
       reorderUrl: reorderHref(available.map((a) => ({ productId: a.product.id, quantity: a.quantity })))!,
       optOutUrl: unsubscribeUrl(c.email, "reminders"),
+    }).catch(() => false);
+    if (ok) sent++;
+  }
+  return `${sent} sent`;
+}
+
+/* ---------------- "Complete your payment" reminders ---------------- */
+
+async function paymentJob(now: Date) {
+  const s = await getSettings();
+  if (s.paymentRemindersEnabled !== "1") return "off";
+  if (!(await getEnabledMethods()).length) return "no payment gateways active";
+
+  const orders = await prisma.order.findMany({
+    where: {
+      paymentStatus: { in: ["unpaid", "failed"] },
+      paymentReminderAt: null,
+      total: { gt: 0 },
+      createdAt: { lt: new Date(now.getTime() - PAY_MIN_AGE), gt: new Date(now.getTime() - PAY_MAX_AGE) },
+    },
+    include: { items: { include: { product: true } }, customer: true },
+    orderBy: { createdAt: "asc" },
+    take: 200,
+  });
+
+  let sent = 0;
+  for (const o of orders) {
+    // Claim first, so nobody is ever reminded twice about the same order
+    const claim = await prisma.order.updateMany({ where: { id: o.id, paymentReminderAt: null }, data: { paymentReminderAt: now } });
+    if (claim.count !== 1) continue;
+
+    // Skip if they've placed another order since (paid or a newer attempt), or opted out
+    const newer = await prisma.order.count({ where: { email: o.email, createdAt: { gt: o.createdAt } } });
+    if (newer || o.customer?.remindersOptOut || o.customer?.deletionRequestedAt) continue;
+
+    const ok = await sendPaymentReminder({
+      to: o.email,
+      name: o.customer?.name ?? null,
+      orderNumber: o.orderNumber,
+      total: o.total,
+      items: o.items.map((i) => ({
+        name: i.name,
+        slug: i.product?.slug ?? "",
+        price: i.price,
+        image: i.image ?? (i.product ? parseImages(i.product.images)[0] : null) ?? null,
+        quantity: i.quantity,
+      })),
+      payUrl: orderUrl(o.orderNumber),
+      optOutUrl: unsubscribeUrl(o.email, "reminders"),
     }).catch(() => false);
     if (ok) sent++;
   }

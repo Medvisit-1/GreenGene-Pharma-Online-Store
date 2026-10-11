@@ -49,6 +49,10 @@ model Product {
   isCombo          Boolean        @default(false)
   // How many days one unit lasts (for refill reminders). Blank = store default.
   supplyDays       Int?
+  // Product page tabs (plain text). FAQs: "Q: …" / "A: …" blocks separated by a blank line.
+  howToUse         String?
+  warnings         String?
+  faqs             String?
   featured         Boolean        @default(false)
   active           Boolean        @default(true)
   category         Category?      @relation(fields: [categoryId], references: [id])
@@ -221,41 +225,43 @@ model RewardClaim {
 }
 
 model Order {
-  id              String      @id @default(cuid())
-  orderNumber     String      @unique
-  customer        Customer?   @relation(fields: [customerId], references: [id])
-  customerId      String?
-  email           String
-  phone           String?
+  id                String      @id @default(cuid())
+  orderNumber       String      @unique
+  customer          Customer?   @relation(fields: [customerId], references: [id])
+  customerId        String?
+  email             String
+  phone             String?
   // Fulfilment status: unfulfilled | fulfilled
-  status          String      @default("unfulfilled")
+  status            String      @default("unfulfilled")
   // Payment: unpaid | paid | refunded | failed
-  paymentStatus   String      @default("unpaid")
-  paymentMethod   String?
+  paymentStatus     String      @default("unpaid")
+  paymentMethod     String?
   // Stock is only decremented once, when the order is first marked paid
-  stockDeducted   Boolean     @default(false)
-  paymentRef      String?
+  stockDeducted     Boolean     @default(false)
+  paymentRef        String?
   // Amounts in cents (ZAR)
-  subtotal        Int
-  shipping        Int         @default(0)
-  discount        Int         @default(0)
-  total           Int
-  discountCode    String?
+  subtotal          Int
+  shipping          Int         @default(0)
+  discount          Int         @default(0)
+  total             Int
+  discountCode      String?
   // JSON-encoded shipping address object
-  shippingAddress String      @default("{}")
-  notes           String?
+  shippingAddress   String      @default("{}")
+  notes             String?
   // Bob Go fulfilment
-  bobgoOrderId    String?
-  trackingNumber  String?
-  trackingUrl     String?
+  bobgoOrderId      String?
+  trackingNumber    String?
+  trackingUrl       String?
   // Customer whose refer-a-friend link this (first) order came through
-  referrerId      String?
+  referrerId        String?
   // Order timeline
-  paidAt          DateTime?
-  shippedAt       DateTime?
-  items           OrderItem[]
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  paidAt            DateTime?
+  shippedAt         DateTime?
+  // "Complete your payment" reminder for an unpaid order
+  paymentReminderAt DateTime?
+  items             OrderItem[]
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
 
   @@index([referrerId])
 }
