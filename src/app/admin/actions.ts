@@ -125,6 +125,20 @@ export async function splitProductDescriptions() {
   redirect(`/admin/products?split=${changed}`);
 }
 
+/** Fill the FAQs of every product that has none with our suggested questions (editable afterwards). */
+export async function addSuggestedFaqs() {
+  await requireAdmin();
+  const { suggestedFaqs } = await import("@/lib/suggested-faqs");
+  const { contactEmail } = await getSettings();
+  const products = await prisma.product.findMany({ where: { OR: [{ faqs: null }, { faqs: "" }] } });
+  for (const p of products) {
+    await prisma.product.update({ where: { id: p.id }, data: { faqs: suggestedFaqs(p, contactEmail) } });
+  }
+  revalidatePath("/admin/products");
+  revalidatePath("/products");
+  redirect(`/admin/products?faqs=${products.length}`);
+}
+
 export async function deleteProduct(formData: FormData) {
   await requireAdmin();
   const id = String(formData.get("id"));
