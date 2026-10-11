@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Menu, Search, ShoppingBag, User, X } from "lucide-react";
+import { Heart, Menu, Search, ShoppingBag, User, X } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/lib/cart-store";
+import { useWishlist } from "@/lib/wishlist-store";
 import { SearchOverlay } from "@/components/search-overlay";
 
 const NAV = [
@@ -17,13 +18,16 @@ const NAV = [
   { href: "/contact", label: "Contact" },
 ];
 
-export function SiteHeader({ announcement }: { announcement?: string }) {
+export function SiteHeader({ announcement, signedIn }: { announcement?: string; signedIn?: boolean }) {
   const [open, setOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const count = useCart((s) => s.items.reduce((n, i) => n + i.quantity, 0));
   const openCart = useCart((s) => s.open);
   useEffect(() => setMounted(true), []);
+  const loadWishlist = useWishlist((s) => s.load);
+  const saved = useWishlist((s) => (s.signedIn ? s.ids.length : 0));
+  useEffect(() => loadWishlist(signedIn), [loadWishlist, signedIn]);
 
   const iconBtn =
     "relative rounded-full p-2.5 text-white/80 transition-colors hover:bg-white/10 hover:text-white";
@@ -75,6 +79,14 @@ export function SiteHeader({ announcement }: { announcement?: string }) {
             <Link href="/account" aria-label="My account" className={cn(iconBtn, "hidden sm:inline-flex")}>
               <User className="h-5 w-5" />
             </Link>
+            <Link href="/account?tab=wishlist" aria-label={saved ? `Wishlist (${saved} saved)` : "Wishlist"} title="Wishlist" className={iconBtn}>
+              <Heart className="h-5 w-5" />
+              {saved > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1 text-[11px] font-bold text-white">
+                  {saved}
+                </span>
+              )}
+            </Link>
             <button type="button" onClick={openCart} aria-label="View cart" className={iconBtn}>
               <ShoppingBag className="h-5 w-5" />
               {mounted && count > 0 && (
@@ -90,7 +102,7 @@ export function SiteHeader({ announcement }: { announcement?: string }) {
         <div
           className={cn(
             "overflow-hidden border-t border-white/10 bg-header md:hidden",
-            open ? "max-h-72" : "max-h-0 border-t-0"
+            open ? "max-h-96" : "max-h-0 border-t-0"
           )}
           style={{ transition: "max-height 0.25s ease" }}
         >
@@ -111,6 +123,13 @@ export function SiteHeader({ announcement }: { announcement?: string }) {
               className="rounded-lg px-3 py-2.5 text-sm font-medium text-white/85 hover:bg-white/10 hover:text-white"
             >
               My account
+            </Link>
+            <Link
+              href="/account?tab=wishlist"
+              onClick={() => setOpen(false)}
+              className="rounded-lg px-3 py-2.5 text-sm font-medium text-white/85 hover:bg-white/10 hover:text-white"
+            >
+              Wishlist
             </Link>
           </nav>
         </div>

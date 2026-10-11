@@ -16,6 +16,12 @@ import { claimReward, describeDiscount } from "@/lib/rewards";
 import { sendDeletionRequest, sendLoginCode, sendRewardCode } from "@/lib/email";
 import { subscribe, unsubscribe } from "@/lib/newsletter";
 
+/** Only same-site paths are allowed as a post-login destination. */
+function safeNext(raw: FormDataEntryValue | null): string {
+  const next = String(raw ?? "");
+  return /^\/(?![\/\\])[^\s]*$/.test(next) && next.length < 300 ? next : "/account";
+}
+
 export type LoginState = {
   step: "email" | "code";
   email?: string;
@@ -72,7 +78,17 @@ export async function loginAction(prev: LoginState, formData: FormData): Promise
     return { step: "code", email, error };
   }
   await setCustomerSession(result.customerId);
-  redirect("/account");
+
+  // Signed out shoppers who tapped "Save for later" get the product saved as they sign in
+  const save = String(formData.get("save") ?? "");
+  if (save && (await prisma.product.findUnique({ where: { id: save }, select: { id: true } }))) {
+    await prisma.wishlistItem.upsert({
+      where: { customerId_productId: { customerId: result.customerId, productId: save } },
+      create: { customerId: result.customerId, productId: save },
+      update: {},
+    });
+  }
+  redirect(safeNext(formData.get("next")));
 }
 
 /** POPIA: record a deletion request and notify the store and the customer. */

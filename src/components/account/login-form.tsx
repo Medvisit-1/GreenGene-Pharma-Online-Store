@@ -8,13 +8,21 @@ import { Button } from "@/components/ui/button";
 const field =
   "w-full rounded-xl border border-border bg-white px-4 py-3 text-sm outline-none focus:border-plum-400 focus:ring-2 focus:ring-plum-100";
 
-export function LoginForm() {
+/** `next`: where to go after signing in. `save`: product to add to the wishlist on sign-in. */
+export function LoginForm({ next, save }: { next?: string; save?: string }) {
   const [state, action, pending] = useActionState<LoginState, FormData>(loginAction, { step: "email" });
+  const carry = (
+    <>
+      {next && <input type="hidden" name="next" value={next} />}
+      {save && <input type="hidden" name="save" value={save} />}
+    </>
+  );
 
   if (state.step === "code") {
     return (
       <form action={action} className="space-y-4">
         <input type="hidden" name="email" value={state.email ?? ""} />
+        {carry}
         <div className="flex items-start gap-2.5 rounded-xl bg-plum-50 px-3.5 py-3 text-left ring-1 ring-plum-100">
           <MailCheck className="mt-0.5 h-4 w-4 shrink-0 text-plum-600" />
           <p className="text-sm text-plum-800">
@@ -58,6 +66,7 @@ export function LoginForm() {
 
   return (
     <form action={action} className="space-y-4">
+      {carry}
       <div>
         <label htmlFor="email" className="mb-1.5 block text-sm font-medium">Email address</label>
         <input

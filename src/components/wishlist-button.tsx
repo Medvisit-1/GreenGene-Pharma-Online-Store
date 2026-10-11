@@ -25,11 +25,11 @@ export function WishlistButton({ productId, initial, variant = "icon", className
   const toggle = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const askToSignIn = () =>
-      toast("Sign in to save favourites", {
-        description: "Your wishlist is kept in your account.",
-        action: { label: "Sign in", onClick: () => router.push("/account") },
-      });
+    // Not signed in: sign in first, then come straight back with the product saved
+    const askToSignIn = () => {
+      const here = window.location.pathname + window.location.search;
+      router.push(`/account?next=${encodeURIComponent(here)}&save=${encodeURIComponent(productId)}`);
+    };
     if (status === "ready" && !signedIn) return askToSignIn();
     const res = await set(productId, !saved);
     if (res.signedOut) return askToSignIn();
