@@ -1,4 +1,4 @@
-import { Check, CreditCard, Home, Package, ShoppingBag } from "lucide-react";
+import { Check, CreditCard, Package, ShoppingBag } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type TimelineOrder = {
@@ -7,7 +7,6 @@ type TimelineOrder = {
   status: string;
   paidAt: Date | null;
   shippedAt: Date | null;
-  deliveredAt: Date | null;
   trackingNumber?: string | null;
 };
 
@@ -17,7 +16,7 @@ function fmt(d: Date | null) {
     : null;
 }
 
-/** Ordered → Paid → Shipped → Delivered progress for a customer's order. */
+/** Ordered → Paid → Shipped progress for a customer's order. */
 export function OrderTimeline({ order, compact = false }: { order: TimelineOrder; compact?: boolean }) {
   if (order.paymentStatus === "refunded" || order.paymentStatus === "failed") {
     return (
@@ -28,12 +27,10 @@ export function OrderTimeline({ order, compact = false }: { order: TimelineOrder
   }
   const paid = order.paymentStatus === "paid";
   const shipped = order.status === "fulfilled" || !!order.shippedAt || !!order.trackingNumber;
-  const delivered = !!order.deliveredAt;
   const steps = [
     { label: "Ordered", icon: ShoppingBag, done: true, date: fmt(order.createdAt) },
     { label: "Paid", icon: CreditCard, done: paid, date: paid ? fmt(order.paidAt) : null },
     { label: "Shipped", icon: Package, done: shipped, date: shipped ? fmt(order.shippedAt) : null },
-    { label: "Delivered", icon: Home, done: delivered, date: fmt(order.deliveredAt) },
   ];
   const current = steps.findIndex((s) => !s.done);
 

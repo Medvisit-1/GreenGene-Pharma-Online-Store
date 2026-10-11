@@ -142,10 +142,10 @@ export async function setFulfillment(formData: FormData) {
     where: { id },
     data: {
       status,
-      // Timeline: shipped when first fulfilled; un-fulfilling clears shipped/delivered
+      // Timeline: shipped when first fulfilled; un-fulfilling clears it
       ...(status === "fulfilled"
         ? existing?.shippedAt ? {} : { shippedAt: new Date() }
-        : { shippedAt: null, deliveredAt: null }),
+        : { shippedAt: null }),
     },
   });
   // Email the customer when newly fulfilled
@@ -157,18 +157,31 @@ export async function setFulfillment(formData: FormData) {
   revalidatePath("/admin/orders");
 }
 
-/** Timeline: mark a shipped order as delivered (or undo). */
-export async function setDelivered(formData: FormData) {
+/** Fulfil every paid order that hasn't been fulfilled yet, emailing each customer. */
+export async function fulfillAllPaid() {
   await requireAdmin();
-  const id = String(formData.get("id"));
-  const delivered = String(formData.get("delivered")) === "1";
-  await prisma.order.update({
-    where: { id },
-    data: delivered ? { deliveredAt: new Date(), status: "fulfilled" } : { deliveredAt: null },
+  const pending = await prisma.order.findMany({
+    where: { paymentStatus: "paid", status: "unfulfilled" },
+    select: { id: true },
   });
-  await prisma.order.updateMany({ where: { id, shippedAt: null, status: "fulfilled" }, data: { shippedAt: new Date() } });
-  revalidatePath(`/admin/orders/${id}`);
+  const { sendOrderShipped } = await import("@/lib/email");
+  let done = 0;
+  const queue = [...pending];
+  const worker = async () => {
+    for (let o = queue.shift(); o; o = queue.shift()) {
+      // Claim it, so a double click (or another admin) can't email the customer twice
+      const claim = await prisma.order.updateMany({
+        where: { id: o.id, status: "unfulfilled" },
+        data: { status: "fulfilled", shippedAt: new Date() },
+      });
+      if (claim.count !== 1) continue;
+      done++;
+      await sendOrderShipped(o.id).catch(() => {});
+    }
+  };
+  await Promise.all(Array.from({ length: 5 }, worker));
   revalidatePath("/admin/orders");
+  redirect(`/admin/orders?fulfilled=${done}`);
 }
 
 export async function saveTracking(formData: FormData) {

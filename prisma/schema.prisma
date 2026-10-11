@@ -253,7 +253,6 @@ model Order {
   // Order timeline
   paidAt          DateTime?
   shippedAt       DateTime?
-  deliveredAt     DateTime?
   items           OrderItem[]
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt

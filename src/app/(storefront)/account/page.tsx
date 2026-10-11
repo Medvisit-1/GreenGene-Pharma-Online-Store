@@ -298,7 +298,7 @@ function OrderList({ orders }: { orders: OrderWithItems[] }) {
               "rounded-full px-2.5 py-0.5 text-xs font-semibold",
               paid ? "bg-brand-100 text-brand-700" : "bg-amber-100 text-amber-700"
             )}>
-              {paid ? (o.deliveredAt ? "Delivered" : o.status === "fulfilled" ? "Shipped" : "Paid · preparing") : o.paymentStatus === "refunded" ? "Refunded" : "Awaiting payment"}
+              {paid ? (o.status === "fulfilled" ? "Shipped" : "Paid · preparing") : o.paymentStatus === "refunded" ? "Refunded" : "Awaiting payment"}
             </span>
             {o.trackingUrl && (
               <a href={o.trackingUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs font-semibold text-plum-700 hover:underline">
