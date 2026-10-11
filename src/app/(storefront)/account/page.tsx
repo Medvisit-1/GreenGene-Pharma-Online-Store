@@ -13,7 +13,10 @@ import {
   AlertTriangle,
   Users,
   Ticket,
+  Download,
+  Trash2,
 } from "lucide-react";
+import { ConfirmSubmit } from "@/components/admin/confirm-submit";
 import type { Customer } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { cn, formatPrice } from "@/lib/utils";
@@ -31,7 +34,7 @@ import { appUrl } from "@/lib/email";
 import { Button } from "@/components/ui/button";
 import { LoginForm } from "@/components/account/login-form";
 import { CopyCode } from "@/components/account/copy-code";
-import { claim, saveDetails, signOut } from "./actions";
+import { claim, requestDeletion, saveDetails, signOut } from "./actions";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "My Account" };
@@ -41,6 +44,7 @@ type Search = Promise<{
   saved?: string;
   claimed?: string;
   error?: string;
+  deletion?: string;
 }>;
 
 const input =
@@ -184,7 +188,12 @@ export default async function AccountPage({ searchParams }: { searchParams: Sear
         {tab === "rewards" && rewardsData && (
           <Rewards data={rewardsData} claimed={sp.claimed} error={sp.error} referral={referral} />
         )}
-        {tab === "details" && <Details customer={customer} saved={!!sp.saved} programOn={programOn} />}
+        {tab === "details" && (
+          <div className="space-y-6">
+            <Details customer={customer} saved={!!sp.saved} programOn={programOn} />
+            <PrivacyTools customer={customer} justRequested={!!sp.deletion} />
+          </div>
+        )}
       </div>
     </div>
   );
@@ -384,13 +393,20 @@ function Rewards({
             — they can enter it at checkout.
           </p>
           <p className="relative mt-2 text-xs text-plum-100">
-            It counts on your friend&apos;s first order, placed with their own email and delivery address.
+            It counts on your friend&apos;s first order, placed with their own email and delivery address. Only share
+            with people you know.{" "}
+            <Link href="/rewards-terms" className="font-semibold text-white underline">T&amp;Cs apply</Link>.
           </p>
         </section>
       )}
 
       <section>
-        <SectionTitle className="mb-3">Ways to earn</SectionTitle>
+        <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+          <SectionTitle>Ways to earn</SectionTitle>
+          <Link href="/rewards-terms" className="text-xs font-semibold text-plum-700 underline">
+            Rewards T&amp;Cs apply
+          </Link>
+        </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {data.rewards.map((r) => <RewardCard key={r.reward.id} r={r} />)}
         </div>
@@ -583,9 +599,13 @@ function Details({ customer, saved, programOn }: { customer: Customer; saved: bo
             className="mt-0.5 h-4 w-4 accent-plum-600"
           />
           <span>
-            <span className="font-semibold">Newsletter</span> — send me news, launches and offers by email.
+            <span className="font-semibold">Newsletter</span> — send me news, launches and offers by email. You can
+            unsubscribe at any time (<Link href="/privacy-policy" className="underline">Privacy Policy</Link>).
             {programOn && !customer.newsletter && (
-              <span className="block text-xs font-medium text-plum-700">Subscribing unlocks a welcome reward.</span>
+              <span className="block text-xs font-medium text-plum-700">
+                Subscribing unlocks a welcome reward.{" "}
+                <Link href="/rewards-terms" className="underline">T&amp;Cs apply</Link>.
+              </span>
             )}
           </span>
         </label>
@@ -593,6 +613,43 @@ function Details({ customer, saved, programOn }: { customer: Customer; saved: bo
 
       <Button type="submit" size="lg" variant="plum">Save details</Button>
     </form>
+  );
+}
+
+/** POPIA rights: access (download) and deletion request. */
+function PrivacyTools({ customer, justRequested }: { customer: Customer; justRequested: boolean }) {
+  return (
+    <section className="rounded-2xl border border-border bg-card p-6">
+      <SectionTitle className="mb-1">Your privacy</SectionTitle>
+      <p className="mb-4 text-sm text-muted-foreground">
+        You can see everything we hold about you, or ask us to delete it. Read our{" "}
+        <Link href="/privacy-policy" className="font-semibold text-plum-700 underline">Privacy Policy</Link>.
+      </p>
+      <div className="flex flex-wrap gap-3">
+        <a
+          href="/api/account/export"
+          className="inline-flex h-10 items-center gap-2 rounded-full border border-border bg-white px-4 text-sm font-semibold hover:bg-muted"
+        >
+          <Download className="h-4 w-4" /> Download my data
+        </a>
+        {customer.deletionRequestedAt ? (
+          <p className="inline-flex items-center gap-2 rounded-full bg-plum-50 px-4 py-2 text-sm font-medium text-plum-700 ring-1 ring-plum-100">
+            <CheckCircle2 className="h-4 w-4" />
+            Deletion requested on {customer.deletionRequestedAt.toLocaleDateString("en-ZA", { dateStyle: "medium" })}
+            {justRequested ? " — we've emailed you a confirmation." : ""}
+          </p>
+        ) : (
+          <form action={requestDeletion}>
+            <ConfirmSubmit
+              message="Ask us to delete your account and personal information? We'll action it within 30 days. Invoices and order records we must keep by law are retained, and unused reward codes are cancelled."
+              className="inline-flex h-10 items-center gap-2 rounded-full px-4 text-sm font-semibold text-red-700 ring-1 ring-red-200 hover:bg-red-50"
+            >
+              <Trash2 className="h-4 w-4" /> Request account deletion
+            </ConfirmSubmit>
+          </form>
+        )}
+      </div>
+    </section>
   );
 }
 
@@ -668,6 +725,10 @@ async function RewardsTeaser() {
           </li>
         ))}
       </ul>
+      <p className="relative mt-4 text-[11px] text-plum-100">
+        Free to join. Rewards and minimum spends may change.{" "}
+        <Link href="/rewards-terms" className="font-semibold text-white underline">T&amp;Cs apply</Link>.
+      </p>
     </div>
   );
 }

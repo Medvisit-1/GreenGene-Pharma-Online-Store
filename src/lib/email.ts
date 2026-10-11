@@ -516,7 +516,7 @@ export async function sendRewardCode(d: {
   const conditions = [
     d.minSpend > 0 ? `Minimum spend ${formatPrice(d.minSpend)}` : "",
     d.expiresAt ? `Valid until ${d.expiresAt.toLocaleDateString("en-ZA", { dateStyle: "long" })}` : "",
-    "Single use · linked to your account email",
+    "Single use · linked to your account email · no cash value",
   ].filter(Boolean);
   const body = `
     <p style="font-size:14px;line-height:1.6">You've claimed <strong>${esc(d.rewardTitle)}</strong> — <strong>${esc(d.discount)}</strong> on your next order. 🎉</p>
@@ -524,7 +524,7 @@ export async function sendRewardCode(d: {
       <div style="font-size:12px;color:#6b7c73;text-transform:uppercase;letter-spacing:1px">Your code</div>
       <div style="font-size:24px;font-weight:800;color:#104536;letter-spacing:2px;margin-top:4px">${esc(d.code)}</div>
     </div>
-    <p style="font-size:12px;color:#6b7c73;line-height:1.6">${conditions.map(esc).join(" · ")}</p>
+    <p style="font-size:12px;color:#6b7c73;line-height:1.6">${conditions.map(esc).join(" · ")} · <a href="${APP_URL}/rewards-terms" style="color:#6b7c73">T&amp;Cs apply</a></p>
     <p style="margin-top:18px"><a href="${APP_URL}/products" style="background:#155640;color:#fff;padding:10px 18px;border-radius:999px;text-decoration:none;font-size:14px">Shop now</a></p>`;
   return sendMail({ to: d.to, subject: `Your reward: ${d.discount}`, html: layout("Reward unlocked!", body) });
 }
@@ -542,15 +542,22 @@ export async function sendRewardUnlocked(d: {
       <div style="font-size:22px;font-weight:800;color:#104536;margin-top:4px">${esc(d.discount)}</div>
     </div>
     <p style="font-size:14px;line-height:1.6">Claim it in your account and it's applied at your next checkout.</p>
+    <p style="font-size:11px;color:#8a978f;line-height:1.6">Minimum spend and expiry may apply. <a href="${APP_URL}/rewards-terms" style="color:#8a978f">Rewards T&amp;Cs apply</a>.</p>
     <p style="margin-top:18px"><a href="${APP_URL}/account?tab=rewards" style="background:#155640;color:#fff;padding:10px 18px;border-radius:999px;text-decoration:none;font-size:14px">Claim my reward</a></p>`;
   return sendMail({ to: d.to, subject: `🎁 You've unlocked ${d.discount}`, html: layout("You've unlocked a reward!", body) });
 }
 
 /* ---------- Newsletter ---------- */
-function newsletterFooter(unsubUrl: string) {
+async function newsletterFooter(unsubUrl: string) {
+  const s = await getSettings();
+  const name = s.invoiceCompanyName || "GreenGene Pharma";
+  const addr = s.invoiceCompanyAddress || s.contactAddress;
+  const email = s.invoiceCompanyEmail || s.contactEmail;
   return `<p style="margin-top:22px;border-top:1px solid #e3e9e5;padding-top:12px;font-size:11px;color:#8a978f;line-height:1.6">
-    You're receiving this because you subscribed to GreenGene Pharma news & offers.
-    <a href="${unsubUrl}" style="color:#6b7c73">Unsubscribe</a></p>`;
+    You're receiving this because you subscribed to GreenGene Pharma news &amp; offers.
+    <a href="${unsubUrl}" style="color:#6b7c73">Unsubscribe</a> at any time, free of charge.<br>
+    Sent by ${esc(name)}${s.invoiceRegNo ? ` (Reg. No. ${esc(s.invoiceRegNo)})` : ""} · ${esc(addr)} · <a href="mailto:${esc(email)}" style="color:#6b7c73">${esc(email)}</a><br>
+    <a href="${APP_URL}/privacy-policy" style="color:#6b7c73">Privacy Policy</a> · <a href="${APP_URL}/rewards-terms" style="color:#6b7c73">Rewards T&amp;Cs</a></p>`;
 }
 
 export async function sendNewsletterWelcome(to: string, unsubUrl: string): Promise<boolean> {
@@ -568,7 +575,7 @@ export async function sendNewsletterWelcome(to: string, unsubUrl: string): Promi
     </div>
     <p><a href="${APP_URL}/account?tab=rewards" style="background:#155640;color:#fff;padding:10px 18px;border-radius:999px;text-decoration:none;font-size:14px">Claim my welcome gift</a></p>` : `
     <p><a href="${APP_URL}/products" style="background:#155640;color:#fff;padding:10px 18px;border-radius:999px;text-decoration:none;font-size:14px">Browse our range</a></p>`}
-    ${newsletterFooter(unsubUrl)}`;
+    ${await newsletterFooter(unsubUrl)}`;
   return sendMail({ to, subject: "Welcome to GreenGene Pharma 🌿", html: layout("Welcome to the GreenGene family", body) });
 }
 
@@ -590,6 +597,27 @@ export async function sendNewsletterEmail(
     : "";
   const body = `${image}${paragraphs}
     ${c.buttonLabel && link ? `<p style="margin-top:18px"><a href="${escAttr(link)}" style="background:#155640;color:#fff;padding:11px 20px;border-radius:999px;text-decoration:none;font-size:14px;font-weight:700">${esc(c.buttonLabel)}</a></p>` : ""}
-    ${newsletterFooter(unsubUrl)}`;
+    ${await newsletterFooter(unsubUrl)}`;
   return sendMail({ to, subject: c.subject, html: layout(esc(c.heading || c.subject), body) });
+}
+
+/* ---------- POPIA requests ---------- */
+export async function sendDeletionRequest(c: { email: string; name: string | null }): Promise<boolean> {
+  const settings = await getSettings();
+  const when = new Date().toLocaleString("en-ZA", { dateStyle: "long", timeStyle: "short", timeZone: "Africa/Johannesburg" });
+  await sendMail({
+    to: settings.contactEmail,
+    subject: `POPIA: account deletion request from ${c.email}`,
+    html: layout("Account deletion request", `
+      <p style="font-size:14px;line-height:1.6"><strong>${esc(c.name || "A customer")}</strong> (${esc(c.email)}) asked us to delete their account and personal information on ${esc(when)}.</p>
+      <p style="font-size:14px;line-height:1.6">Under POPIA, please action this within a reasonable time (we tell customers within 30 days). Keep only what the law requires (e.g. invoices and order records for tax), then confirm to the customer.</p>`),
+  });
+  return sendMail({
+    to: c.email,
+    subject: "We received your request to delete your data",
+    html: layout("Your deletion request", `
+      <p style="font-size:14px;line-height:1.6">We've received your request to delete your GreenGene Pharma account and personal information. We'll action it within 30 days and confirm by email.</p>
+      <p style="font-size:14px;line-height:1.6">Some records — such as invoices and order records — must be kept for a period required by law (for example, tax law). Any unused reward codes will be cancelled.</p>
+      <p style="font-size:12px;color:#6b7c73;line-height:1.6">Didn't ask for this? Reply to this email and we'll stop the request.</p>`),
+  });
 }

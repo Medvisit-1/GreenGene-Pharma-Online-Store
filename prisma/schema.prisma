@@ -136,25 +136,27 @@ model Quotation {
 }
 
 model Customer {
-  id              String               @id @default(cuid())
-  email           String               @unique
-  name            String?
-  phone           String?
-  address         String?
+  id                  String               @id @default(cuid())
+  email               String               @unique
+  name                String?
+  phone               String?
+  address             String?
   // Saved delivery address for checkout pre-fill (JSON: line1, line2, suburb, city, province, postalCode)
-  shippingDetails String               @default("{}")
+  shippingDetails     String               @default("{}")
   // Only month/day are used (birthday reward). Locked once set.
-  birthday        DateTime?
-  newsletter      Boolean              @default(false)
+  birthday            DateTime?
+  newsletter          Boolean              @default(false)
   // When they opted in to the newsletter (consent record)
-  newsletterAt    DateTime?
+  newsletterAt        DateTime?
   // Personal refer-a-friend code (link: /r/<code>)
-  referralCode    String?              @unique
-  lastLoginAt     DateTime?
-  orders          Order[]
-  loginTokens     CustomerLoginToken[]
-  rewardClaims    RewardClaim[]
-  createdAt       DateTime             @default(now())
+  referralCode        String?              @unique
+  // POPIA: when the customer asked us to delete their data
+  deletionRequestedAt DateTime?
+  lastLoginAt         DateTime?
+  orders              Order[]
+  loginTokens         CustomerLoginToken[]
+  rewardClaims        RewardClaim[]
+  createdAt           DateTime             @default(now())
 }
 
 // Single-use, short-lived email sign-in codes. Only a keyed hash of the code is stored.

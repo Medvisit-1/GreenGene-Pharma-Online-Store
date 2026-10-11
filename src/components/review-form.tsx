@@ -114,7 +114,11 @@ export function ReviewForm({ productId }: { productId: string }) {
         {submitting ? <><Loader2 className="h-4 w-4 animate-spin" /> Submitting…</> : "Submit review"}
       </Button>
       <p className="mt-2 text-xs text-muted-foreground">
-        Reviews are checked by our team before they appear.
+        Reviews are checked by our team before they appear — we publish honest reviews whatever the
+        rating, and only remove content that is offensive, unlawful or not about the product. Please
+        don&apos;t include personal health details or medical claims. By submitting, you agree that we may
+        publish your review with your name; your email is never shown. See our{" "}
+        <a href="/privacy-policy" className="underline hover:text-brand-700">Privacy Policy</a>.
       </p>
     </form>
   );

@@ -2,10 +2,12 @@ import Link from "next/link";
 import { Mail, MapPin, Phone } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { getSettings } from "@/lib/settings";
+import { businessIdentity } from "@/lib/legal";
 import { NewsletterSignup } from "@/components/newsletter-signup";
 
 export async function SiteFooter() {
   const settings = await getSettings();
+  const id = businessIdentity(settings);
   return (
     <footer className="mt-20 bg-header text-white">
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:grid-cols-2 lg:grid-cols-4">
@@ -43,6 +45,7 @@ export async function SiteFooter() {
             <li><Link href="/refund-policy" className="hover:text-white">Refund Policy</Link></li>
             <li><Link href="/privacy-policy" className="hover:text-white">Privacy Policy</Link></li>
             <li><Link href="/terms-of-service" className="hover:text-white">Terms of Service</Link></li>
+            <li><Link href="/rewards-terms" className="hover:text-white">Rewards T&amp;Cs</Link></li>
           </ul>
         </div>
 
@@ -65,9 +68,18 @@ export async function SiteFooter() {
       </div>
 
       <div className="border-t border-white/10">
+        <p className="mx-auto max-w-7xl px-4 pt-5 text-[11px] leading-relaxed text-white/45">
+          Our products are not intended to diagnose, treat, cure or prevent any disease. Information on this
+          website is not medical advice — consult your healthcare practitioner before use, especially if you are
+          pregnant, breastfeeding, taking medication or have a medical condition.
+        </p>
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-5 text-xs text-white/60 sm:flex-row">
-          <p>© {new Date().getFullYear()} GreenGene Pharma. All rights reserved.</p>
-          <p>Prices in South African Rand (ZAR).</p>
+          <p>
+            © {new Date().getFullYear()} {id.legalName}
+            {id.regNo ? ` · Reg. No. ${id.regNo}` : ""}
+            {id.vatNo ? ` · VAT No. ${id.vatNo}` : ""}. All rights reserved.
+          </p>
+          <p>Prices in South African Rand (ZAR), incl. VAT where applicable.</p>
         </div>
       </div>
     </footer>

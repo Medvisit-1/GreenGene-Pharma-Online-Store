@@ -79,6 +79,12 @@ export function LoginForm() {
         No password needed. New here? Enter your email — we&apos;ll create your account and link any
         previous orders automatically.
       </p>
+      <p className="text-center text-[11px] leading-relaxed text-muted-foreground">
+        By continuing you confirm you are 18 or older and agree to our{" "}
+        <a href="/terms-of-service" className="underline hover:text-plum-700">Terms of Service</a> and{" "}
+        <a href="/rewards-terms" className="underline hover:text-plum-700">Rewards T&amp;Cs</a>. See how we use your
+        information in our <a href="/privacy-policy" className="underline hover:text-plum-700">Privacy Policy</a>.
+      </p>
     </form>
   );
 }

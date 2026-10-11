@@ -37,7 +37,12 @@ export function NewsletterSignup() {
         </button>
       </div>
       {state.status === "error" && <p className="text-xs text-red-300">{state.message}</p>}
-      <p className="text-xs text-white/50">News, launches & member offers. Unsubscribe anytime.</p>
+      <p className="text-xs text-white/50">
+        News, launches & member offers. By subscribing you agree to receive marketing emails; unsubscribe
+        anytime. See our{" "}
+        <a href="/privacy-policy" className="underline hover:text-white">Privacy Policy</a>. Welcome gift{" "}
+        <a href="/rewards-terms" className="underline hover:text-white">T&amp;Cs apply</a>.
+      </p>
     </form>
   );
 }
