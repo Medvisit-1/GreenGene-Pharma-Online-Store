@@ -64,19 +64,6 @@ export default async function ProductPage({ params }: { params: Params }) {
     where: { productId: product.id, status: "approved" },
     orderBy: { createdAt: "desc" },
   });
-  // "Verified buyer" only for reviewers whose email has a paid order containing this product.
-  const reviewerEmails = reviews.map((r) => r.email?.toLowerCase()).filter((e): e is string => !!e);
-  const buyers = reviewerEmails.length
-    ? await prisma.order.findMany({
-        where: {
-          paymentStatus: "paid",
-          email: { in: reviewerEmails, mode: "insensitive" },
-          items: { some: { productId: product.id } },
-        },
-        select: { email: true },
-      })
-    : [];
-  const verified = new Set(buyers.map((o) => o.email.toLowerCase()));
   const { productDisclaimer } = await getSettings();
   const reviewCount = reviews.length;
   const avgRating =
@@ -254,11 +241,9 @@ export default async function ProductPage({ params }: { params: Params }) {
                   <p className="mt-1 text-sm text-foreground/80">{r.body}</p>
                   <div className="mt-3 flex items-center gap-2">
                     <p className="text-xs font-medium text-brand-700">— {r.author}</p>
-                    {r.email && verified.has(r.email.toLowerCase()) && (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2 py-0.5 text-[11px] font-semibold text-brand-700">
-                        <BadgeCheck className="h-3.5 w-3.5" /> Verified buyer
-                      </span>
-                    )}
+                    <span className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2 py-0.5 text-[11px] font-semibold text-brand-700">
+                      <BadgeCheck className="h-3.5 w-3.5" /> Verified
+                    </span>
                   </div>
                 </div>
               ))
