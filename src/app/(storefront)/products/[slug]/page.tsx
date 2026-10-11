@@ -2,9 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { Truck, ShieldCheck, RotateCcw, Check, BadgeCheck, Info, Pill, TriangleAlert, CircleHelp, ChevronDown } from "lucide-react";
-import { parseFaqs } from "@/lib/product-info";
+import { productFaqLabel } from "@/lib/faq-content";
 import { prisma } from "@/lib/prisma";
-import { formatPrice, parseImages } from "@/lib/utils";
+import { formatPrice, parseImages, slugify } from "@/lib/utils";
 import { ProductGallery } from "@/components/product-gallery";
 import { AddToCart } from "@/components/add-to-cart";
 import { ProductCard } from "@/components/product-card";
@@ -69,7 +69,7 @@ export default async function ProductPage({ params }: { params: Params }) {
     orderBy: { createdAt: "desc" },
   });
   const { productDisclaimer } = await getSettings();
-  const faqs = parseFaqs(product.faqs);
+  const faqLabel = productFaqLabel(product.name);
   const customer = product.stock <= 0 ? await getCurrentCustomer() : null;
   const reviewCount = reviews.length;
   const avgRating =
@@ -188,7 +188,7 @@ export default async function ProductPage({ params }: { params: Params }) {
             </div>
           )}
 
-          {(product.howToUse || product.warnings || faqs.length > 0) && (
+          {(product.howToUse || product.warnings) && (
             <div className="mt-8 divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card">
               {product.howToUse && (
                 <InfoSection title="How to use" icon={<Pill className="h-4 w-4" />} open>
@@ -200,20 +200,15 @@ export default async function ProductPage({ params }: { params: Params }) {
                   <p className="whitespace-pre-line">{product.warnings}</p>
                 </InfoSection>
               )}
-              {faqs.length > 0 && (
-                <InfoSection title={`Questions & answers (${faqs.length})`} icon={<CircleHelp className="h-4 w-4" />}>
-                  <dl className="space-y-4">
-                    {faqs.map((f) => (
-                      <div key={f.q}>
-                        <dt className="font-semibold text-foreground">{f.q}</dt>
-                        <dd className="mt-1 whitespace-pre-line">{f.a}</dd>
-                      </div>
-                    ))}
-                  </dl>
-                </InfoSection>
-              )}
             </div>
           )}
+
+          <Link
+            href={`/faqs${faqLabel ? `#${slugify(faqLabel)}` : ""}`}
+            className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-brand-700 hover:underline"
+          >
+            <CircleHelp className="h-4 w-4" /> Questions about {faqLabel ?? "this product"}? See our FAQs
+          </Link>
 
           {product.sku && (
             <p className="mt-6 text-xs text-muted-foreground">SKU: {product.sku}</p>

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Metadata } from "next";
 import { Mail, MapPin, Clock } from "lucide-react";
 import { getSettings } from "@/lib/settings";
@@ -25,6 +26,10 @@ export default async function ContactPage() {
         <p className="mx-auto mt-2 max-w-lg text-muted-foreground">
           Questions about a product or an order? Our friendly team is here to help. We can&apos;t give
           medical advice — for health questions, please speak to your healthcare practitioner.
+        </p>
+        <p className="mt-3 text-sm">
+          Looking for a quick answer? Try our{" "}
+          <Link href="/faqs" className="font-semibold text-brand-700 underline">frequently asked questions</Link>.
         </p>
       </div>
 
