@@ -1,12 +1,15 @@
-import { Download } from "lucide-react";
+import { CheckCheck, Download } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { Button } from "@/components/ui/button";
 import { OrderRow } from "@/components/admin/order-row";
+import { ConfirmSubmit } from "@/components/admin/confirm-submit";
+import { fulfillAllPaid } from "@/app/admin/actions";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Orders" };
 
-export default async function AdminOrders() {
+export default async function AdminOrders({ searchParams }: { searchParams: Promise<{ fulfilled?: string }> }) {
+  const { fulfilled } = await searchParams;
   const orders = await prisma.order.findMany({
     orderBy: { createdAt: "desc" },
     include: { _count: { select: { items: true } } },
@@ -20,6 +23,21 @@ export default async function AdminOrders() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold tracking-tight">Orders ({orders.length})</h1>
+        <div className="flex flex-wrap gap-2">
+        {paidToShip > 0 ? (
+          <form action={fulfillAllPaid}>
+            <ConfirmSubmit
+              message={`Mark all ${paidToShip} paid order${paidToShip === 1 ? "" : "s"} as fulfilled? Each customer will get a "your order is on its way" email.`}
+              className="inline-flex h-10 items-center gap-2 rounded-full bg-brand-600 px-5 text-sm font-semibold text-white hover:bg-brand-700"
+            >
+              <CheckCheck className="h-4 w-4" /> Mark all as fulfilled ({paidToShip})
+            </ConfirmSubmit>
+          </form>
+        ) : (
+          <Button disabled>
+            <CheckCheck className="h-4 w-4" /> Mark all as fulfilled
+          </Button>
+        )}
         {paidToShip > 0 ? (
           <a href="/api/admin/bobgo-export">
             <Button variant="outline">
@@ -31,7 +49,16 @@ export default async function AdminOrders() {
             <Download className="h-4 w-4" /> Export paid orders → Bob Go CSV
           </Button>
         )}
+        </div>
       </div>
+
+      {fulfilled !== undefined && (
+        <p role="status" className="rounded-2xl border border-brand-200 bg-brand-50 px-4 py-3 text-sm font-medium text-brand-800">
+          {fulfilled === "0"
+            ? "There were no paid orders waiting to be fulfilled."
+            : `${fulfilled} order${fulfilled === "1" ? "" : "s"} marked as fulfilled — customers have been emailed.`}
+        </p>
+      )}
 
       {orders.length === 0 ? (
         <p className="rounded-2xl border border-dashed border-border p-10 text-center text-muted-foreground">

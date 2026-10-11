@@ -23,6 +23,7 @@ import {
   checkCredentials,
   setSession,
   clearSession,
+  requireAdmin,
 } from "@/lib/auth";
 
 /* ---------------- Auth ---------------- */
@@ -60,6 +61,7 @@ function parseImageLines(v: FormDataEntryValue | null): string {
 /* ---------------- Products ---------------- */
 
 export async function saveProduct(formData: FormData) {
+  await requireAdmin();
   const id = String(formData.get("id") ?? "");
   const name = String(formData.get("name") ?? "").trim();
   const data = {
@@ -84,6 +86,7 @@ export async function saveProduct(formData: FormData) {
     featured: formData.get("featured") === "on",
     active: formData.get("active") === "on",
     isCombo: formData.get("isCombo") === "on",
+    supplyDays: Math.min(365, parseInt(String(formData.get("supplyDays") ?? ""), 10) || 0) || null,
   };
 
   if (id) {
@@ -97,6 +100,7 @@ export async function saveProduct(formData: FormData) {
 }
 
 export async function deleteProduct(formData: FormData) {
+  await requireAdmin();
   const id = String(formData.get("id"));
   await prisma.product.delete({ where: { id } });
   revalidatePath("/admin/products");
@@ -107,6 +111,7 @@ export async function deleteProduct(formData: FormData) {
 
 /** Permanently delete an order (its line items cascade away). */
 export async function deleteOrder(formData: FormData) {
+  await requireAdmin();
   const id = String(formData.get("id"));
   await prisma.order.delete({ where: { id } });
   revalidatePath("/admin/orders");
@@ -114,6 +119,7 @@ export async function deleteOrder(formData: FormData) {
 
 /** Update payment status only (fulfilment is handled separately). */
 export async function updateOrder(formData: FormData) {
+  await requireAdmin();
   const id = String(formData.get("id"));
   const paymentStatus = String(formData.get("paymentStatus") ?? "unpaid");
   await prisma.order.update({ where: { id }, data: { paymentStatus } });
@@ -128,10 +134,20 @@ export async function updateOrder(formData: FormData) {
 
 /** Mark an order fulfilled / unfulfilled. */
 export async function setFulfillment(formData: FormData) {
+  await requireAdmin();
   const id = String(formData.get("id"));
   const status = String(formData.get("status")) === "fulfilled" ? "fulfilled" : "unfulfilled";
   const existing = await prisma.order.findUnique({ where: { id } });
-  await prisma.order.update({ where: { id }, data: { status } });
+  await prisma.order.update({
+    where: { id },
+    data: {
+      status,
+      // Timeline: shipped when first fulfilled; un-fulfilling clears it
+      ...(status === "fulfilled"
+        ? existing?.shippedAt ? {} : { shippedAt: new Date() }
+        : { shippedAt: null }),
+    },
+  });
   // Email the customer when newly fulfilled
   if (status === "fulfilled" && existing?.status !== "fulfilled") {
     const { sendOrderShipped } = await import("@/lib/email");
@@ -141,7 +157,35 @@ export async function setFulfillment(formData: FormData) {
   revalidatePath("/admin/orders");
 }
 
+/** Fulfil every paid order that hasn't been fulfilled yet, emailing each customer. */
+export async function fulfillAllPaid() {
+  await requireAdmin();
+  const pending = await prisma.order.findMany({
+    where: { paymentStatus: "paid", status: "unfulfilled" },
+    select: { id: true },
+  });
+  const { sendOrderShipped } = await import("@/lib/email");
+  let done = 0;
+  const queue = [...pending];
+  const worker = async () => {
+    for (let o = queue.shift(); o; o = queue.shift()) {
+      // Claim it, so a double click (or another admin) can't email the customer twice
+      const claim = await prisma.order.updateMany({
+        where: { id: o.id, status: "unfulfilled" },
+        data: { status: "fulfilled", shippedAt: new Date() },
+      });
+      if (claim.count !== 1) continue;
+      done++;
+      await sendOrderShipped(o.id).catch(() => {});
+    }
+  };
+  await Promise.all(Array.from({ length: 5 }, worker));
+  revalidatePath("/admin/orders");
+  redirect(`/admin/orders?fulfilled=${done}`);
+}
+
 export async function saveTracking(formData: FormData) {
+  await requireAdmin();
   const id = String(formData.get("id"));
   const trackingNumber = String(formData.get("trackingNumber") ?? "").trim();
   const trackingUrl = String(formData.get("trackingUrl") ?? "").trim();
@@ -154,6 +198,9 @@ export async function saveTracking(formData: FormData) {
       ...(trackingNumber ? { status: "fulfilled" } : {}),
     },
   });
+  if (trackingNumber) {
+    await prisma.order.updateMany({ where: { id, shippedAt: null }, data: { shippedAt: new Date() } });
+  }
   // Notify the customer with their tracking details
   if (trackingNumber) {
     const { sendOrderShipped } = await import("@/lib/email");
@@ -166,6 +213,7 @@ export async function saveTracking(formData: FormData) {
 /* ---------------- Promotions ---------------- */
 
 export async function savePromotion(formData: FormData) {
+  await requireAdmin();
   const id = String(formData.get("id") ?? "");
   const type = String(formData.get("type") ?? "percent");
   const rawValue = parseFloat(String(formData.get("value") ?? "0")) || 0;
@@ -187,6 +235,7 @@ export async function savePromotion(formData: FormData) {
 }
 
 export async function deletePromotion(formData: FormData) {
+  await requireAdmin();
   const id = String(formData.get("id"));
   await prisma.promotion.delete({ where: { id } });
   revalidatePath("/admin/promotions");
@@ -196,6 +245,7 @@ export async function deletePromotion(formData: FormData) {
 /* ---------------- Reviews ---------------- */
 
 export async function setReviewStatus(formData: FormData) {
+  await requireAdmin();
   const id = String(formData.get("id"));
   const status = String(formData.get("status"));
   await prisma.review.update({ where: { id }, data: { status } });
@@ -203,6 +253,7 @@ export async function setReviewStatus(formData: FormData) {
 }
 
 export async function deleteReview(formData: FormData) {
+  await requireAdmin();
   const id = String(formData.get("id"));
   await prisma.review.delete({ where: { id } });
   revalidatePath("/admin/reviews");
@@ -211,6 +262,7 @@ export async function deleteReview(formData: FormData) {
 /* ---------------- Settings ---------------- */
 
 export async function saveSettings(formData: FormData) {
+  await requireAdmin();
   await updateSettings({
     contactPhone: String(formData.get("contactPhone") ?? ""),
     contactEmail: String(formData.get("contactEmail") ?? ""),
@@ -227,6 +279,7 @@ export async function saveSettings(formData: FormData) {
 }
 
 export async function saveFrontShop(formData: FormData) {
+  await requireAdmin();
   const g = (k: string) => String(formData.get(k) ?? "");
   await updateSettings({
     heroBadge: g("heroBadge"),
@@ -264,6 +317,7 @@ export async function saveFrontShop(formData: FormData) {
 }
 
 export async function saveGateways(formData: FormData) {
+  await requireAdmin();
   const active: Record<string, boolean> = {};
   for (const g of GATEWAYS) {
     active[g.id] = formData.get(`gateway_${g.id}`) === "on";
@@ -281,6 +335,7 @@ async function nextInvoiceNumber(): Promise<string> {
 }
 
 export async function saveInvoiceSettings(formData: FormData) {
+  await requireAdmin();
   const g = (k: string) => String(formData.get(k) ?? "");
   await updateSettings({
     invoiceCompanyName: g("invoiceCompanyName"),
@@ -302,6 +357,7 @@ export async function saveInvoiceSettings(formData: FormData) {
 }
 
 export async function createInvoice(formData: FormData) {
+  await requireAdmin();
   const g = (k: string) => String(formData.get(k) ?? "").trim();
   const lines = parseLines(g("items"));
   if (!g("customerName") || !g("customerEmail") || !lines.length) {
@@ -356,6 +412,7 @@ export async function createInvoice(formData: FormData) {
 }
 
 export async function setInvoiceStatus(formData: FormData) {
+  await requireAdmin();
   const id = String(formData.get("id"));
   const status = String(formData.get("status")) === "paid" ? "paid" : "unpaid";
   await prisma.invoice.update({ where: { id }, data: { status } });
@@ -364,6 +421,7 @@ export async function setInvoiceStatus(formData: FormData) {
 }
 
 export async function deleteInvoice(formData: FormData) {
+  await requireAdmin();
   const id = String(formData.get("id"));
   await prisma.invoice.delete({ where: { id } });
   revalidatePath("/admin/invoices");
@@ -371,6 +429,7 @@ export async function deleteInvoice(formData: FormData) {
 }
 
 export async function sendInvoice(formData: FormData) {
+  await requireAdmin();
   const id = String(formData.get("id"));
   const { sendInvoiceEmail } = await import("@/lib/email");
   const ok = await sendInvoiceEmail(id);
@@ -386,6 +445,7 @@ async function nextQuotationNumber(): Promise<string> {
 }
 
 export async function saveWholesaleSettings(formData: FormData) {
+  await requireAdmin();
   const g = (k: string) => String(formData.get(k) ?? "");
   const posInt = (k: string, fallback: number) => {
     const n = parseInt(g(k), 10);
@@ -409,6 +469,7 @@ export async function saveWholesaleSettings(formData: FormData) {
 }
 
 export async function createQuotation(formData: FormData) {
+  await requireAdmin();
   const g = (k: string) => String(formData.get(k) ?? "").trim();
   const lines = parseQuoteLines(g("items"));
   if (!g("customerName") || !g("customerEmail") || !lines.length) {
@@ -474,6 +535,7 @@ export async function createQuotation(formData: FormData) {
 }
 
 export async function setQuotationStatus(formData: FormData) {
+  await requireAdmin();
   const id = String(formData.get("id"));
   const raw = String(formData.get("status"));
   const status = ["draft", "sent", "accepted", "declined"].includes(raw) ? raw : "draft";
@@ -483,6 +545,7 @@ export async function setQuotationStatus(formData: FormData) {
 }
 
 export async function deleteQuotation(formData: FormData) {
+  await requireAdmin();
   const id = String(formData.get("id"));
   await prisma.quotation.delete({ where: { id } });
   revalidatePath("/admin/wholesale");
@@ -490,6 +553,7 @@ export async function deleteQuotation(formData: FormData) {
 }
 
 export async function sendQuotation(formData: FormData) {
+  await requireAdmin();
   const id = String(formData.get("id"));
   const { sendQuotationEmail } = await import("@/lib/email");
   const ok = await sendQuotationEmail(id);

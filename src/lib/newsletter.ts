@@ -8,25 +8,37 @@ function secret() {
   return process.env.SESSION_SECRET || "dev-secret-change-me";
 }
 
-function unsubToken(email: string) {
+export type OptOutKind = "newsletter" | "reminders";
+
+function unsubToken(email: string, kind: OptOutKind = "newsletter") {
+  // The newsletter keeps its original purpose string so links in old emails stay valid
+  const purpose = kind === "reminders" ? "reminders" : "unsubscribe";
   return crypto
     .createHmac("sha256", secret())
-    .update(`unsubscribe:${email.toLowerCase()}`)
+    .update(`${purpose}:${email.toLowerCase()}`)
     .digest("base64url")
     .slice(0, 32);
 }
 
-/** Personal one-click-safe unsubscribe link included in every newsletter email. */
-export function unsubscribeUrl(email: string) {
-  return `${appUrl()}/newsletter/unsubscribe?e=${encodeURIComponent(email)}&t=${unsubToken(email)}`;
+/** Personal one-click-safe opt-out link included in every newsletter / reminder email. */
+export function unsubscribeUrl(email: string, kind: OptOutKind = "newsletter") {
+  return `${appUrl()}/newsletter/unsubscribe?e=${encodeURIComponent(email)}&t=${unsubToken(email, kind)}${kind === "reminders" ? "&k=reminders" : ""}`;
 }
 
-export function verifyUnsubscribe(email: string, token: string) {
-  const expected = unsubToken(email);
+export function verifyUnsubscribe(email: string, token: string, kind: OptOutKind = "newsletter") {
+  const expected = unsubToken(email, kind);
   return (
     token.length === expected.length &&
     crypto.timingSafeEqual(Buffer.from(token), Buffer.from(expected))
   );
+}
+
+/** Stop refill and saved-cart reminder emails. */
+export async function optOutOfReminders(email: string) {
+  await prisma.customer.updateMany({
+    where: { email: email.trim().toLowerCase() },
+    data: { remindersOptOut: true },
+  });
 }
 
 /**

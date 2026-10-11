@@ -82,6 +82,19 @@ export function ProductForm({
             <input name="stock" type="number" defaultValue={product?.stock ?? 0} className={input} />
           </div>
           <div>
+            <label className={label}>Days one unit lasts</label>
+            <input
+              name="supplyDays"
+              type="number"
+              min={1}
+              max={365}
+              defaultValue={product?.supplyDays ?? ""}
+              placeholder="30"
+              className={input}
+            />
+            <p className="mt-1 text-xs text-muted-foreground">For refill reminders. Blank = store default (30).</p>
+          </div>
+          <div>
             <label className={label}>SKU</label>
             <input name="sku" defaultValue={product?.sku ?? ""} className={input} />
           </div>

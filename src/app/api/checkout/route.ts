@@ -136,6 +136,9 @@ export async function POST(req: Request) {
   // order is confirmed paid (see finalizePaidOrder), so failed/abandoned
   // payments never reduce stock.
 
+  // Their cart became an order — no saved-cart reminder needed
+  await prisma.savedCart.deleteMany({ where: { customerId: customer.id } }).catch(() => {});
+
   if (body.newsletter) {
     const { subscribe } = await import("@/lib/newsletter");
     await subscribe(body.email, body.name).catch(() => false);

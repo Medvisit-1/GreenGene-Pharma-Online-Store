@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getSettings } from "@/lib/settings";
 import { cn } from "@/lib/utils";
 import { NewsletterComposer } from "@/components/admin/newsletter-composer";
+import { WellnessAdmin } from "@/components/admin/wellness-admin";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Newsletter" };
@@ -11,7 +12,8 @@ function daysAgo(days: number) {
   return new Date(Date.now() - days * 86400_000);
 }
 
-export default async function AdminNewsletter() {
+export default async function AdminNewsletter({ searchParams }: { searchParams: Promise<{ msg?: string }> }) {
+  const { msg } = await searchParams;
   const monthAgo = daysAgo(30);
   const [subscribers, newThisMonth, campaigns, settings] = await Promise.all([
     prisma.customer.findMany({
@@ -40,8 +42,15 @@ export default async function AdminNewsletter() {
         <Stat icon={Send} label="Emails sent" value={campaigns.length} />
       </div>
 
+      {msg && (
+        <p role="status" className="rounded-2xl border border-brand-200 bg-brand-50 px-4 py-3 text-sm font-medium text-brand-800">{msg}</p>
+      )}
+
+      <WellnessAdmin settings={settings} subscribers={subscribers.length} />
+
       <section className="rounded-2xl border border-border bg-surface p-5">
-        <h2 className="mb-4 font-bold">Write a newsletter</h2>
+        <h2 className="mb-1 font-bold">Write a one-off newsletter</h2>
+        <p className="mb-4 text-sm text-muted-foreground">For announcements and offers, outside the Wellness Notes schedule.</p>
         <NewsletterComposer subscribers={subscribers.length} defaultTestEmail={settings.contactEmail} />
       </section>
 

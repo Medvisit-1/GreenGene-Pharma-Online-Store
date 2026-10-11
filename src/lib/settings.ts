@@ -87,6 +87,16 @@ export type SiteSettings = {
   // ---- Legal & compliance ----
   legalInfoOfficer: string; // POPIA Information Officer (name / role)
   productDisclaimer: string; // health-product disclaimer shown on every product page
+
+  // ---- Automated wellness newsletter ----
+  newsletterAutoEnabled: string; // "1" | "0"
+  newsletterDays: string; // comma-separated weekdays, 0 = Sunday … 6 = Saturday (e.g. "2,5" = Tue & Fri)
+  newsletterHour: string; // hour of day (South African time) to send, "0"–"23"
+
+  // ---- Customer reminders ----
+  refillRemindersEnabled: string; // "1" | "0"
+  refillDefaultDays: string; // how long one unit lasts when a product doesn't say
+  cartRemindersEnabled: string; // "1" | "0"
 };
 
 export const DEFAULT_SETTINGS: SiteSettings = {
@@ -168,6 +178,14 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   legalInfoOfficer: "",
   productDisclaimer:
     "This unregistered medicine has not been evaluated by the SAHPRA for its quality, safety or intended use. It is not intended to diagnose, treat, cure or prevent any disease. Do not exceed the recommended dose. Consult your healthcare practitioner before use if you are pregnant or breastfeeding, taking medication or have a medical condition. Keep out of reach of children.",
+
+  newsletterAutoEnabled: "0",
+  newsletterDays: "2,5",
+  newsletterHour: "8",
+
+  refillRemindersEnabled: "1",
+  refillDefaultDays: "30",
+  cartRemindersEnabled: "1",
 };
 
 /** Parse shipping settings into cents numbers for calculations. */

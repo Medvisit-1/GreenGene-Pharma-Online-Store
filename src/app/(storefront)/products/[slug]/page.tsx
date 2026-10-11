@@ -12,6 +12,9 @@ import { Stars } from "@/components/stars";
 import { ReviewForm } from "@/components/review-form";
 import { getRatingMap } from "@/lib/reviews";
 import { getSettings } from "@/lib/settings";
+import { getCurrentCustomer } from "@/lib/customer-auth";
+import { WishlistButton } from "@/components/wishlist-button";
+import { NotifyMe } from "@/components/notify-me";
 
 export const dynamic = "force-dynamic";
 
@@ -65,6 +68,7 @@ export default async function ProductPage({ params }: { params: Params }) {
     orderBy: { createdAt: "desc" },
   });
   const { productDisclaimer } = await getSettings();
+  const customer = product.stock <= 0 ? await getCurrentCustomer() : null;
   const reviewCount = reviews.length;
   const avgRating =
     reviewCount > 0
@@ -154,6 +158,10 @@ export default async function ProductPage({ params }: { params: Params }) {
                 stock: product.stock,
               }}
             />
+            {product.stock <= 0 && <NotifyMe productId={product.id} email={customer?.email ?? ""} />}
+            <div className="mt-3">
+              <WishlistButton productId={product.id} variant="pill" />
+            </div>
           </div>
 
           <div className="mt-7 grid grid-cols-1 gap-3 rounded-2xl border border-border p-4 sm:grid-cols-3">

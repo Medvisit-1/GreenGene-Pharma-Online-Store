@@ -12,10 +12,12 @@ export const metadata = { title: "Unsubscribe", robots: { index: false } };
 export default async function UnsubscribePage({
   searchParams,
 }: {
-  searchParams: Promise<{ e?: string; t?: string; done?: string; invalid?: string }>;
+  searchParams: Promise<{ e?: string; t?: string; k?: string; done?: string; invalid?: string }>;
 }) {
-  const { e = "", t = "", done, invalid } = await searchParams;
-  const valid = !done && !invalid && e && t && verifyUnsubscribe(e, t);
+  const { e = "", t = "", k, done, invalid } = await searchParams;
+  const reminders = k === "reminders";
+  const valid = !done && !invalid && e && t && verifyUnsubscribe(e, t, reminders ? "reminders" : "newsletter");
+  const what = reminders ? "refill and saved-cart reminder emails" : "newsletter emails";
 
   return (
     <div className="mx-auto flex max-w-7xl justify-center px-4 py-20">
@@ -25,7 +27,7 @@ export default async function UnsubscribePage({
             <CheckCircle2 className="mx-auto h-10 w-10 text-brand-600" />
             <h1 className="mt-4 text-2xl font-bold text-brand-800">You&apos;re unsubscribed</h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              You won&apos;t receive newsletter emails any more. Order emails still arrive as normal.
+              You won&apos;t receive {what} any more. Order emails still arrive as normal.
             </p>
           </>
         ) : valid ? (
@@ -33,11 +35,12 @@ export default async function UnsubscribePage({
             <MailX className="mx-auto h-10 w-10 text-brand-600" />
             <h1 className="mt-4 text-2xl font-bold text-brand-800">Unsubscribe?</h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              Stop newsletter emails to <strong className="text-foreground">{e}</strong>.
+              Stop {what} to <strong className="text-foreground">{e}</strong>.
             </p>
             <form action={confirmUnsubscribe} className="mt-6">
               <input type="hidden" name="e" value={e} />
               <input type="hidden" name="t" value={t} />
+              {reminders && <input type="hidden" name="k" value="reminders" />}
               <Button type="submit" size="lg" className="w-full">Unsubscribe me</Button>
             </form>
           </>
@@ -45,8 +48,8 @@ export default async function UnsubscribePage({
           <>
             <h1 className="text-2xl font-bold text-brand-800">Link not valid</h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              Please use the unsubscribe link from one of our emails, or turn the newsletter off under
-              My details in your account.
+              Please use the unsubscribe link from one of our emails, or change your email preferences
+              under My details in your account.
             </p>
           </>
         )}
