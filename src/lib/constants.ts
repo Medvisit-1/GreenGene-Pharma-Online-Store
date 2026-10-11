@@ -67,3 +67,20 @@ export function parseArticleBody(body: string): ArticleBlock[] {
   }
   return blocks;
 }
+
+/**
+ * Newsletter teaser of an article: its opening paragraph plus the first list of
+ * points (max 4) with that list's heading. The full article lives on /wellness.
+ */
+export function articleTeaser(body: string): { intro: string | null; heading: string | null; points: string[] } {
+  const blocks = parseArticleBody(body);
+  const intro = blocks.find((b) => b.type === "p");
+  const listAt = blocks.findIndex((b) => b.type === "ul");
+  const list = listAt >= 0 ? blocks[listAt] : null;
+  const before = listAt > 0 ? blocks[listAt - 1] : null;
+  return {
+    intro: intro && intro.type === "p" ? intro.text : null,
+    heading: before && before.type === "h" ? before.text : null,
+    points: list && list.type === "ul" ? list.items.slice(0, 4) : [],
+  };
+}

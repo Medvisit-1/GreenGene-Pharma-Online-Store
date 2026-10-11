@@ -3,7 +3,7 @@ import nodemailer from "nodemailer";
 import { prisma } from "@/lib/prisma";
 import { getSettings } from "@/lib/settings";
 import { formatPrice } from "@/lib/utils";
-import { WELLNESS_DISCLAIMER, parseArticleBody } from "@/lib/constants";
+import { WELLNESS_DISCLAIMER, articleTeaser } from "@/lib/constants";
 
 const APP_URL = process.env.APP_URL || "https://greengene-store-production.up.railway.app";
 
@@ -611,16 +611,16 @@ function absUrl(u: string) {
   return u.startsWith("http") ? u : `${APP_URL}${u.startsWith("/") ? "" : "/"}${u}`;
 }
 
-function articleHtml(body: string) {
-  return parseArticleBody(body)
-    .map((b) =>
-      b.type === "h"
-        ? `<h3 style="margin:20px 0 8px;font-size:16px;color:#104536">${esc(b.text)}</h3>`
-        : b.type === "ul"
-          ? `<ul style="margin:0 0 12px;padding-left:20px">${b.items.map((i) => `<li style="font-size:14px;line-height:1.7;margin-bottom:4px">${esc(i)}</li>`).join("")}</ul>`
-          : `<p style="font-size:14px;line-height:1.7;margin:0 0 12px">${esc(b.text)}</p>`
-    )
-    .join("");
+/** The newsletter shows a teaser; readers click through for the full article. */
+function articleTeaserHtml(body: string) {
+  const t = articleTeaser(body);
+  return [
+    t.intro ? `<p style="font-size:14px;line-height:1.7;margin:0 0 12px">${esc(t.intro)}</p>` : "",
+    t.points.length
+      ? `<h3 style="margin:18px 0 8px;font-size:16px;color:#104536">${esc(t.heading ?? "Key points")}</h3>
+         <ul style="margin:0 0 12px;padding-left:20px">${t.points.map((i) => `<li style="font-size:14px;line-height:1.7;margin-bottom:4px">${esc(i)}</li>`).join("")}</ul>`
+      : "",
+  ].join("");
 }
 
 /** Product cards for emails (a simple 1-column table that works in every mail app). */
@@ -664,9 +664,9 @@ export async function sendArticleEmail(
   const body = `
     <p style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#8a4a6d;margin:0 0 6px">GreenGene Wellness Notes</p>
     <p style="font-size:15px;line-height:1.6;color:#4a5a51;margin:0 0 16px"><em>${esc(a.excerpt)}</em></p>
-    ${articleHtml(a.body)}
+    ${articleTeaserHtml(a.body)}
+    <p style="margin:18px 0 12px"><a href="${escAttr(url)}" style="${BTN}">Read the full article</a></p>
     ${products.length ? `<h3 style="margin:24px 0 10px;font-size:16px;color:#104536">From our range</h3>${productCardsHtml(products)}` : ""}
-    <p style="margin-top:18px"><a href="${escAttr(url)}" style="${BTN}">Read on our website</a></p>
     <p style="margin-top:18px;padding:12px;background:#f5f7f6;border-radius:10px;font-size:11px;color:#6b7c73;line-height:1.6">${esc(WELLNESS_DISCLAIMER)}</p>
     ${await newsletterFooter(unsubUrl)}`;
   return sendMail({ to, subject: a.subject, html: layout(esc(a.title), body) });
