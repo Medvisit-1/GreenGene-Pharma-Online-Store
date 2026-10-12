@@ -18,6 +18,7 @@ import {
   ExternalLink,
   Users,
   BarChart3,
+  CircleHelp,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -33,6 +34,7 @@ const LINKS = [
   { href: "/admin/rewards", label: "Rewards", icon: Gift },
   { href: "/admin/newsletter", label: "Newsletter", icon: Mail },
   { href: "/admin/reviews", label: "Reviews", icon: Star },
+  { href: "/admin/faqs", label: "FAQs", icon: CircleHelp },
   { href: "/admin/front-shop", label: "Front Shop", icon: LayoutTemplate },
   { href: "/admin/payments", label: "Payment Gateways", icon: CreditCard },
   { href: "/admin/settings", label: "Settings", icon: Settings },

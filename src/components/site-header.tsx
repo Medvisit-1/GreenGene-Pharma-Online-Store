@@ -125,6 +125,13 @@ export function SiteHeader({ announcement, signedIn }: { announcement?: string; 
               My account
             </Link>
             <Link
+              href="/faqs"
+              onClick={() => setOpen(false)}
+              className="rounded-lg px-3 py-2.5 text-sm font-medium text-white/85 hover:bg-white/10 hover:text-white"
+            >
+              FAQs
+            </Link>
+            <Link
               href="/account?tab=wishlist"
               onClick={() => setOpen(false)}
               className="rounded-lg px-3 py-2.5 text-sm font-medium text-white/85 hover:bg-white/10 hover:text-white"

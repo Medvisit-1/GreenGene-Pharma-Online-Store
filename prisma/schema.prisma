@@ -49,9 +49,10 @@ model Product {
   isCombo          Boolean        @default(false)
   // How many days one unit lasts (for refill reminders). Blank = store default.
   supplyDays       Int?
-  // Product page tabs (plain text). FAQs: "Q: …" / "A: …" blocks separated by a blank line.
+  // Product page sections (plain text)
   howToUse         String?
   warnings         String?
+  // Legacy per-product FAQs (now on the store-wide FAQ page; copied there once)
   faqs             String?
   featured         Boolean        @default(false)
   active           Boolean        @default(true)
@@ -378,4 +379,18 @@ model NewsletterArticle {
   lastSentAt      DateTime?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+}
+
+// Store-wide FAQ page (/faqs), grouped into sections.
+model Faq {
+  id        String   @id @default(cuid())
+  section   String
+  question  String
+  answer    String
+  sortOrder Int      @default(0)
+  published Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([sortOrder])
 }

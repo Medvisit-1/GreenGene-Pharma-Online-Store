@@ -42,6 +42,7 @@ export async function SiteFooter() {
           </h4>
           <ul className="space-y-2.5 text-sm text-white/70">
             <li><Link href="/contact" className="hover:text-white">Contact Us</Link></li>
+            <li><Link href="/faqs" className="hover:text-white">FAQs</Link></li>
             <li><Link href="/shipping-policy" className="hover:text-white">Shipping Policy</Link></li>
             <li><Link href="/refund-policy" className="hover:text-white">Refund Policy</Link></li>
             <li><Link href="/privacy-policy" className="hover:text-white">Privacy Policy</Link></li>

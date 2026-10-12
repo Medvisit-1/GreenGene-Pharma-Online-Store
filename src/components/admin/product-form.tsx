@@ -73,19 +73,6 @@ export function ProductForm({
               className={input}
             />
           </div>
-          <div>
-            <label className={label}>FAQs</label>
-            <textarea
-              name="faqs"
-              rows={6}
-              defaultValue={product?.faqs ?? ""}
-              placeholder={"How long until I notice a difference?\nMost people use it daily for 4–6 weeks.\n\nCan I take it with other supplements?\nPlease check with your pharmacist first."}
-              className={input}
-            />
-            <p className="mt-1 text-xs text-muted-foreground">
-              One question per block: the question on the first line, the answer below it, and a blank line between questions.
-            </p>
-          </div>
         </div>
       </div>
 
