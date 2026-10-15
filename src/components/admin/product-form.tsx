@@ -3,6 +3,7 @@ import type { Category, Product } from "@prisma/client";
 import { parseImages } from "@/lib/utils";
 import { saveProduct } from "@/app/admin/actions";
 import { Button } from "@/components/ui/button";
+import { PdfField } from "@/components/admin/pdf-field";
 import { ImageUploader } from "@/components/admin/image-uploader";
 import { WholesalePricingFields } from "@/components/admin/wholesale-pricing-fields";
 import type { WholesaleTier } from "@/lib/wholesale";
@@ -62,6 +63,13 @@ export function ProductForm({
               placeholder="e.g. Adults (18+): take 2 capsules daily with water."
               className={input}
             />
+          </div>
+          <div>
+            <label className={label}>Information pack (PDF)</label>
+            <PdfField name="infoPackUrl" initial={product?.infoPackUrl ?? ""} />
+            <p className="mt-1 text-xs text-muted-foreground">
+              Shown on the product page as &ldquo;Click here to download our information pack&rdquo;. Anyone can download it.
+            </p>
           </div>
           <div>
             <label className={label}>Warnings &amp; precautions</label>
