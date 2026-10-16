@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { Truck, ShieldCheck, RotateCcw, Check, BadgeCheck, Info, Pill, TriangleAlert, CircleHelp, ChevronDown } from "lucide-react";
+import { Truck, ShieldCheck, RotateCcw, Check, BadgeCheck, Info, Pill, TriangleAlert, CircleHelp, ChevronDown, FileDown } from "lucide-react";
+import { ensureBundledInfoPacks } from "@/lib/info-packs";
 import { productFaqLabel } from "@/lib/faq-content";
 import { prisma } from "@/lib/prisma";
 import { formatPrice, parseImages, slugify } from "@/lib/utils";
@@ -37,6 +38,7 @@ export async function generateMetadata({
 
 export default async function ProductPage({ params }: { params: Params }) {
   const { slug } = await params;
+  await ensureBundledInfoPacks();
   const product = await prisma.product.findUnique({
     where: { slug },
     include: { category: true },
@@ -201,6 +203,20 @@ export default async function ProductPage({ params }: { params: Params }) {
                 </InfoSection>
               )}
             </div>
+          )}
+
+          {product.infoPackUrl && (
+            <a
+              href={product.infoPackUrl}
+              download={`${slugify(faqLabel ?? product.name.split(/ [-—–(]/)[0])}-information-pack.pdf`}
+              className="mt-6 flex items-center gap-3 rounded-2xl border border-brand-200 bg-brand-50 px-4 py-3 text-sm font-semibold text-brand-800 transition hover:bg-brand-100"
+            >
+              <FileDown className="h-5 w-5 shrink-0 text-brand-600" />
+              <span>
+                Click here to download our {faqLabel ?? product.name.split(/ [-—–(]/)[0]} information pack{" "}
+                <span className="font-normal text-muted-foreground">(PDF)</span>
+              </span>
+            </a>
           )}
 
           <Link

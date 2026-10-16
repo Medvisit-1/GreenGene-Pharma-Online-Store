@@ -52,6 +52,8 @@ model Product {
   // Product page sections (plain text)
   howToUse         String?
   warnings         String?
+  // Downloadable product information pack (PDF URL)
+  infoPackUrl      String?
   // Legacy per-product FAQs (now on the store-wide FAQ page; copied there once)
   faqs             String?
   featured         Boolean        @default(false)

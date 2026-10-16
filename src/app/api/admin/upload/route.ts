@@ -15,6 +15,7 @@ const EXT: Record<string, string> = {
   "image/avif": "avif",
 };
 const MAX_BYTES = 6 * 1024 * 1024; // 6 MB
+const MAX_PDF_BYTES = 15 * 1024 * 1024; // 15 MB for information packs
 
 export async function POST(req: Request) {
   if (!(await isAuthed())) {
@@ -27,10 +28,26 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "No file provided" }, { status: 400 });
   }
 
+  // PDFs (product information packs) are stored as-is
+  if (file.type === "application/pdf") {
+    if (file.size > MAX_PDF_BYTES) {
+      return NextResponse.json({ error: "PDF too large (max 15 MB)." }, { status: 400 });
+    }
+    const pdf = Buffer.from(await file.arrayBuffer());
+    if (pdf.subarray(0, 5).toString() !== "%PDF-") {
+      return NextResponse.json({ error: "That file isn't a valid PDF." }, { status: 400 });
+    }
+    const pdfName = `${Date.now()}-${crypto.randomUUID().slice(0, 8)}.pdf`;
+    const pdfDir = path.join(process.cwd(), "public", "uploads");
+    await mkdir(pdfDir, { recursive: true });
+    await writeFile(path.join(pdfDir, pdfName), pdf);
+    return NextResponse.json({ url: `/uploads/${pdfName}` });
+  }
+
   const ext = EXT[file.type];
   if (!ext) {
     return NextResponse.json(
-      { error: "Unsupported file type. Use PNG, JPG, WEBP, GIF or AVIF." },
+      { error: "Unsupported file type. Use PNG, JPG, WEBP, GIF, AVIF (or PDF for information packs)." },
       { status: 400 }
     );
   }

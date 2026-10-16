@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { ProductForm } from "@/components/admin/product-form";
 import { getSettings } from "@/lib/settings";
 import { tiersFromSettings } from "@/lib/wholesale";
+import { ensureBundledInfoPacks } from "@/lib/info-packs";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Edit product" };
@@ -14,6 +15,7 @@ export default async function EditProduct({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  await ensureBundledInfoPacks();
   const [product, categories, s] = await Promise.all([
     prisma.product.findUnique({ where: { id } }),
     prisma.category.findMany({ orderBy: { sortOrder: "asc" } }),

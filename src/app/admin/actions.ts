@@ -60,6 +60,12 @@ function parseImageLines(v: FormDataEntryValue | null): string {
 
 /* ---------------- Products ---------------- */
 
+/** Information packs must be our own uploaded/bundled PDFs (or an https link). */
+function safePackUrl(v: FormDataEntryValue | null): string | null {
+  const s = String(v ?? "").trim().slice(0, 500);
+  return /^(\/(uploads|info-packs)\/[\w.-]+\.pdf|https:\/\/\S+)$/i.test(s) ? s : null;
+}
+
 export async function saveProduct(formData: FormData) {
   await requireAdmin();
   const id = String(formData.get("id") ?? "");
@@ -89,6 +95,7 @@ export async function saveProduct(formData: FormData) {
     supplyDays: Math.min(365, parseInt(String(formData.get("supplyDays") ?? ""), 10) || 0) || null,
     howToUse: String(formData.get("howToUse") ?? "").trim().slice(0, 5000) || null,
     warnings: String(formData.get("warnings") ?? "").trim().slice(0, 5000) || null,
+    infoPackUrl: safePackUrl(formData.get("infoPackUrl")),
   };
 
   if (id) {
