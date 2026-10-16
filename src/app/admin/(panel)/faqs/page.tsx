@@ -46,6 +46,10 @@ export default async function AdminFaqs({ searchParams }: { searchParams: Promis
             These fill in your live settings: <code>{"{contact_email}"}</code>, <code>{"{delivery_fee}"}</code>,{" "}
             <code>{"{free_delivery_from}"}</code>
           </li>
+          <li>
+            <code>{"{info_pack_links}"}</code> adds download links for every product with an information pack
+            (set on each product&apos;s edit page).
+          </li>
           <li>Sections appear in the order of their first question. Use the arrows to reorder questions.</li>
         </ul>
       </details>

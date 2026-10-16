@@ -15,6 +15,9 @@ function Answer({ text }: { text: string }) {
     <>
       {parts.map((p, i) => {
         const link = p.match(/^\[([^\]]+)\]\((\/[^)\s]*)\)$/);
+        if (link && /\.pdf$/i.test(link[2])) {
+          return <a key={i} href={link[2]} download className="font-semibold text-brand-700 underline">{link[1]}</a>;
+        }
         if (link) return <Link key={i} href={link[2]} className="font-semibold text-brand-700 underline">{link[1]}</Link>;
         if (/^[\w.+-]+@[\w-]+\.[\w.-]*\w$/.test(p)) return <a key={i} href={`mailto:${p}`} className="font-semibold text-brand-700 underline">{p}</a>;
         return <span key={i}>{p}</span>;
