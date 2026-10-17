@@ -132,6 +132,39 @@ export function describeRequirement(r: Pick<Reward, "type" | "threshold">): stri
   }
 }
 
+/** Short amount for headlines: "R30" (or "R29.50", "10%", "Free delivery"). */
+export function shortDiscount(r: Pick<Reward, "discountType" | "discountValue">): string {
+  if (r.discountType === "freeship") return "Free delivery";
+  if (r.discountType === "percent") return `${r.discountValue}%`;
+  return r.discountValue % 100 === 0 ? `R${r.discountValue / 100}` : formatPrice(r.discountValue);
+}
+
+export type RewardHighlights = {
+  welcome: Reward | null;
+  referral: Reward | null;
+  /** Milestones in order of threshold */
+  milestones: Reward[];
+};
+
+/** The headline rewards for the homepage and footer, or null when the programme is off. */
+export async function rewardHighlights(): Promise<RewardHighlights | null> {
+  if (!(await rewardsEnabled())) return null;
+  try {
+    await ensureDefaultRewards();
+    const active = await prisma.reward.findMany({
+      where: { active: true, type: { in: ["newsletter", "referral", "milestone"] } },
+      orderBy: [{ threshold: "asc" }, { sortOrder: "asc" }],
+    });
+    return {
+      welcome: active.find((r) => r.type === "newsletter") ?? null,
+      referral: active.find((r) => r.type === "referral") ?? null,
+      milestones: active.filter((r) => r.type === "milestone" && r.threshold > 0),
+    };
+  } catch {
+    return null;
+  }
+}
+
 /** Year + month (1-12) in South Africa, regardless of server timezone. */
 function saNow(): { year: number; month: number } {
   const parts = new Intl.DateTimeFormat("en-ZA", {

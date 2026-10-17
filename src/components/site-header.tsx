@@ -1,148 +1,128 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { Heart, Menu, Search, ShoppingBag, User, X } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/lib/cart-store";
 import { useWishlist } from "@/lib/wishlist-store";
 import { SearchOverlay } from "@/components/search-overlay";
+import { GIcon } from "@/components/garden/art";
 
 const NAV = [
   { href: "/", label: "Home" },
-  { href: "/products", label: "Products" },
+  { href: "/products", label: "Shop" },
   { href: "/combos", label: "Combos" },
-  { href: "/promotions", label: "Promotions" },
+  { href: "/promotions", label: "Offers" },
   { href: "/wellness", label: "Wellness" },
+  { href: "/account?tab=rewards", label: "Rewards" },
+];
+
+const MORE = [
+  { href: "/account", label: "My account" },
+  { href: "/account?tab=wishlist", label: "Wishlist" },
+  { href: "/faqs", label: "FAQs" },
   { href: "/contact", label: "Contact" },
 ];
 
-export function SiteHeader({ announcement, signedIn }: { announcement?: string; signedIn?: boolean }) {
-  const [open, setOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
+function isActive(pathname: string, href: string) {
+  const path = href.split("?")[0];
+  return path === "/" ? pathname === "/" : pathname.startsWith(path) && !href.includes("?");
+}
+
+/** True after hydration (the cart count lives in the browser). */
+const useMounted = () => useSyncExternalStore(() => () => {}, () => true, () => false);
+
+function useHeaderCounts(signedIn?: boolean) {
+  const mounted = useMounted();
   const count = useCart((s) => s.items.reduce((n, i) => n + i.quantity, 0));
-  const openCart = useCart((s) => s.open);
-  useEffect(() => setMounted(true), []);
   const loadWishlist = useWishlist((s) => s.load);
   const saved = useWishlist((s) => (s.signedIn ? s.ids.length : 0));
   useEffect(() => loadWishlist(signedIn), [loadWishlist, signedIn]);
+  return { cart: mounted ? count : 0, saved };
+}
 
-  const iconBtn =
-    "relative rounded-full p-2.5 text-white/80 transition-colors hover:bg-white/10 hover:text-white";
+export function SiteHeader({ announcement, signedIn }: { announcement?: string; signedIn?: boolean }) {
+  const pathname = usePathname();
+  const [open, setOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const openCart = useCart((s) => s.open);
+  const { cart, saved } = useHeaderCounts(signedIn);
 
   return (
-    <header className="sticky top-0 z-40">
-      {/* Announcement bar (taupe) */}
-      <div className="bg-background text-center text-xs font-medium text-brand-800">
-        <div className="mx-auto max-w-7xl px-4 py-2">
-          {announcement ?? "Welcome to GreenGene Pharma · Empower Your Wellness, Live Better"}
-        </div>
+    <>
+      <div className="gg-announce">
+        {announcement ?? "Welcome to GreenGene Pharma · Empower Your Wellness, Live Better"}
       </div>
+      <header className="gg-header">
+        <div className="gg-wrap gg-header-row">
+          <Logo height={46} priority className="shrink-0" />
 
-      {/* Main bar (black) */}
-      <div className="bg-header text-white">
-        <div className="mx-auto grid h-20 max-w-7xl grid-cols-[1fr_auto_1fr] items-center gap-4 px-4">
-          {/* Left: nav (desktop) / hamburger (mobile) */}
-          <div className="flex items-center">
-            <nav className="hidden items-center gap-1 md:flex">
-              {NAV.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="rounded-full px-3.5 py-2 text-sm font-medium text-white/85 transition-colors hover:bg-white/10 hover:text-white"
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </nav>
-            <button
-              aria-label="Toggle menu"
-              onClick={() => setOpen((v) => !v)}
-              className={cn(iconBtn, "md:hidden")}
-            >
-              {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </button>
-          </div>
-
-          {/* Center: logo */}
-          <div className="flex justify-center">
-            <Logo height={52} priority className="shrink-0" />
-          </div>
-
-          {/* Right: icons */}
-          <div className="flex items-center justify-end gap-1">
-            <button type="button" onClick={() => setSearchOpen(true)} aria-label="Search products" className={cn(iconBtn, "hidden sm:inline-flex")}>
-              <Search className="h-5 w-5" />
-            </button>
-            <Link href="/account" aria-label="My account" className={cn(iconBtn, "hidden sm:inline-flex")}>
-              <User className="h-5 w-5" />
-            </Link>
-            <Link href="/account?tab=wishlist" aria-label={saved ? `Wishlist (${saved} saved)` : "Wishlist"} title="Wishlist" className={iconBtn}>
-              <Heart className="h-5 w-5" />
-              {saved > 0 && (
-                <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1 text-[11px] font-bold text-white">
-                  {saved}
-                </span>
-              )}
-            </Link>
-            <button type="button" onClick={openCart} aria-label="View cart" className={iconBtn}>
-              <ShoppingBag className="h-5 w-5" />
-              {mounted && count > 0 && (
-                <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1 text-[11px] font-bold text-brand-900">
-                  {count}
-                </span>
-              )}
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile menu */}
-        <div
-          className={cn(
-            "overflow-hidden border-t border-white/10 bg-header md:hidden",
-            open ? "max-h-96" : "max-h-0 border-t-0"
-          )}
-          style={{ transition: "max-height 0.25s ease" }}
-        >
-          <nav className="flex flex-col gap-1 px-4 py-3">
+          <nav className="gg-tabs" aria-label="Main">
             {NAV.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setOpen(false)}
-                className="rounded-lg px-3 py-2.5 text-sm font-medium text-white/85 hover:bg-white/10 hover:text-white"
-              >
+              <Link key={item.href} href={item.href} className={cn(isActive(pathname, item.href) && "on")}>
                 {item.label}
               </Link>
             ))}
-            <Link
-              href="/account"
-              onClick={() => setOpen(false)}
-              className="rounded-lg px-3 py-2.5 text-sm font-medium text-white/85 hover:bg-white/10 hover:text-white"
-            >
-              My account
+          </nav>
+
+          <div className="gg-hicons">
+            <button type="button" onClick={() => setSearchOpen(true)} aria-label="Search products" className="gg-hicon">
+              <Search className="h-5 w-5" />
+            </button>
+            <Link href="/account" aria-label="My account" className="gg-hicon gg-sm-up">
+              <User className="h-5 w-5" />
             </Link>
-            <Link
-              href="/faqs"
-              onClick={() => setOpen(false)}
-              className="rounded-lg px-3 py-2.5 text-sm font-medium text-white/85 hover:bg-white/10 hover:text-white"
-            >
-              FAQs
+            <Link href="/account?tab=wishlist" aria-label={saved ? `Wishlist (${saved} saved)` : "Wishlist"} title="Wishlist" className="gg-hicon">
+              <Heart className="h-5 w-5" />
+              {saved > 0 && <span className="gg-dot">{saved}</span>}
             </Link>
-            <Link
-              href="/account?tab=wishlist"
-              onClick={() => setOpen(false)}
-              className="rounded-lg px-3 py-2.5 text-sm font-medium text-white/85 hover:bg-white/10 hover:text-white"
-            >
-              Wishlist
-            </Link>
+            <button type="button" onClick={openCart} aria-label="View cart" className="gg-hicon">
+              <ShoppingBag className="h-5 w-5" />
+              {cart > 0 && <span className="gg-dot">{cart}</span>}
+            </button>
+            <button type="button" aria-label="Toggle menu" aria-expanded={open} onClick={() => setOpen((v) => !v)} className="gg-hicon gg-only-m">
+              {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
+          </div>
+        </div>
+
+        <div className={cn("gg-mobile-menu gg-only-m", open ? "max-h-[32rem]" : "max-h-0")}>
+          <nav className="gg-wrap grid gap-1 pb-4" aria-label="Menu">
+            {[...NAV, ...MORE].map((item) => (
+              <Link key={item.href} href={item.href} onClick={() => setOpen(false)}>
+                {item.label}
+              </Link>
+            ))}
           </nav>
         </div>
-      </div>
 
-      <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />
-    </header>
+        <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />
+      </header>
+    </>
+  );
+}
+
+/** Thumb-reach navigation for phones and tablets. */
+export function BottomNav({ signedIn }: { signedIn?: boolean }) {
+  const pathname = usePathname();
+  const openCart = useCart((s) => s.open);
+  const { cart, saved } = useHeaderCounts(signedIn);
+  return (
+    <nav className="gg-bottomnav" aria-label="Quick links">
+      <Link href="/" className={cn(pathname === "/" && "on")}><GIcon name="home" size={22} />Home</Link>
+      <Link href="/products" className={cn(pathname.startsWith("/products") && "on")}><GIcon name="leaf" size={22} />Shop</Link>
+      <Link href="/account?tab=wishlist">
+        <GIcon name="heart" size={22} />Saved
+        {saved > 0 && <span className="gg-dot">{saved}</span>}
+      </Link>
+      <Link href="/account?tab=rewards"><GIcon name="gift" size={22} />Rewards</Link>
+      <button type="button" onClick={openCart}>
+        <GIcon name="bag" size={22} />Cart
+        {cart > 0 && <span className="gg-dot">{cart}</span>}
+      </button>
+    </nav>
   );
 }
