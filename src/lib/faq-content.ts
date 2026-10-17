@@ -8,7 +8,8 @@
  *
  * Answers may use [link text](/path) for links to our own pages, and these
  * tokens, filled in from the live settings: {contact_email}, {delivery_fee},
- * {free_delivery_from}.
+ * {free_delivery_from}, and {info_pack_links} (download links for every
+ * product that has an information pack).
  */
 
 type Faq = [question: string, answer: string];
@@ -52,7 +53,7 @@ export const GENERAL_FAQS: { section: string; faqs: Faq[] }[] = [
   {
     section: "Our products & your health",
     faqs: [
-      ["I have a health condition or take medication. Can I use your products?", "For health-related questions, please email us at {contact_email} and we'll send you the full information pack on the product you're interested in."],
+      ["I have a health condition or take medication. Can I use your products?", "For health-related questions, please email us at {contact_email} and we'll send you the full information pack on the product you're interested in. {info_pack_links}"],
       ["Are your products natural?", "Our formulas are made from natural, plant-based ingredients, and every ingredient and its dose is listed on the product page."],
       ["How long before I notice a difference?", "Everyone is different. Most of our formulas are designed to be taken consistently for several weeks — see the product sections below for guidance on each one."],
       ["Can I use your products while pregnant or breastfeeding?", "Please don't use our products while pregnant or breastfeeding unless your doctor advises it."],
@@ -167,3 +168,7 @@ export function productFaqLabel(name: string): string | null {
 
 /** Questions every product section used to repeat — now answered once in the general sections. */
 export const GENERIC_QUESTION = /^(i have a health condition|can i use it while pregnant|can i combine it|how long does one pack|is it registered with sahpra)/i;
+
+/** The original health answer, before {info_pack_links} was added (for a one-time update). */
+export const HEALTH_ANSWER_V1 = "For health-related questions, please email us at {contact_email} and we'll send you the full information pack on the product you're interested in.";
+export const HEALTH_ANSWER_V2 = "For health-related questions, please email us at {contact_email} and we'll send you the full information pack on the product you're interested in. {info_pack_links}";

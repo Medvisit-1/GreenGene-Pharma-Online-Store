@@ -1,5 +1,5 @@
 import { CircleHelp } from "lucide-react";
-import { faqSections, fillTokens } from "@/lib/faqs";
+import { faqSections, fillTokens, infoPacks } from "@/lib/faqs";
 import { getSettings } from "@/lib/settings";
 import { FaqBrowser, type FaqGroup } from "@/components/faq-browser";
 
@@ -10,11 +10,11 @@ export const metadata = {
 };
 
 export default async function FaqsPage() {
-  const [sections, settings] = await Promise.all([faqSections(), getSettings()]);
+  const [sections, settings, packs] = await Promise.all([faqSections(), getSettings(), infoPacks()]);
   const groups: FaqGroup[] = sections.map((s) => ({
     name: s.name,
     anchor: s.anchor,
-    faqs: s.faqs.map((f) => ({ id: f.id, q: f.question, a: fillTokens(f.answer, settings) })),
+    faqs: s.faqs.map((f) => ({ id: f.id, q: f.question, a: fillTokens(f.answer, settings, packs) })),
   }));
 
   // Lets Google show these questions in search results
