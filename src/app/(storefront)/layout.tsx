@@ -1,5 +1,5 @@
 import { Toaster } from "sonner";
-import { SiteHeader } from "@/components/site-header";
+import { SiteHeader, BottomNav } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { CartDrawer } from "@/components/cart-drawer";
 import { MarqueeBar } from "@/components/marquee-bar";
@@ -10,6 +10,10 @@ import { ReferralBanner } from "@/components/referral-banner";
 import { REF_BANNER_HIDE_COOKIE } from "@/lib/constants";
 import { CUSTOMER_COOKIE } from "@/lib/customer-auth";
 import { CartSync } from "@/components/cart-sync";
+import { GardenDefs } from "@/components/garden/art";
+import { GardenMotion } from "@/components/garden/motion";
+import { gardenFonts } from "./fonts";
+import "./garden.css";
 
 // Storefront reads live settings from the DB, so render at request time
 // (not at build, where the database isn't reachable).
@@ -27,7 +31,8 @@ export default async function StorefrontLayout({
   ]);
   const showReferral = referral && jar.get(REF_BANNER_HIDE_COOKIE)?.value !== referral.code;
   return (
-    <div className="flex min-h-full flex-col">
+    <div className={`gg-theme ${gardenFonts} flex min-h-full flex-col`}>
+      <GardenDefs />
       {settings.marqueeEnabled === "1" && (
         <MarqueeBar text={settings.marqueeText} speed={Number(settings.marqueeSpeed)} />
       )}
@@ -35,9 +40,11 @@ export default async function StorefrontLayout({
       <SiteHeader announcement={settings.announcement} signedIn={jar.has(CUSTOMER_COOKIE)} />
       <main className="flex-1">{children}</main>
       <SiteFooter />
+      <BottomNav signedIn={jar.has(CUSTOMER_COOKIE)} />
+      <GardenMotion />
       <CartDrawer />
       {jar.has(CUSTOMER_COOKIE) && <CartSync />}
-      <Toaster position="bottom-right" richColors closeButton />
+      <Toaster position="bottom-right" richColors closeButton mobileOffset={{ bottom: 96 }} />
     </div>
   );
 }

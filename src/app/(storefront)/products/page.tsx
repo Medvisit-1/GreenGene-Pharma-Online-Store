@@ -32,9 +32,9 @@ export default async function ProductsPage({
   if (featured) where.featured = true;
   if (q)
     where.OR = [
-      { name: { contains: q } },
-      { description: { contains: q } },
-      { brand: { contains: q } },
+      { name: { contains: q, mode: "insensitive" } },
+      { description: { contains: q, mode: "insensitive" } },
+      { brand: { contains: q, mode: "insensitive" } },
     ];
 
   const orderBy: Prisma.ProductOrderByWithRelationInput =
