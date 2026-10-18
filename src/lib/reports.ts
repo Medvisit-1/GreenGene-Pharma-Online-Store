@@ -60,11 +60,11 @@ async function loadPaidOrders() {
 }
 
 /**
- * Reports count an order on the day the customer placed it. (paidAt is when the
- * payment was confirmed — for EFT/manual payments that is when someone clicked
- * "paid" in the admin, which would bunch orders onto that day.)
+ * Reports count a paid order on the date it was marked paid (card payments: the
+ * moment they went through; EFT/manual: when it was set to Paid in the admin).
+ * Older orders without a paid date fall back to when they were placed.
  */
-const paidDate = (o: { createdAt: Date }) => o.createdAt;
+const paidDate = (o: { paidAt: Date | null; createdAt: Date }) => o.paidAt ?? o.createdAt;
 
 function summarise(orders: PaidOrder[]) {
   const revenue = orders.reduce((n, o) => n + o.total, 0);

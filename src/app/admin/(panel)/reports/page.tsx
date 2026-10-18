@@ -22,7 +22,7 @@ export default async function SalesReport({ searchParams }: { searchParams: Prom
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Sales report</h1>
-          <p className="text-sm text-muted-foreground">Paid orders only, by the date the order was placed (South African time).</p>
+          <p className="text-sm text-muted-foreground">Paid orders only, by the date they were marked paid (South African time).</p>
         </div>
         <nav className="flex flex-wrap gap-1.5" aria-label="Period">
           {PERIODS.map((x) => (

@@ -97,7 +97,7 @@ export default async function AdminDashboard() {
           <div className="mb-4 flex items-end justify-between gap-3">
             <div>
               <h2>Daily revenue</h2>
-              <p className="text-xs text-muted-foreground">Paid orders by the day they were placed, last 30 days (South African time)</p>
+              <p className="text-xs text-muted-foreground">Paid orders by the day they were marked paid, last 30 days (South African time)</p>
             </div>
             <Link href="/admin/insights" className="text-sm font-semibold text-[color:var(--g-plum3)] hover:underline">Trends →</Link>
           </div>

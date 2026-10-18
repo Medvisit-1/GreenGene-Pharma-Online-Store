@@ -40,7 +40,7 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
         <div>
           <h1>Insights &amp; trends</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Patterns in what sells, when, to whom and where. Paid orders, {periodLabel}, counted on the day each order was placed (South African time).
+            Patterns in what sells, when, to whom and where. Paid orders, {periodLabel}, counted on the date each was marked paid (South African time).
           </p>
         </div>
         <nav className="flex flex-wrap gap-1.5" aria-label="Period">
@@ -100,7 +100,7 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
 
       {/* When */}
       <div className="grid gap-6 xl:grid-cols-[1.6fr_1fr]">
-        <Card title="When people buy" note="When paid orders were placed, by day of the week and hour of the day.">
+        <Card title="When people buy" note="When orders were marked paid, by day of the week and hour of the day.">
           <Heatmap grid={d.heat} rows={WEEKDAYS} />
         </Card>
         <Card title="Busiest days">

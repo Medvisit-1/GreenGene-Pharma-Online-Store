@@ -12,8 +12,8 @@ function saParts(d: Date) {
   return { weekday: (sa.getUTCDay() + 6) % 7, hour: sa.getUTCHours(), day: sa.toISOString().slice(0, 10), month: sa.toISOString().slice(0, 7) };
 }
 
-/** Orders count on the day the customer placed them (see reports.ts). */
-const paidDate = (o: { createdAt: Date }) => o.createdAt;
+/** Paid orders count on the date they were marked paid (see reports.ts). */
+const paidDate = (o: { paidAt: Date | null; createdAt: Date }) => o.paidAt ?? o.createdAt;
 
 async function paidOrders() {
   return prisma.order.findMany({
@@ -255,7 +255,7 @@ export async function insightsData(period: Period, now = new Date()) {
       title: days.length === 1 ? "Busiest day" : "Busiest days",
       text: `${dayList} — ${top} of ${inRange.length} orders${days.length === 1 ? "" : " each"} (${share}).`,
     });
-    patterns.push({ title: "Peak time", text: `${peakHoursText(byHour)} is when most orders are placed. Schedule emails and posts just before it.` });
+    patterns.push({ title: "Peak time", text: `${peakHoursText(byHour)} is when most orders are paid. Schedule emails and posts just before it.` });
     if (topProducts[0]) patterns.push({ title: "Best seller", text: `${short(topProducts[0].name)} — ${Math.round((topProducts[0].revenue / Math.max(1, productSales)) * 100)}% of product sales.` });
     if (together[0]) patterns.push({ title: "Bought together", text: `${short(together[0].a)} + ${short(together[0].b)} (${together[0].orders} order${together[0].orders === 1 ? "" : "s"}). A combo or bundle offer could work well.` });
     patterns.push({ title: "Loyal customers", text: `${Math.round((repeatRevenue / Math.max(1, revenue)) * 100)}% of revenue in this period came from repeat orders.` });
