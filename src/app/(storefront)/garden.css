@@ -1,39 +1,9 @@
 /* ============================================================
    "Rewards Garden" storefront theme: cream, plum & gold, serif
    headings, handwritten accents, leaf sprigs and falling petals.
-   Everything is namespaced (gg-) so the admin is untouched.
+   Everything is namespaced (gg-). Colour tokens live in garden/tokens.css.
    ============================================================ */
 .gg-theme {
-  /* Base colours (Admin → Appearance overrides these five) */
-  --g-primary: #5c1a3b; --g-accent: #e3bd78; --g-secondary: #24543a; --g-bg: #f3ebe1; --g-ink: #2d1724;
-
-  /* Everything else is derived, so any theme stays in harmony */
-  --g-cream: var(--g-bg);
-  --g-cream2: color-mix(in oklab, var(--g-bg) 94%, var(--g-ink));
-  --g-card: color-mix(in oklab, var(--g-bg) 40%, #fff);
-  --g-plum: var(--g-primary);
-  --g-plum2: color-mix(in oklab, var(--g-primary) 84%, #fff);
-  --g-plum3: color-mix(in oklab, var(--g-primary) 70%, #fff);
-  --g-plum-hi: color-mix(in oklab, var(--g-primary) 80%, #fff);
-  --g-plum-lo: color-mix(in oklab, var(--g-primary) 76%, #000);
-  --g-forest: var(--g-secondary);
-  --g-leaf: color-mix(in oklab, var(--g-secondary) 86%, #fff);
-  --g-leaf2: color-mix(in oklab, var(--g-secondary) 70%, #fff);
-  --g-plum-soft: color-mix(in oklab, var(--g-primary) 50%, #fff);
-  --g-plum-pale: color-mix(in oklab, var(--g-primary) 32%, #fff);
-  --g-forest-lo: color-mix(in oklab, var(--g-secondary) 66%, #000);
-  --g-gold: var(--g-accent);
-  --g-muted: color-mix(in oklab, var(--g-ink) 62%, var(--g-bg));
-  --g-blush: color-mix(in oklab, var(--g-primary) 11%, #fff);
-  --g-sage: color-mix(in oklab, var(--g-secondary) 13%, #fff);
-  --g-lilac: color-mix(in oklab, var(--g-primary) 8%, #eceaf6);
-  --g-on-primary: color-mix(in oklab, var(--g-primary) 14%, #fff);
-  --g-on-primary-2: color-mix(in oklab, var(--g-primary) 26%, #fff);
-  --g-hello-a: color-mix(in oklab, var(--g-bg) 55%, #fff);
-  --g-hello-c: color-mix(in oklab, var(--g-bg) 88%, var(--g-primary));
-  --g-line: color-mix(in oklab, var(--g-bg) 86%, var(--g-ink));
-  --g-check-line: color-mix(in oklab, var(--g-primary) 22%, #fff);
-
   /* Re-point the shared tokens so every storefront page picks up the theme */
   --background: var(--g-cream);
   --foreground: var(--g-ink);

@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/utils";
 import { updateSettings, getSettings } from "@/lib/settings";
 import { parseNewReleaseCards } from "@/lib/new-release";
-import { THEME_PRESETS, resolveTheme } from "@/lib/themes";
+import { THEME_PRESETS, resolveAdminTheme, resolveTheme } from "@/lib/themes";
 import { GATEWAYS, saveGatewayStates } from "@/lib/payments";
 import {
   computeTotals,
@@ -339,18 +339,37 @@ export async function saveFrontShop(formData: FormData) {
 
 export async function saveAppearance(formData: FormData) {
   await requireAdmin();
-  const preset = String(formData.get("preset") ?? "");
-  if (preset === "custom") {
+  const target = String(formData.get("target") ?? "both");
+  const raw = String(formData.get("preset") ?? "");
+  let preset = THEME_PRESETS.some((t) => t.id === raw) ? raw : THEME_PRESETS[0].id;
+  let custom = "";
+  if (raw === "custom") {
     const pick = (k: string) => String(formData.get(k) ?? "");
-    const custom = { primary: pick("primary"), accent: pick("accent"), secondary: pick("secondary"), background: pick("background"), ink: pick("ink") };
+    const picked = { primary: pick("primary"), accent: pick("accent"), secondary: pick("secondary"), background: pick("background"), ink: pick("ink") };
     // resolveTheme drops anything that isn't a #rrggbb colour
-    const { colors } = resolveTheme("custom", JSON.stringify(custom));
-    await updateSettings({ themePreset: "custom", themeCustom: JSON.stringify(colors) });
-  } else {
-    await updateSettings({ themePreset: THEME_PRESETS.some((t) => t.id === preset) ? preset : THEME_PRESETS[0].id });
+    preset = "custom";
+    custom = JSON.stringify(resolveTheme("custom", JSON.stringify(picked)).colors);
   }
+
+  const s = await getSettings();
+  const values: Record<string, string> = {};
+  if (target === "shop" || target === "both") {
+    values.themePreset = preset;
+    values.themeCustom = custom || s.themeCustom;
+    // An admin that was following the shop keeps its current look when only the shop changes
+    if (target === "shop" && !s.adminThemePreset) {
+      const now = resolveAdminTheme(s);
+      values.adminThemePreset = now.id;
+      values.adminThemeCustom = JSON.stringify(now.colors);
+    }
+  }
+  if (target === "admin" || target === "both") {
+    values.adminThemePreset = preset;
+    values.adminThemeCustom = custom || s.adminThemeCustom;
+  }
+  await updateSettings(values);
   revalidatePath("/", "layout");
-  redirect("/admin/appearance?saved=1");
+  redirect(`/admin/appearance?saved=${target === "shop" || target === "admin" ? target : "both"}`);
 }
 
 export async function saveGateways(formData: FormData) {

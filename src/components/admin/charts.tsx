@@ -1,10 +1,10 @@
 import { cn } from "@/lib/utils";
 
-// Chart colours, validated against the admin card surface (#fbf7f1):
+// Chart colours, validated against the admin card surface (var(--g-card)):
 // slot 1 plum, slot 2 ochre; both ≥3:1, CVD-separable as a pair.
-export const SERIES = ["#8e3263", "#a8761c"] as const;
+export const SERIES = ["var(--g-chart)", "#a8761c"] as const;
 // Sequential plum ramp, light → dark (magnitude)
-const RAMP = ["#f7eaf0", "#eccbdb", "#dba3bf", "#c4769f", "#a64e80", "#7f2c5c", "#5c1a3b"];
+const RAMP = ["var(--g-ramp-1)", "var(--g-ramp-2)", "var(--g-ramp-3)", "var(--g-ramp-4)", "var(--g-ramp-5)", "var(--g-ramp-6)", "var(--g-plum)"];
 
 /** Round an axis maximum up to a clean value (1, 2, 2.5, 5 × 10ⁿ per step). */
 function niceScale(max: number, steps = 4) {
@@ -28,7 +28,7 @@ function Tip({ children, align }: { children: React.ReactNode; align: "left" | "
     <span
       role="tooltip"
       className={cn(
-        "pointer-events-none absolute bottom-full z-20 mb-1 hidden whitespace-nowrap rounded-lg bg-[#2d1724] px-2.5 py-1.5 text-xs text-white shadow-md group-hover:block group-focus-within:block",
+        "pointer-events-none absolute bottom-full z-20 mb-1 hidden whitespace-nowrap rounded-lg bg-[color:var(--g-ink)] px-2.5 py-1.5 text-xs text-white shadow-md group-hover:block group-focus-within:block",
         align === "left" ? "left-0" : align === "right" ? "right-0" : "left-1/2 -translate-x-1/2"
       )}
     >
@@ -201,10 +201,16 @@ export function Heatmap({ grid, rows }: { grid: number[][]; rows: string[] }) {
   return (
     <figure>
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[560px] border-separate" style={{ borderSpacing: 2 }}>
+        {/* Fixed layout: all 24 hour columns get equal width (auto layout gave the
+            unlabelled hours zero width, hiding two-thirds of the day) */}
+        <table className="w-full min-w-[560px] table-fixed border-separate" style={{ borderSpacing: 2 }}>
+          <colgroup>
+            <col style={{ width: 40 }} />
+            {Array.from({ length: 24 }, (_, h) => <col key={h} />)}
+          </colgroup>
           <thead>
             <tr>
-              <th className="w-10" />
+              <th />
               {Array.from({ length: 24 }, (_, h) => (
                 <th key={h} scope="col" className="text-[10px] font-normal text-muted-foreground">{h % 3 === 0 ? String(h).padStart(2, "0") : ""}</th>
               ))}

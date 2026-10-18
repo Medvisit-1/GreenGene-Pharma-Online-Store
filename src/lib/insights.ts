@@ -242,11 +242,10 @@ export async function insightsData(period: Period, now = new Date()) {
 
   // Plain-English patterns
   const peakDay = maxIndex(byWeekday);
-  const peakHour = maxIndex(byHour);
   const patterns: { title: string; text: string }[] = [];
   if (inRange.length) {
     patterns.push({ title: "Busiest day", text: `${WEEKDAYS[peakDay]} — ${byWeekday[peakDay]} of ${inRange.length} orders (${Math.round((byWeekday[peakDay] / inRange.length) * 100)}%).` });
-    patterns.push({ title: "Peak time", text: `${hourLabel(peakHour)}–${hourLabel((peakHour + 1) % 24)} is when most orders are paid. Schedule emails and posts just before it.` });
+    patterns.push({ title: "Peak time", text: `${peakHoursText(byHour)} is when most orders are paid. Schedule emails and posts just before it.` });
     if (topProducts[0]) patterns.push({ title: "Best seller", text: `${short(topProducts[0].name)} — ${Math.round((topProducts[0].revenue / Math.max(1, revenue)) * 100)}% of product sales.` });
     if (together[0]) patterns.push({ title: "Bought together", text: `${short(together[0].a)} + ${short(together[0].b)} (${together[0].orders} order${together[0].orders === 1 ? "" : "s"}). A combo or bundle offer could work well.` });
     patterns.push({ title: "Loyal customers", text: `${Math.round((repeatRevenue / Math.max(1, revenue)) * 100)}% of revenue in this period came from repeat orders.` });
@@ -301,6 +300,17 @@ function median(a: number[]) {
   const m = Math.floor(s.length / 2);
   return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
 }
+/** "20:00–21:00 (5 orders)", or the tied hours: "08:00 and 20:00 (3 orders each)". */
+export function peakHoursText(byHour: number[]) {
+  const max = Math.max(...byHour);
+  if (max === 0) return "—";
+  const peaks = byHour.map((n, h) => (n === max ? h : -1)).filter((h) => h >= 0);
+  const n = `${max} order${max === 1 ? "" : "s"}`;
+  if (peaks.length === 1) return `${hourLabel(peaks[0])}–${hourLabel((peaks[0] + 1) % 24)} (${n})`;
+  const list = peaks.slice(0, 3).map(hourLabel);
+  return `${list.slice(0, -1).join(", ")} and ${list.at(-1)}${peaks.length > 3 ? " and others" : ""} (${n} each)`;
+}
+
 export function hourLabel(h: number) {
   return `${String(h).padStart(2, "0")}:00`;
 }

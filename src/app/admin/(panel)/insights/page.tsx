@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Lightbulb } from "lucide-react";
 import { PERIODS, type Period } from "@/lib/reports";
-import { WEEKDAYS, hourLabel, insightsData, short } from "@/lib/insights";
+import { WEEKDAYS, insightsData, peakHoursText, short } from "@/lib/insights";
 import { cn, formatPrice } from "@/lib/utils";
 import { BarList, ColumnChart, DataTable, Heatmap, StackedColumns, compactRand } from "@/components/admin/charts";
 
@@ -22,7 +22,7 @@ function Stat({ label, value, note }: { label: string; value: string; note?: str
   return (
     <div className="rounded-2xl bg-white p-4">
       <p className="text-[11px] font-semibold uppercase tracking-[.16em] text-muted-foreground">{label}</p>
-      <p className="mt-1 font-[family-name:var(--font-g-serif)] text-3xl font-semibold leading-none text-[#5c1a3b]">{value}</p>
+      <p className="mt-1 font-[family-name:var(--font-g-serif)] text-3xl font-semibold leading-none text-[color:var(--g-plum)]">{value}</p>
       {note && <p className="mt-1 text-xs text-muted-foreground">{note}</p>}
     </div>
   );
@@ -51,7 +51,7 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
               aria-current={x.id === period ? "page" : undefined}
               className={cn(
                 "rounded-full border px-3 py-1.5 text-xs font-semibold",
-                x.id === period ? "border-[#5c1a3b] bg-[#5c1a3b] text-white" : "border-border bg-white hover:bg-muted"
+                x.id === period ? "border-[color:var(--g-plum)] bg-[color:var(--g-plum)] text-white" : "border-border bg-white hover:bg-muted"
               )}
             >
               {x.label}
@@ -69,8 +69,8 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
       </div>
 
       {/* Patterns */}
-      <section className="relative overflow-hidden rounded-[28px] p-6 text-[#f8ece3]" style={{ background: "radial-gradient(120% 100% at 85% 0%, #8b3463 0%, #5c1a3b 55%, #47112d 100%)" }}>
-        <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[.22em] text-[#e3bd78]">
+      <section className="relative overflow-hidden rounded-[28px] p-6 text-[color:var(--g-on-primary)]" style={{ background: "radial-gradient(120% 100% at 85% 0%, var(--g-plum-hi) 0%, var(--g-plum) 55%, var(--g-plum-lo) 100%)" }}>
+        <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[.22em] text-[color:var(--g-gold)]">
           <Lightbulb className="h-4 w-4" /> Patterns we spotted
         </p>
         {d.patterns.length === 0 ? (
@@ -80,7 +80,7 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
             {d.patterns.map((x) => (
               <li key={x.title} className="rounded-2xl bg-white/[0.08] p-4">
                 <p className="font-[family-name:var(--font-g-serif)] text-xl font-semibold text-white">{x.title}</p>
-                <p className="mt-1 text-sm text-[#f1d9e4]">{x.text}</p>
+                <p className="mt-1 text-sm text-[color:var(--g-on-primary)]">{x.text}</p>
               </li>
             ))}
           </ul>
@@ -104,9 +104,9 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
           <Heatmap grid={d.heat} rows={WEEKDAYS} />
         </Card>
         <Card title="Busiest days">
-          <BarList rows={WEEKDAYS.map((w, i) => ({ label: w, value: d.byWeekday[i], display: String(d.byWeekday[i]), sub: "orders" }))} />
+          <BarList rows={WEEKDAYS.map((w, i) => ({ label: w, value: d.byWeekday[i], display: `${d.byWeekday[i]} order${d.byWeekday[i] === 1 ? "" : "s"}` }))} />
           <p className="mt-4 text-xs text-muted-foreground">
-            Peak hour: <strong className="text-foreground">{d.orders ? hourLabel(d.byHour.indexOf(Math.max(...d.byHour))) : "—"}</strong>
+            Peak hour: <strong className="text-foreground">{peakHoursText(d.byHour)}</strong>
           </p>
         </Card>
       </div>
@@ -130,7 +130,7 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
               {d.together.map((x) => (
                 <li key={x.a + x.b} className="flex items-center gap-3 rounded-2xl bg-white px-4 py-3 text-sm">
                   <span className="font-medium">{short(x.a)}</span>
-                  <span className="text-[#a64274]">+</span>
+                  <span className="text-[color:var(--g-plum3)]">+</span>
                   <span className="font-medium">{short(x.b)}</span>
                   <span className="ml-auto text-muted-foreground">{x.orders} order{x.orders === 1 ? "" : "s"}</span>
                 </li>
@@ -163,10 +163,10 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
       {/* Marketing */}
       <div className="grid gap-6 lg:grid-cols-3">
         <Card title="Checkout completion" note={`Orders started vs paid, ${periodLabel}.`}>
-          <p className="font-[family-name:var(--font-g-serif)] text-5xl font-semibold text-[#5c1a3b]">{d.checkout.rate === null ? "—" : `${d.checkout.rate}%`}</p>
+          <p className="font-[family-name:var(--font-g-serif)] text-5xl font-semibold text-[color:var(--g-plum)]">{d.checkout.rate === null ? "—" : `${d.checkout.rate}%`}</p>
           <p className="mt-1 text-sm text-muted-foreground">{d.checkout.paid} paid of {d.checkout.created} orders placed</p>
           <div className="mt-3 h-2.5 rounded-full bg-black/[0.05]">
-            <div className="h-2.5 rounded-full bg-[#8e3263]" style={{ width: `${d.checkout.rate ?? 0}%` }} />
+            <div className="h-2.5 rounded-full bg-[color:var(--g-chart)]" style={{ width: `${d.checkout.rate ?? 0}%` }} />
           </div>
         </Card>
         <Card title="Discount codes" note="Most used in this period.">

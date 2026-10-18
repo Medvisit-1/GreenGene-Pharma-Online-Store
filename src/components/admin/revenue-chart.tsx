@@ -3,7 +3,7 @@ import { cn, formatPrice } from "@/lib/utils";
 type Month = { key: string; label: string; revenue: number; orders: number };
 
 // Brand green step that passes the chart colour checks (lightness, chroma, ≥3:1 vs surface)
-const BAR = "#22805a";
+const BAR = "var(--g-chart)";
 
 /** Round an axis maximum up to a clean value (1, 2, 2.5, 5 × 10ⁿ per step). */
 function niceScale(max: number, steps = 4) {

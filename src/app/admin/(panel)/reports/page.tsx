@@ -85,7 +85,7 @@ export default async function SalesReport({ searchParams }: { searchParams: Prom
                   <td className="px-5 py-2.5">
                     <div className="font-medium">{b.name.split(/ [-—–(]/)[0]}</div>
                     <div className="mt-1 h-1.5 max-w-xs rounded-full bg-brand-50" aria-hidden>
-                      <div className="h-full rounded-full" style={{ width: `${(b.revenue / topRevenue) * 100}%`, background: "#22805a" }} />
+                      <div className="h-full rounded-full" style={{ width: `${(b.revenue / topRevenue) * 100}%`, background: "var(--g-chart)" }} />
                     </div>
                   </td>
                   <td className="px-3 py-2.5 text-right tabular-nums">{b.units}</td>

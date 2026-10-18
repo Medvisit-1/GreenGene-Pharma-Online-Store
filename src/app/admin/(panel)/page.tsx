@@ -51,9 +51,9 @@ export default async function AdminDashboard() {
       <section className="gg-dash-hello">
         <Sprig kind="green" style={{ right: -30, top: -40, width: 140, transform: "rotate(180deg) scaleX(-1)" }} />
         <Sprig kind="plum" className="hidden md:block" style={{ right: 120, bottom: -40, width: 120, transform: "rotate(-10deg)" }} />
-        <p className="text-xs font-semibold uppercase tracking-[.22em] text-[#a64274]">{greeting()} · {dateLine}</p>
+        <p className="text-xs font-semibold uppercase tracking-[.22em] text-[color:var(--g-plum3)]">{greeting()} · {dateLine}</p>
         <h1 className="mt-2">Welcome back</h1>
-        <p className="mt-1 font-[family-name:var(--font-g-script)] text-2xl text-[#2f6b47]">here&apos;s how your shop is growing</p>
+        <p className="mt-1 font-[family-name:var(--font-g-script)] text-2xl text-[color:var(--g-leaf)]">here&apos;s how your shop is growing</p>
         <div className="mt-5 flex flex-wrap gap-2">
           <Link href="/admin/products/new" className="gg-quick"><PackagePlus className="h-4 w-4" /> Add product</Link>
           <Link href="/admin/orders" className="gg-quick"><ShoppingCart className="h-4 w-4" /> Orders</Link>
@@ -70,13 +70,13 @@ export default async function AdminDashboard() {
           <div className="flex items-center justify-between"><span className="lbl">Revenue · 30 days</span><span className="ic"><Banknote className="h-5 w-5" /></span></div>
           <p className="num">{formatPrice(kpis.revenue.value)}</p>
           <Change value={kpis.revenue.change} />
-          <div className="mt-2 text-[#e3bd78]"><Sparkline values={d.daily.map((p) => p.value)} /></div>
+          <div className="mt-2 text-[color:var(--g-gold)]"><Sparkline values={d.daily.map((p) => p.value)} /></div>
         </Link>
         <Link href="/admin/orders" className="gg-dash-tile">
-          <div className="flex items-center justify-between"><span className="lbl text-muted-foreground">Paid orders</span><span className="ic text-[#a64274]"><ShoppingCart className="h-5 w-5" /></span></div>
-          <p className="num text-[#5c1a3b]">{kpis.orders.value}</p>
+          <div className="flex items-center justify-between"><span className="lbl text-muted-foreground">Paid orders</span><span className="ic text-[color:var(--g-plum3)]"><ShoppingCart className="h-5 w-5" /></span></div>
+          <p className="num text-[color:var(--g-plum)]">{kpis.orders.value}</p>
           <Change value={kpis.orders.change} />
-          <div className="mt-2 text-[#a64274]"><Sparkline values={d.daily.map((p) => p.count)} /></div>
+          <div className="mt-2 text-[color:var(--g-plum3)]"><Sparkline values={d.daily.map((p) => p.count)} /></div>
         </Link>
         <Link href="/admin/insights" className="gg-dash-tile forest">
           <div className="flex items-center justify-between"><span className="lbl">Average order</span><span className="ic"><CircleDollarSign className="h-5 w-5" /></span></div>
@@ -84,8 +84,8 @@ export default async function AdminDashboard() {
           <Change value={kpis.aov.change} />
         </Link>
         <Link href="/admin/customers" className="gg-dash-tile">
-          <div className="flex items-center justify-between"><span className="lbl text-muted-foreground">New sign-ups</span><span className="ic text-[#a64274]"><UserPlus className="h-5 w-5" /></span></div>
-          <p className="num text-[#5c1a3b]">{kpis.signups.value}</p>
+          <div className="flex items-center justify-between"><span className="lbl text-muted-foreground">New sign-ups</span><span className="ic text-[color:var(--g-plum3)]"><UserPlus className="h-5 w-5" /></span></div>
+          <p className="num text-[color:var(--g-plum)]">{kpis.signups.value}</p>
           <Change value={kpis.signups.change} />
         </Link>
       </div>
@@ -98,7 +98,7 @@ export default async function AdminDashboard() {
               <h2>Daily revenue</h2>
               <p className="text-xs text-muted-foreground">Paid orders, last 30 days (South African time)</p>
             </div>
-            <Link href="/admin/insights" className="text-sm font-semibold text-[#a64274] hover:underline">Trends →</Link>
+            <Link href="/admin/insights" className="text-sm font-semibold text-[color:var(--g-plum3)] hover:underline">Trends →</Link>
           </div>
           <ColumnChart
             points={d.daily}
@@ -122,7 +122,7 @@ export default async function AdminDashboard() {
                   <Link href={t.href} className="flex items-center gap-3 rounded-2xl bg-white px-3 py-2.5 transition hover:translate-x-0.5 hover:shadow-sm">
                     <span className={cn(
                       "grid h-10 w-10 shrink-0 place-items-center rounded-full",
-                      t.tone === "plum" ? "bg-[#5c1a3b] text-white" : t.tone === "gold" ? "bg-[#f6ead2] text-[#7a5410]" : "bg-muted text-muted-foreground"
+                      t.tone === "plum" ? "bg-[color:var(--g-plum)] text-white" : t.tone === "gold" ? "bg-[color:var(--g-gold-soft)] text-[color:var(--g-gold-ink)]" : "bg-muted text-muted-foreground"
                     )}>
                       <t.icon className="h-4.5 w-4.5" />
                     </span>
@@ -140,7 +140,7 @@ export default async function AdminDashboard() {
         <section className="rounded-2xl border border-border bg-surface p-5">
           <div className="mb-3 flex items-center justify-between">
             <h2>Latest orders</h2>
-            <Link href="/admin/orders" className="text-sm font-semibold text-[#a64274] hover:underline">All orders →</Link>
+            <Link href="/admin/orders" className="text-sm font-semibold text-[color:var(--g-plum3)] hover:underline">All orders →</Link>
           </div>
           {d.recent.length === 0 ? (
             <p className="text-sm text-muted-foreground">No orders yet.</p>
@@ -148,7 +148,7 @@ export default async function AdminDashboard() {
             <ul className="divide-y divide-border">
               {d.recent.map((o) => (
                 <li key={o.id}>
-                  <Link href={`/admin/orders/${o.id}`} className="flex items-center gap-3 py-3 text-sm hover:text-[#5c1a3b]">
+                  <Link href={`/admin/orders/${o.id}`} className="flex items-center gap-3 py-3 text-sm hover:text-[color:var(--g-plum)]">
                     <span className="w-24 shrink-0 font-semibold">{o.orderNumber}</span>
                     <span className="min-w-0 flex-1 truncate text-muted-foreground">{o.email}</span>
                     <span className={cn("rounded-full px-2 py-0.5 text-[11px] font-semibold capitalize", STATUS[o.paymentStatus] ?? "bg-muted")}>{o.paymentStatus}</span>
@@ -163,7 +163,7 @@ export default async function AdminDashboard() {
         <section className="rounded-2xl border border-border bg-surface p-5">
           <div className="mb-3 flex items-center justify-between">
             <h2>Low stock</h2>
-            <Link href="/admin/products" className="text-sm font-semibold text-[#a64274] hover:underline">Products →</Link>
+            <Link href="/admin/products" className="text-sm font-semibold text-[color:var(--g-plum3)] hover:underline">Products →</Link>
           </div>
           {d.lowStock.length === 0 ? (
             <p className="text-sm text-muted-foreground">All products are well stocked.</p>
@@ -174,7 +174,7 @@ export default async function AdminDashboard() {
                 return (
                   <li key={p.id}>
                     <Link href={`/admin/products/${p.id}`} className="flex items-center gap-3 rounded-2xl bg-white p-2.5 hover:shadow-sm">
-                      <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-[#f6e3ea]">
+                      <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-[color:var(--g-blush)]">
                         {img && <img src={img} alt="" className="max-h-11 max-w-11 object-contain" />}
                       </span>
                       <span className="min-w-0">
@@ -189,7 +189,7 @@ export default async function AdminDashboard() {
               })}
             </ul>
           )}
-          <Link href="/admin/voice" className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[#a64274] hover:underline">
+          <Link href="/admin/voice" className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[color:var(--g-plum3)] hover:underline">
             <MessagesSquare className="h-4 w-4" /> See what customers are asking for →
           </Link>
         </section>
