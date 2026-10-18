@@ -14,6 +14,7 @@ import { GardenDefs } from "@/components/garden/art";
 import { GardenMotion } from "@/components/garden/motion";
 import { gardenFonts } from "@/components/garden/fonts";
 import { resolveTheme, themeStyle } from "@/lib/themes";
+import "@/components/garden/tokens.css";
 import "./garden.css";
 
 // Storefront reads live settings from the DB, so render at request time

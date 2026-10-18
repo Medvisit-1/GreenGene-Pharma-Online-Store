@@ -34,7 +34,7 @@ function Step({ n, title, note, children }: { n: number; title: string; note?: s
   return (
     <section className="rounded-2xl border border-border bg-surface p-6">
       <div className="mb-4 flex items-start gap-3">
-        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#5c1a3b] font-[family-name:var(--font-g-serif)] text-lg font-semibold text-[#e3bd78]">{n}</span>
+        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[color:var(--g-plum)] font-[family-name:var(--font-g-serif)] text-lg font-semibold text-[color:var(--g-gold)]">{n}</span>
         <div>
           <h2>{title}</h2>
           {note && <p className="text-xs text-muted-foreground">{note}</p>}
@@ -151,7 +151,7 @@ export default async function AdminFrontShop({
           <NewReleaseEditor name="newReleaseCards" initial={newReleaseCards} linkOptions={linkOptions} />
         </Step>
 
-        <div className="sticky bottom-4 z-10 flex items-center gap-3 rounded-full bg-[#5c1a3b] p-2 pl-6 text-sm text-[#f1d9e4] shadow-xl">
+        <div className="sticky bottom-4 z-10 flex items-center gap-3 rounded-full bg-[color:var(--g-plum)] p-2 pl-6 text-sm text-[color:var(--g-on-primary)] shadow-xl">
           <span className="flex-1">Changes go live as soon as you save.</span>
           <Button type="submit" variant="accent" size="md">Save homepage</Button>
         </div>

@@ -9,6 +9,9 @@ import { AdminToast } from "@/components/admin/admin-toast";
 import { GardenDefs, Sprig } from "@/components/garden/art";
 import { gardenFonts } from "@/components/garden/fonts";
 import { logoutAction } from "@/app/admin/actions";
+import { getSettings } from "@/lib/settings";
+import { resolveTheme, themeStyle } from "@/lib/themes";
+import "@/components/garden/tokens.css";
 import "../admin.css";
 
 export const dynamic = "force-dynamic";
@@ -23,7 +26,8 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   await requireAdmin();
-  const [reviews, voice, fulfil] = await Promise.all([
+  const [settings, reviews, voice, fulfil] = await Promise.all([
+    getSettings(),
     prisma.review.count({ where: { status: "pending" } }),
     prisma.contactMessage.count({ where: { handled: false } }).catch(() => 0),
     prisma.order.count({ where: { paymentStatus: "paid", status: "unfulfilled" } }),
@@ -31,7 +35,11 @@ export default async function AdminLayout({
   const counts = { reviews, voice, fulfil };
 
   return (
-    <div className={`gg-admin ${gardenFonts} flex min-h-screen`}>
+    // The admin wears the same colour theme as the shop (Admin → Appearance)
+    <div
+      className={`gg-admin ${gardenFonts} flex min-h-screen`}
+      style={themeStyle(resolveTheme(settings.themePreset, settings.themeCustom).colors) as React.CSSProperties}
+    >
       <GardenDefs />
       {/* Sidebar */}
       <aside className="gg-side hidden md:flex print:hidden!">
@@ -51,7 +59,7 @@ export default async function AdminLayout({
         {/* Mobile top bar */}
         <header className="gg-admin-top md:hidden print:hidden">
           <div className="flex items-center justify-between gap-4 px-4 py-3">
-            <span className="rounded-2xl bg-[#f3ebe1] px-3 py-1.5">
+            <span className="rounded-2xl bg-[color:var(--g-cream)] px-3 py-1.5">
               <Image src="/logo.png" alt="GreenGene Pharma" width={1547} height={756} className="h-7 w-auto" />
             </span>
             <form action={logoutAction}>

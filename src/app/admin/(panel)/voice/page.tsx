@@ -16,7 +16,7 @@ function Card({ title, icon: Icon, note, children, id, className }: { title: str
   return (
     <section id={id} className={cn("scroll-mt-6 rounded-2xl border border-border bg-surface p-5", className)}>
       <div className="flex items-center gap-3">
-        <span className="grid h-10 w-10 place-items-center rounded-full border border-[#a64274]/50 text-[#a64274]"><Icon className="h-4.5 w-4.5" /></span>
+        <span className="grid h-10 w-10 place-items-center rounded-full border border-[color:var(--g-plum3)]/50 text-[color:var(--g-plum3)]"><Icon className="h-4.5 w-4.5" /></span>
         <div>
           <h2>{title}</h2>
           {note && <p className="text-xs text-muted-foreground">{note}</p>}
@@ -92,18 +92,18 @@ export default async function VoicePage() {
         ) : (
           <ul className="space-y-3">
             {messages.map((m) => (
-              <li key={m.id} className={cn("rounded-2xl p-4", m.handled ? "bg-white/60 opacity-75" : "bg-white shadow-sm ring-1 ring-[#a64274]/20")}>
+              <li key={m.id} className={cn("rounded-2xl p-4", m.handled ? "bg-white/60 opacity-75" : "bg-white shadow-sm ring-1 ring-[color:var(--g-plum3)]/20")}>
                 <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                  {!m.handled && <span className="rounded-full bg-[#5c1a3b] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">New</span>}
+                  {!m.handled && <span className="rounded-full bg-[color:var(--g-plum)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">New</span>}
                   <strong>{m.name}</strong>
-                  <a href={`mailto:${m.email}?subject=${encodeURIComponent(`Re: ${m.subject || "your message to GreenGene Pharma"}`)}`} className="text-sm text-[#a64274] hover:underline">{m.email}</a>
+                  <a href={`mailto:${m.email}?subject=${encodeURIComponent(`Re: ${m.subject || "your message to GreenGene Pharma"}`)}`} className="text-sm text-[color:var(--g-plum3)] hover:underline">{m.email}</a>
                   {m.phone && <span className="text-sm text-muted-foreground">{m.phone}</span>}
                   <span className="ml-auto text-xs text-muted-foreground">{when(m.createdAt)}</span>
                 </div>
                 {m.subject && <p className="mt-1 text-sm font-semibold">{m.subject}</p>}
                 <p className="mt-1 whitespace-pre-line text-sm text-foreground/85">{m.message}</p>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  <a href={`mailto:${m.email}?subject=${encodeURIComponent(`Re: ${m.subject || "your message to GreenGene Pharma"}`)}`} className="inline-flex items-center gap-1.5 rounded-full bg-[#5c1a3b] px-3 py-1.5 text-xs font-semibold text-white">
+                  <a href={`mailto:${m.email}?subject=${encodeURIComponent(`Re: ${m.subject || "your message to GreenGene Pharma"}`)}`} className="inline-flex items-center gap-1.5 rounded-full bg-[color:var(--g-plum)] px-3 py-1.5 text-xs font-semibold text-white">
                     <Mail className="h-3.5 w-3.5" /> Reply
                   </a>
                   <form action={setMessageHandled}>
@@ -136,7 +136,7 @@ export default async function VoicePage() {
                 <div key={r} className="flex items-center gap-3 text-sm">
                   <span className="w-8 shrink-0 tabular-nums">{r}★</span>
                   <span className="h-2 flex-1 rounded-full bg-black/[0.05]">
-                    <span className="block h-2 rounded-full bg-[#8e3263]" style={{ width: `${totalRatings ? (n / totalRatings) * 100 : 0}%` }} />
+                    <span className="block h-2 rounded-full bg-[color:var(--g-chart)]" style={{ width: `${totalRatings ? (n / totalRatings) * 100 : 0}%` }} />
                   </span>
                   <span className="w-8 shrink-0 text-right tabular-nums text-muted-foreground">{n}</span>
                 </div>
@@ -156,16 +156,16 @@ export default async function VoicePage() {
               </li>
             ))}
           </ul>
-          <Link href="/admin/reviews" className="mt-2 inline-block text-sm font-semibold text-[#a64274] hover:underline">Moderate reviews →</Link>
+          <Link href="/admin/reviews" className="mt-2 inline-block text-sm font-semibold text-[color:var(--g-plum3)] hover:underline">Moderate reviews →</Link>
         </Card>
 
         {/* Searches */}
         <Card title="What people search for" icon={Search} note={`${searches.length} searches in the last 90 days`}>
           <BarList rows={topTerms.map(([t, v]) => ({ label: `“${t}”`, value: v.n, display: `${v.n}×` }))} empty="No searches yet — they appear as shoppers use the search box." />
           {zeroTerms.length > 0 && (
-            <div className="mt-5 rounded-2xl bg-[#f6ead2] p-4">
-              <p className="text-sm font-semibold text-[#7a5410]">Searched for but not found</p>
-              <p className="mb-2 text-xs text-[#7a5410]/80">Possible new products, or words to add to existing product descriptions.</p>
+            <div className="mt-5 rounded-2xl bg-[color:var(--g-gold-soft)] p-4">
+              <p className="text-sm font-semibold text-[color:var(--g-gold-ink)]">Searched for but not found</p>
+              <p className="mb-2 text-xs text-[color:var(--g-gold-ink)]/80">Possible new products, or words to add to existing product descriptions.</p>
               <div className="flex flex-wrap gap-1.5">
                 {zeroTerms.map(([t, v]) => (
                   <span key={t} className="rounded-full bg-white px-2.5 py-1 text-xs font-medium">{t} <span className="text-muted-foreground">×{v.zero}</span></span>
@@ -221,7 +221,7 @@ export default async function VoicePage() {
             ))}
           </ul>
         )}
-        <Link href="/admin/newsletter" className="mt-3 inline-block text-sm font-semibold text-[#a64274] hover:underline">Newsletter →</Link>
+        <Link href="/admin/newsletter" className="mt-3 inline-block text-sm font-semibold text-[color:var(--g-plum3)] hover:underline">Newsletter →</Link>
       </Card>
     </div>
   );

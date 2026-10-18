@@ -97,7 +97,7 @@ export function AdminNav({ counts, compact = false }: { counts: NavCounts; compa
     <nav className="gg-side-nav" aria-label="Admin">
       {GROUPS.map((g) => (
         <div key={g.title} className="mb-2">
-          <p className="mb-0.5 px-3 text-[10px] font-semibold uppercase tracking-[.2em] text-[#e3bd78]/80">{g.title}</p>
+          <p className="mb-0.5 px-3 text-[10px] font-semibold uppercase tracking-[.2em] text-[color:var(--g-gold)]/80">{g.title}</p>
           <div className="grid gap-0.5">{g.items.map(link)}</div>
         </div>
       ))}

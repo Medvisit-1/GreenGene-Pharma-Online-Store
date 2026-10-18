@@ -70,7 +70,7 @@ export function ThemePicker({ current, custom }: { current: string; custom: Them
         <input type="hidden" name="preset" value={preset} />
         <section className="rounded-2xl border border-border bg-surface p-5">
           <h2>Themes</h2>
-          <p className="mb-4 text-xs text-muted-foreground">Pick a ready-made colour scheme. It changes the whole shop — every page, the header and the footer. Emails and this admin keep their own colours.</p>
+          <p className="mb-4 text-xs text-muted-foreground">Pick a ready-made colour scheme. It changes the whole shop (every page, the header and the footer) and this admin too. Emails keep their own colours.</p>
           <div className="grid gap-3 sm:grid-cols-2 2xl:grid-cols-3">
             {THEME_PRESETS.map((t) => (
               <button
@@ -80,10 +80,10 @@ export function ThemePicker({ current, custom }: { current: string; custom: Them
                 aria-pressed={preset === t.id}
                 className={cn(
                   "relative rounded-2xl bg-white p-4 text-left transition hover:-translate-y-0.5 hover:shadow-md",
-                  preset === t.id ? "ring-2 ring-[#5c1a3b]" : "ring-1 ring-border"
+                  preset === t.id ? "ring-2 ring-[color:var(--g-plum)]" : "ring-1 ring-border"
                 )}
               >
-                {preset === t.id && <span className="absolute right-3 top-3 grid h-6 w-6 place-items-center rounded-full bg-[#5c1a3b] text-white"><Check className="h-3.5 w-3.5" /></span>}
+                {preset === t.id && <span className="absolute right-3 top-3 grid h-6 w-6 place-items-center rounded-full bg-[color:var(--g-plum)] text-white"><Check className="h-3.5 w-3.5" /></span>}
                 <div className="flex h-12 overflow-hidden rounded-xl">
                   <span className="flex-[3]" style={{ background: t.colors.primary }} />
                   <span className="flex-[2]" style={{ background: t.colors.secondary }} />
@@ -97,7 +97,7 @@ export function ThemePicker({ current, custom }: { current: string; custom: Them
           </div>
         </section>
 
-        <section className={cn("rounded-2xl border bg-surface p-5", preset === "custom" ? "border-[#5c1a3b]" : "border-border")}>
+        <section className={cn("rounded-2xl border bg-surface p-5", preset === "custom" ? "border-[color:var(--g-plum)]" : "border-border")}>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
               <h2>Your own colours</h2>
@@ -109,7 +109,7 @@ export function ThemePicker({ current, custom }: { current: string; custom: Them
                 if (preset !== "custom") setColors(active);
                 setPreset("custom");
               }}
-              className={cn("rounded-full px-4 py-2 text-sm font-semibold", preset === "custom" ? "bg-[#5c1a3b] text-white" : "border border-border bg-white")}
+              className={cn("rounded-full px-4 py-2 text-sm font-semibold", preset === "custom" ? "bg-[color:var(--g-plum)] text-white" : "border border-border bg-white")}
             >
               {preset === "custom" ? "Using your colours" : "Start from this theme"}
             </button>
@@ -139,7 +139,7 @@ export function ThemePicker({ current, custom }: { current: string; custom: Them
         <section className="rounded-2xl border border-border bg-surface p-5">
           <h2 className="mb-3">Live preview</h2>
           <Preview c={active} />
-          <button type="submit" className="mt-4 w-full rounded-full bg-[#5c1a3b] px-6 py-3 text-sm font-semibold text-white hover:bg-[#4b1a37]">
+          <button type="submit" className="mt-4 w-full rounded-full bg-[color:var(--g-plum)] px-6 py-3 text-sm font-semibold text-white hover:bg-[color:var(--g-plum-dark)]">
             Apply to my shop
           </button>
           <p className="mt-2 text-center text-xs text-muted-foreground">You can switch back any time.</p>
