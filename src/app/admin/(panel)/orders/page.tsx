@@ -1,4 +1,5 @@
-import { CheckCheck, Download } from "lucide-react";
+import Link from "next/link";
+import { ArrowLeft, CheckCheck, Clock, Download } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatPrice } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -9,12 +10,19 @@ import { fulfillAllPaid } from "@/app/admin/actions";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Orders" };
 
-export default async function AdminOrders({ searchParams }: { searchParams: Promise<{ fulfilled?: string }> }) {
-  const { fulfilled } = await searchParams;
-  const orders = await prisma.order.findMany({
-    orderBy: { createdAt: "desc" },
-    include: { _count: { select: { items: true } } },
-  });
+export default async function AdminOrders({ searchParams }: { searchParams: Promise<{ fulfilled?: string; show?: string }> }) {
+  const { fulfilled, show } = await searchParams;
+  // The list shows paid orders only. Unpaid ones live behind "Awaiting payment",
+  // so EFT orders can still be opened and set to Paid.
+  const awaiting = show === "unpaid";
+  const [orders, unpaidCount] = await Promise.all([
+    prisma.order.findMany({
+      where: { paymentStatus: awaiting ? "unpaid" : "paid" },
+      orderBy: { createdAt: "desc" },
+      include: { _count: { select: { items: true } } },
+    }),
+    prisma.order.count({ where: { paymentStatus: "unpaid" } }),
+  ]);
 
   const paidToShip = orders.filter(
     (o) => o.paymentStatus === "paid" && o.status === "unfulfilled"
@@ -23,7 +31,22 @@ export default async function AdminOrders({ searchParams }: { searchParams: Prom
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold tracking-tight">Orders ({orders.length})</h1>
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">{awaiting ? "Awaiting payment" : "Paid orders"} ({orders.length})</h1>
+          {awaiting ? (
+            <p className="mt-1 text-sm text-muted-foreground">
+              Orders not paid yet. Open one and set its payment to Paid when an EFT comes in — it then moves to Paid orders.{" "}
+              <Link href="/admin/orders" className="inline-flex items-center gap-1 font-semibold text-brand-700 hover:underline"><ArrowLeft className="h-3.5 w-3.5" /> Back to paid orders</Link>
+            </p>
+          ) : (
+            unpaidCount > 0 && (
+              <Link href="/admin/orders?show=unpaid" className="mt-1 inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-brand-700">
+                <Clock className="h-3.5 w-3.5" /> Awaiting payment ({unpaidCount}) →
+              </Link>
+            )
+          )}
+        </div>
+        {!awaiting && (
         <div className="flex flex-wrap gap-2">
         {paidToShip > 0 ? (
           <form action={fulfillAllPaid}>
@@ -51,6 +74,7 @@ export default async function AdminOrders({ searchParams }: { searchParams: Prom
           </Button>
         )}
         </div>
+        )}
       </div>
 
       {fulfilled !== undefined && (
@@ -63,7 +87,7 @@ export default async function AdminOrders({ searchParams }: { searchParams: Prom
 
       {orders.length === 0 ? (
         <p className="rounded-2xl border border-dashed border-border p-10 text-center text-muted-foreground">
-          No orders yet.
+          {awaiting ? "No orders are waiting for payment." : "No paid orders yet."}
         </p>
       ) : (
         <div className="overflow-hidden rounded-2xl border border-border bg-surface">

@@ -1,6 +1,6 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
-import { periodRange, type Period } from "@/lib/reports";
+import { periodRange, saDayStart, type Period } from "@/lib/reports";
 
 const DAY = 864e5;
 const SAST = 2 * 36e5; // South Africa is UTC+2 all year
@@ -12,6 +12,7 @@ function saParts(d: Date) {
   return { weekday: (sa.getUTCDay() + 6) % 7, hour: sa.getUTCHours(), day: sa.toISOString().slice(0, 10), month: sa.toISOString().slice(0, 7) };
 }
 
+/** Paid orders count on the date they were marked paid (see reports.ts). */
 const paidDate = (o: { paidAt: Date | null; createdAt: Date }) => o.paidAt ?? o.createdAt;
 
 async function paidOrders() {
@@ -70,8 +71,9 @@ const pct = (now: number, before: number) => (before > 0 ? Math.round(((now - be
 // ---------------------------------------------------------------------------
 
 export async function dashboardData(now = new Date()) {
-  const from = new Date(now.getTime() - 30 * DAY);
-  const prevFrom = new Date(now.getTime() - 60 * DAY);
+  // Last 30 SA calendar days (today included), matching the chart's 30 columns
+  const from = saDayStart(now, 29);
+  const prevFrom = new Date(from.getTime() - 30 * DAY);
   const [orders, signups, prevSignups, toFulfil, unpaid, pendingReviews, lowStock, waitingAlerts, messages, recent] = await Promise.all([
     paidOrders(),
     prisma.customer.count({ where: { createdAt: { gte: from } } }),
@@ -82,7 +84,7 @@ export async function dashboardData(now = new Date()) {
     prisma.product.findMany({ where: { active: true, stock: { lte: 5 } }, orderBy: { stock: "asc" }, take: 6 }),
     prisma.stockAlert.count({ where: { notifiedAt: null } }),
     prisma.contactMessage.count({ where: { handled: false } }).catch(() => 0),
-    prisma.order.findMany({ orderBy: { createdAt: "desc" }, take: 6 }),
+    prisma.order.findMany({ where: { paymentStatus: "paid" }, orderBy: [{ paidAt: { sort: "desc", nulls: "last" } }, { createdAt: "desc" }], take: 6 }),
   ]);
   const cur = orders.filter((o) => paidDate(o) >= from);
   const prev = orders.filter((o) => paidDate(o) >= prevFrom && paidDate(o) < from);
@@ -128,7 +130,7 @@ export async function insightsData(period: Period, now = new Date()) {
   const daily = period === "30d" || period === "90d";
   const trend = daily
     ? fill(dailyBuckets(period === "30d" ? 30 : 90, now), inRange, "day")
-    : fill(monthlyBuckets(period === "12m" || period === "ytd" ? 12 : Math.max(12, monthsSpan(all, now)), now), inRange, "month");
+    : fill(monthlyBuckets(period === "12m" ? 12 : period === "ytd" ? new Date(now.getTime() + SAST).getUTCMonth() + 1 : Math.max(12, monthsSpan(all, now)), now), inRange, "month");
 
   // When do people buy? weekday × hour (SA time)
   const heat = Array.from({ length: 7 }, () => Array(24).fill(0) as number[]);
@@ -210,7 +212,7 @@ export async function insightsData(period: Period, now = new Date()) {
     let prov = "Not given";
     try {
       const a = JSON.parse(o.shippingAddress || "{}") as Record<string, string>;
-      prov = (a.province || a.state || a.city || "Not given").trim() || "Not given";
+      prov = (a.province || a.state || "").trim() || "Not given";
     } catch {
       /* keep "Not given" */
     }
@@ -222,7 +224,8 @@ export async function insightsData(period: Period, now = new Date()) {
 
   // Checkout completion and discounts
   const created = createdOrders.reduce((n, g) => n + g._count._all, 0);
-  const paid = createdOrders.find((g) => g.paymentStatus === "paid")?._count._all ?? 0;
+  // Refunded orders were paid too; they count as completed checkouts
+  const paid = createdOrders.filter((g) => g.paymentStatus === "paid" || g.paymentStatus === "refunded").reduce((n, g) => n + g._count._all, 0);
   const codes = new Map<string, { uses: number; discount: number }>();
   for (const o of inRange)
     if (o.discountCode) {
@@ -241,12 +244,19 @@ export async function insightsData(period: Period, now = new Date()) {
   }
 
   // Plain-English patterns
-  const peakDay = maxIndex(byWeekday);
+  const productSales = [...prod.values()].reduce((n, r) => n + r.revenue, 0);
   const patterns: { title: string; text: string }[] = [];
   if (inRange.length) {
-    patterns.push({ title: "Busiest day", text: `${WEEKDAYS[peakDay]} — ${byWeekday[peakDay]} of ${inRange.length} orders (${Math.round((byWeekday[peakDay] / inRange.length) * 100)}%).` });
+    const top = Math.max(...byWeekday);
+    const days = WEEKDAYS.filter((_, i) => byWeekday[i] === top);
+    const dayList = days.length === 1 ? days[0] : `${days.slice(0, -1).join(", ")} and ${days.at(-1)} (tied)`;
+    const share = `${Math.round((top / inRange.length) * 100)}%`;
+    patterns.push({
+      title: days.length === 1 ? "Busiest day" : "Busiest days",
+      text: `${dayList} — ${top} of ${inRange.length} orders${days.length === 1 ? "" : " each"} (${share}).`,
+    });
     patterns.push({ title: "Peak time", text: `${peakHoursText(byHour)} is when most orders are paid. Schedule emails and posts just before it.` });
-    if (topProducts[0]) patterns.push({ title: "Best seller", text: `${short(topProducts[0].name)} — ${Math.round((topProducts[0].revenue / Math.max(1, revenue)) * 100)}% of product sales.` });
+    if (topProducts[0]) patterns.push({ title: "Best seller", text: `${short(topProducts[0].name)} — ${Math.round((topProducts[0].revenue / Math.max(1, productSales)) * 100)}% of product sales.` });
     if (together[0]) patterns.push({ title: "Bought together", text: `${short(together[0].a)} + ${short(together[0].b)} (${together[0].orders} order${together[0].orders === 1 ? "" : "s"}). A combo or bundle offer could work well.` });
     patterns.push({ title: "Loyal customers", text: `${Math.round((repeatRevenue / Math.max(1, revenue)) * 100)}% of revenue in this period came from repeat orders.` });
     const topProv = [...provinces.entries()].filter(([k]) => k !== "Not given").sort((a, b) => b[1].orders - a[1].orders)[0];
@@ -291,9 +301,6 @@ function monthsSpan(all: PaidOrder[], now: Date) {
   if (!all.length) return 12;
   const first = Math.min(...all.map((o) => paidDate(o).getTime()));
   return Math.min(36, Math.ceil((now.getTime() - first) / (30.4 * DAY)) + 1);
-}
-function maxIndex(a: number[]) {
-  return a.reduce((best, v, i) => (v > a[best] ? i : best), 0);
 }
 function median(a: number[]) {
   const s = [...a].sort((x, y) => x - y);

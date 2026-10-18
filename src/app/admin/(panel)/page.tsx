@@ -42,7 +42,7 @@ export default async function AdminDashboard() {
     { n: todo.pendingReviews, label: "reviews waiting for approval", href: "/admin/reviews", icon: Star, tone: "gold" },
     { n: todo.lowStock, label: "products low on stock", href: "/admin/products", icon: AlertTriangle, tone: "gold" },
     { n: todo.waitingAlerts, label: "shoppers waiting for back-in-stock", href: "/admin/voice#demand", icon: Bell, tone: "gold" },
-    { n: todo.unpaid, label: "unpaid orders this week", href: "/admin/orders", icon: CircleDollarSign, tone: "muted" },
+    { n: todo.unpaid, label: "unpaid orders this week", href: "/admin/orders?show=unpaid", icon: CircleDollarSign, tone: "muted" },
   ].filter((t) => t.n > 0);
 
   return (
@@ -87,6 +87,7 @@ export default async function AdminDashboard() {
           <div className="flex items-center justify-between"><span className="lbl text-muted-foreground">New sign-ups</span><span className="ic text-[color:var(--g-plum3)]"><UserPlus className="h-5 w-5" /></span></div>
           <p className="num text-[color:var(--g-plum)]">{kpis.signups.value}</p>
           <Change value={kpis.signups.change} />
+          <span className="sub block">New accounts and newsletter subscribers</span>
         </Link>
       </div>
 
@@ -96,7 +97,7 @@ export default async function AdminDashboard() {
           <div className="mb-4 flex items-end justify-between gap-3">
             <div>
               <h2>Daily revenue</h2>
-              <p className="text-xs text-muted-foreground">Paid orders, last 30 days (South African time)</p>
+              <p className="text-xs text-muted-foreground">Paid orders by the day they were marked paid, last 30 days (South African time)</p>
             </div>
             <Link href="/admin/insights" className="text-sm font-semibold text-[color:var(--g-plum3)] hover:underline">Trends →</Link>
           </div>
@@ -139,7 +140,7 @@ export default async function AdminDashboard() {
       <div className="grid gap-6 lg:grid-cols-2">
         <section className="rounded-2xl border border-border bg-surface p-5">
           <div className="mb-3 flex items-center justify-between">
-            <h2>Latest orders</h2>
+            <h2>Latest paid orders</h2>
             <Link href="/admin/orders" className="text-sm font-semibold text-[color:var(--g-plum3)] hover:underline">All orders →</Link>
           </div>
           {d.recent.length === 0 ? (
