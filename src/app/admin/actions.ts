@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/utils";
 import { updateSettings, getSettings } from "@/lib/settings";
 import { parseNewReleaseCards } from "@/lib/new-release";
+import { THEME_PRESETS, resolveTheme } from "@/lib/themes";
 import { GATEWAYS, saveGatewayStates } from "@/lib/payments";
 import {
   computeTotals,
@@ -300,7 +301,6 @@ export async function saveSettings(formData: FormData) {
     contactEmail: String(formData.get("contactEmail") ?? ""),
     contactAddress: String(formData.get("contactAddress") ?? ""),
     contactHours: String(formData.get("contactHours") ?? ""),
-    announcement: String(formData.get("announcement") ?? ""),
     shippingFlat: String(randsToCents(formData.get("shippingFlat"))),
     freeShippingThreshold: String(randsToCents(formData.get("freeShippingThreshold"))),
     legalInfoOfficer: String(formData.get("legalInfoOfficer") ?? "").trim(),
@@ -313,39 +313,44 @@ export async function saveSettings(formData: FormData) {
 export async function saveFrontShop(formData: FormData) {
   await requireAdmin();
   const g = (k: string) => String(formData.get(k) ?? "");
+  const on = (k: string) => (formData.get(k) === "on" ? "1" : "0");
   await updateSettings({
-    heroBadge: g("heroBadge"),
-    heroHeading: g("heroHeading"),
-    heroSubheading: g("heroSubheading"),
-    heroPrimaryLabel: g("heroPrimaryLabel"),
-    heroPrimaryLink: g("heroPrimaryLink"),
-    heroSecondaryLabel: g("heroSecondaryLabel"),
-    heroSecondaryLink: g("heroSecondaryLink"),
-    heroImage: g("heroImage"),
-    feat1Title: g("feat1Title"), feat1Text: g("feat1Text"),
-    feat2Title: g("feat2Title"), feat2Text: g("feat2Text"),
-    feat3Title: g("feat3Title"), feat3Text: g("feat3Text"),
-    feat4Title: g("feat4Title"), feat4Text: g("feat4Text"),
-    rqtHeading: g("rqtHeading"),
-    rqtBody: g("rqtBody"),
-    rqtButtonLabel: g("rqtButtonLabel"),
-    rqtButtonLink: g("rqtButtonLink"),
-    rqtStat1Key: g("rqtStat1Key"), rqtStat1Val: g("rqtStat1Val"),
-    rqtStat2Key: g("rqtStat2Key"), rqtStat2Val: g("rqtStat2Val"),
-    rqtStat3Key: g("rqtStat3Key"), rqtStat3Val: g("rqtStat3Val"),
-    ctaHeading: g("ctaHeading"),
-    ctaSubheading: g("ctaSubheading"),
-    ctaButtonLabel: g("ctaButtonLabel"),
-    ctaButtonLink: g("ctaButtonLink"),
-    newReleaseEnabled: formData.get("newReleaseEnabled") === "on" ? "1" : "0",
+    announcement: g("announcement").slice(0, 200),
+    homeTagline: g("homeTagline").slice(0, 80),
+    homeSlidesHeading: g("homeSlidesHeading").slice(0, 60),
+    homeSlideRewards: on("homeSlideRewards"),
+    homeSlideOffer: on("homeSlideOffer"),
+    homeSlideArticle: on("homeSlideArticle"),
+    homeShowJourney: on("homeShowJourney"),
+    homeShowRoutine: on("homeShowRoutine"),
+    homeShowPopular: on("homeShowPopular"),
+    homePopularHeading: g("homePopularHeading").slice(0, 60),
+    homeRewardsPhoto: g("homeRewardsPhoto"),
+    newReleaseEnabled: on("newReleaseEnabled"),
     newReleaseHeading: g("newReleaseHeading"),
     newReleaseCards: JSON.stringify(parseNewReleaseCards(g("newReleaseCards"))),
-    marqueeEnabled: formData.get("marqueeEnabled") === "on" ? "1" : "0",
+    marqueeEnabled: on("marqueeEnabled"),
     marqueeText: g("marqueeText"),
     marqueeSpeed: String(parseInt(g("marqueeSpeed"), 10) || 30),
   });
   revalidatePath("/", "layout");
   redirect("/admin/front-shop?saved=1");
+}
+
+export async function saveAppearance(formData: FormData) {
+  await requireAdmin();
+  const preset = String(formData.get("preset") ?? "");
+  if (preset === "custom") {
+    const pick = (k: string) => String(formData.get(k) ?? "");
+    const custom = { primary: pick("primary"), accent: pick("accent"), secondary: pick("secondary"), background: pick("background"), ink: pick("ink") };
+    // resolveTheme drops anything that isn't a #rrggbb colour
+    const { colors } = resolveTheme("custom", JSON.stringify(custom));
+    await updateSettings({ themePreset: "custom", themeCustom: JSON.stringify(colors) });
+  } else {
+    await updateSettings({ themePreset: THEME_PRESETS.some((t) => t.id === preset) ? preset : THEME_PRESETS[0].id });
+  }
+  revalidatePath("/", "layout");
+  redirect("/admin/appearance?saved=1");
 }
 
 export async function saveGateways(formData: FormData) {

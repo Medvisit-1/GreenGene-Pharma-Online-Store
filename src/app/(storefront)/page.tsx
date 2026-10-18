@@ -53,8 +53,8 @@ export default async function HomePage() {
 
   // ----- "For you this week" slides -----
   const slides: Slide[] = [];
-  if (rewards) slides.push({ key: "rewards", className: "gg-s1", label: "GreenGene Rewards", content: <RewardsSlide rewards={rewards} signedIn={!!customer} /> });
-  if (offer) {
+  if (rewards && s.homeSlideRewards !== "0") slides.push({ key: "rewards", className: "gg-s1", label: "GreenGene Rewards", content: <RewardsSlide rewards={rewards} signedIn={!!customer} photo={s.homeRewardsPhoto || "/img/rewards-photo.webp"} /> });
+  if (offer && s.homeSlideOffer !== "0") {
     const t = productTitle(offer.name);
     const img = firstImage(offer);
     slides.push({
@@ -77,7 +77,7 @@ export default async function HomePage() {
       ),
     });
   }
-  if (article) {
+  if (article && s.homeSlideArticle !== "0") {
     const img = article.product ? firstImage(article.product) : null;
     slides.push({
       key: "article",
@@ -104,12 +104,12 @@ export default async function HomePage() {
       {/* Row 1: greeting + rewards */}
       <div className="gg-top">
         <section className="gg-hello">
-          <Petals colors={["#a64274", "#c97a9e", "#e3b6c8"]} leaf="#2f6b47" count={14} height={460} />
+          <Petals colors={["var(--g-plum3)", "var(--g-plum-soft)", "var(--g-plum-pale)"]} leaf="var(--g-leaf)" count={14} height={460} />
           <Sprig kind="green" style={{ right: -34, top: -44, width: 150, transform: "rotate(180deg) scaleX(-1)" }} />
           <Sprig kind="plum" className="gg-hide-m" style={{ right: 40, bottom: -30, width: 150, transform: "rotate(-10deg)" }} />
           <div className="gg-caps">{greeting()}</div>
           <h1>{customer ? `Welcome back${firstName ? `, ${firstName}` : ""}` : "Welcome to GreenGene"}</h1>
-          <div className="gg-script"><span className="gg-write">your path to healthy living</span></div>
+          <div className="gg-script"><span className="gg-write">{s.homeTagline}</span></div>
           <form action="/products" className="gg-search" role="search">
             <Search className="h-5 w-5 shrink-0" />
             <input name="q" type="search" placeholder="Search products, ingredients or goals…" aria-label="Search products" />
@@ -138,25 +138,31 @@ export default async function HomePage() {
       {/* Banner slider */}
       {slides.length > 0 && (
         <>
-          <div className="gg-sh"><h2>For you this week</h2><Link href="/promotions">All offers →</Link></div>
+          <div className="gg-sh"><h2>{s.homeSlidesHeading || "For you this week"}</h2><Link href="/promotions">All offers →</Link></div>
           <HomeSlider slides={slides} />
         </>
       )}
 
       {/* Journey band */}
-      {rewards && <Journey signedIn={!!customer} />}
+      {rewards && s.homeShowJourney !== "0" && <Journey signedIn={!!customer} />}
 
       {/* Routine + refill */}
-      <div className="gg-two">
-        <Routine order={order} fallback={popular} signedIn={!!customer} />
-        <RefillCard order={order} defaultDays={defaultDays} signedIn={!!customer} fallback={popular[1] ?? popular[0]} />
-      </div>
+      {s.homeShowRoutine !== "0" && (
+        <div className="gg-two">
+          <Routine order={order} fallback={popular} signedIn={!!customer} />
+          <RefillCard order={order} defaultDays={defaultDays} signedIn={!!customer} fallback={popular[1] ?? popular[0]} />
+        </div>
+      )}
 
       {/* Popular */}
-      <div className="gg-sh"><h2>Popular right now</h2><Link href="/products">Shop all →</Link></div>
-      <div className="gg-grid">
-        {popular.map((p, i) => <Tile key={p.id} product={p} index={i} />)}
-      </div>
+      {s.homeShowPopular !== "0" && (
+        <>
+          <div className="gg-sh"><h2>{s.homePopularHeading || "Popular right now"}</h2><Link href="/products">Shop all →</Link></div>
+          <div className="gg-grid">
+            {popular.map((p, i) => <Tile key={p.id} product={p} index={i} />)}
+          </div>
+        </>
+      )}
 
       {s.newReleaseEnabled === "1" && newReleaseCards.length > 0 && (
         <div className="mt-6">
@@ -249,7 +255,7 @@ function DeliveryCard({ flat, threshold }: { flat: number; threshold: number }) 
   );
 }
 
-function RewardsSlide({ rewards, signedIn }: { rewards: RewardHighlights; signedIn: boolean }) {
+function RewardsSlide({ rewards, signedIn, photo }: { rewards: RewardHighlights; signedIn: boolean; photo: string }) {
   const { welcome, referral, milestones } = rewards;
   const amount = (r: NonNullable<RewardHighlights["welcome"]>) =>
     r.discountType === "fixed" && r.discountValue % 100 === 0
@@ -280,7 +286,7 @@ function RewardsSlide({ rewards, signedIn }: { rewards: RewardHighlights; signed
         </li>
       </ul>
       <div className="photo">
-        <img src="/img/rewards-photo.webp" alt="" />
+        <img src={photo} alt="" />
         <Sprig kind="plum" className="gg-hide-m" style={{ right: -36, bottom: -62, width: 130, transform: "rotate(-24deg)" }} />
       </div>
       <div className="tc">{welcome ? "*Valid for new subscribers. " : ""}<Link href="/rewards-terms">T&amp;Cs apply</Link>.</div>
@@ -300,7 +306,7 @@ function Journey({ signedIn }: { signedIn: boolean }) {
       </div>
       <div className="gg-path" aria-hidden>
         <svg className="line" viewBox="0 0 700 150" preserveAspectRatio="none">
-          <path d={PATH} stroke="rgba(243,235,225,.25)" strokeWidth="2" strokeDasharray="4 8" fill="none" />
+          <path className="dash" d={PATH} stroke="rgba(243,235,225,.25)" strokeWidth="2" strokeDasharray="4 8" fill="none" />
           <path className="draw" d={PATH} stroke="#e3bd78" strokeWidth="2.5" fill="none" />
           <circle r="7" fill="#e3bd78" className="gg-journey-dot">
             <animateMotion dur="6s" repeatCount="indefinite" keyPoints="0;0.5;1;1" keyTimes="0;0.4;0.8;1" calcMode="linear" path={PATH} />

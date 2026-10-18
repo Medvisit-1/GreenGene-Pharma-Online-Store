@@ -13,7 +13,7 @@ export async function SiteFooter() {
   const welcome = rewards?.welcome;
   return (
     <footer className="gg-footer">
-      <Petals colors={["#a64274", "#c97a9e"]} leaf="#3b8a5b" count={12} height={760} />
+      <Petals colors={["var(--g-plum3)", "var(--g-plum-soft)"]} leaf="var(--g-leaf2)" count={12} height={760} />
       <Sprig kind="green" style={{ left: -20, bottom: -30, width: 180, transform: "rotate(10deg)", opacity: 0.6 }} />
       <Sprig kind="plum" style={{ right: -10, top: -20, width: 170, transform: "rotate(190deg)", opacity: 0.8 }} />
 
@@ -62,9 +62,9 @@ export async function SiteFooter() {
           <div>
             <h4>Get in touch</h4>
             <ul>
-              <li className="flex items-center gap-2.5"><Phone className="h-4 w-4 shrink-0 text-[#e3bd78]" /> {settings.contactPhone}</li>
-              <li className="flex items-center gap-2.5"><Mail className="h-4 w-4 shrink-0 text-[#e3bd78]" /> {settings.contactEmail}</li>
-              <li className="flex items-start gap-2.5"><MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[#e3bd78]" /> {settings.contactAddress}</li>
+              <li className="flex items-center gap-2.5"><Phone className="h-4 w-4 shrink-0 text-[var(--g-gold)]" /> {settings.contactPhone}</li>
+              <li className="flex items-center gap-2.5"><Mail className="h-4 w-4 shrink-0 text-[var(--g-gold)]" /> {settings.contactEmail}</li>
+              <li className="flex items-start gap-2.5"><MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[var(--g-gold)]" /> {settings.contactAddress}</li>
             </ul>
           </div>
         </div>

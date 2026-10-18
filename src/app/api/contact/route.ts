@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
 import { sendContactMessage } from "@/lib/email";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
+import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const str = (v: unknown, max: number) => String(v ?? "").trim().slice(0, max);
 
-// Receives contact-form submissions and emails them to the store inbox.
+// Receives contact-form submissions, saves them, and emails them to the store inbox.
 // Email is sent in the background so the form responds instantly.
 export async function POST(req: Request) {
   const body = await req.json().catch(() => null);
@@ -34,6 +35,10 @@ export async function POST(req: Request) {
     );
   }
 
+  // Keep a copy for Admin → Customer voice (the email still goes to the inbox)
+  await prisma.contactMessage
+    .create({ data: { ...msg, phone: msg.phone || null, subject: msg.subject || null } })
+    .catch((e) => console.error("[contact] save failed:", (e as Error).message));
   void sendContactMessage(msg).catch((e) =>
     console.error("[contact] email failed:", (e as Error).message)
   );

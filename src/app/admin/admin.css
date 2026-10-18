@@ -1,0 +1,103 @@
+/* ============================================================
+   Admin in the "Rewards Garden" look: cream canvas, plum sidebar,
+   gold highlights, serif headings. The shared tokens are re-pointed
+   here, so every admin page (and its brand-* classes) follows suit.
+   ============================================================ */
+.gg-admin {
+  --background: #f3ebe1;
+  --foreground: #2d1724;
+  --surface: #fbf7f1;
+  --card: #fbf7f1;
+  --muted: #efe5da;
+  --muted-foreground: #7c6870;
+  --border: #e4d6c8;
+
+  /* Primary actions, toggles, links and highlights become plum */
+  --brand-50: #faf1f5;
+  --brand-100: #f3dde8;
+  --brand-200: #e6bccf;
+  --brand-300: #d08fae;
+  --brand-400: #b36088;
+  --brand-500: #943d6a;
+  --brand-600: #6e2249;
+  --brand-700: #5c1a3b;
+  --brand-800: #4b1a37;
+  --brand-900: #33122a;
+  --accent: #e3bd78;
+  --ring: #943d6a;
+
+  --font-body: var(--font-g-body);
+  --font-heading: var(--font-g-serif);
+  --font-sans: var(--font-g-body);
+  --font-display: var(--font-g-serif);
+
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-g-body), system-ui, sans-serif;
+}
+.gg-admin :is(h1, h2, h3, .font-display) { font-family: var(--font-g-serif), Georgia, serif; }
+.gg-admin main h1 { font-size: 2.35rem; line-height: 1.05; font-weight: 600; letter-spacing: 0; color: #5c1a3b; }
+.gg-admin main :is(h2, h3) { font-weight: 700; color: #5c1a3b; letter-spacing: 0; }
+.gg-admin main h2.font-bold, .gg-admin main h2.text-lg, .gg-admin main section > h2 { font-size: 1.4rem; line-height: 1.15; }
+.gg-admin main .bg-surface { box-shadow: 0 8px 22px rgba(92, 26, 59, .05); }
+.gg-admin main .rounded-2xl { border-radius: 22px; }
+.gg-admin main table thead { color: #7c6870; }
+.gg-admin ::selection { background: #f3dde8; }
+
+/* ---------- Sidebar ---------- */
+.gg-side {
+  position: sticky; top: 0; height: 100vh; overflow: hidden;
+  width: 264px; flex-shrink: 0; display: flex; flex-direction: column; padding: 18px 14px;
+  color: #f1d9e4;
+  background: radial-gradient(120% 60% at 0% 0%, #7a2a55 0%, #5c1a3b 45%, #3f1029 100%);
+}
+@media (max-width: 767px) { .gg-side { display: none; } }
+@media print { .gg-side, .gg-admin-top { display: none !important; } }
+.gg-side-logo { display: flex; justify-content: center; margin: 2px 6px 14px; padding: 8px; border-radius: 20px; background: #f3ebe1; }
+.gg-side-nav { position: relative; z-index: 2; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.25) transparent; flex: 1; min-height: 0; margin-right: -6px; padding-right: 6px; }
+.gg-side-nav a, .gg-side button { display: flex; align-items: center; gap: 11px; width: 100%; padding: 6px 12px; border-radius: 13px; font-size: 13.5px; font-weight: 500; color: #e8c9d7; transition: background .2s, color .2s; }
+.gg-side-nav a:hover, .gg-side button:hover { background: rgba(255, 255, 255, .08); color: #fff; }
+.gg-side-nav a.on { background: #f3ebe1; color: #5c1a3b; font-weight: 600; box-shadow: 0 6px 16px rgba(0, 0, 0, .18); }
+.gg-side-nav a.on svg { color: #a64274; }
+.gg-side-nav .badge { margin-left: auto; min-width: 22px; padding: 1px 7px; border-radius: 999px; background: #e3bd78; color: #5c1a3b; font-size: 11px; font-weight: 700; text-align: center; }
+.gg-side .gg-sprig { opacity: .45; }
+
+/* ---------- Mobile bar ---------- */
+.gg-admin-top { background: #5c1a3b; color: #f1d9e4; }
+.gg-admin-top .gg-side-nav { display: flex; gap: 6px; overflow-x: auto; margin: 0; padding: 0 12px 12px; }
+.gg-admin-top .gg-side-nav a { width: auto; white-space: nowrap; padding: 7px 12px; }
+
+/* ---------- Dashboard ---------- */
+.gg-dash-hello { position: relative; overflow: hidden; border-radius: 28px; padding: 30px 32px; background: linear-gradient(140deg, #f8f1e8 0%, #efe3d4 60%, #ead9cc 100%); }
+.gg-dash-hello > :not(.gg-sprig, .gg-petals) { position: relative; z-index: 2; }
+.gg-dash-tile { position: relative; overflow: hidden; display: block; border-radius: 24px; padding: 20px; background: #fbf7f1; box-shadow: 0 8px 22px rgba(92, 26, 59, .06); transition: transform .3s, box-shadow .3s; }
+.gg-dash-tile:hover { transform: translateY(-4px); box-shadow: 0 18px 34px rgba(92, 26, 59, .12); }
+.gg-dash-tile.plum { color: #f8ece3; background: radial-gradient(120% 100% at 85% 0%, #8b3463 0%, #5c1a3b 55%, #47112d 100%); }
+.gg-dash-tile.forest { color: #f3ebe1; background: linear-gradient(135deg, #24543a, #2f6b47); }
+.gg-dash-tile .ic { width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; border: 1.5px solid currentColor; opacity: .85; }
+.gg-dash-tile .num { font-family: var(--font-g-serif), serif; font-size: 40px; font-weight: 600; line-height: 1; margin-top: 14px; }
+.gg-dash-tile .lbl { font-size: 12px; letter-spacing: .18em; text-transform: uppercase; font-weight: 600; opacity: .8; }
+.gg-dash-tile .sub { font-size: 13px; opacity: .75; margin-top: 4px; }
+.gg-quick { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 999px; background: #fff; color: #5c1a3b; font-size: 14px; font-weight: 600; box-shadow: 0 6px 16px rgba(92, 26, 59, .08); transition: transform .2s; }
+.gg-quick:hover { transform: translateY(-2px); }
+
+/* ---------- Front Shop editor ---------- */
+.gg-section-tag { display: inline-block; font-size: 11px; letter-spacing: .18em; text-transform: uppercase; font-weight: 600; color: #a64274; }
+
+@media (prefers-reduced-motion: reduce) {
+  .gg-admin * { animation: none !important; transition: none !important; }
+  .gg-admin .gg-petals { display: none; }
+}
+/* Let grid cells shrink on small screens (charts and long names otherwise force them wide) */
+.gg-admin main .grid > * { min-width: 0; }
+
+/* Garden decorations (shared with the storefront) */
+.gg-sprig { position: absolute; pointer-events: none; z-index: 1; }
+.gg-sprig svg { display: block; width: 100%; height: auto; }
+.gg-lf { transform-box: fill-box; transform-origin: 0% 50%; animation: gg-flutter-leaf 4.5s ease-in-out infinite; }
+@keyframes gg-flutter-leaf { 0%, 100% { rotate: -5deg; } 50% { rotate: 7deg; } }
+.gg-petals { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 1; }
+.gg-petal { position: absolute; top: -40px; will-change: transform; animation: gg-fall var(--dur) linear var(--delay) infinite; }
+.gg-petal > svg { display: block; animation: gg-flutter var(--fl) ease-in-out infinite alternate; }
+@keyframes gg-fall { to { transform: translate(var(--drift), calc(var(--h) + 80px)) rotate(var(--rot)); } }
+@keyframes gg-flutter { from { transform: rotateX(0) rotate(-20deg); } to { transform: rotateX(60deg) rotate(25deg); } }
