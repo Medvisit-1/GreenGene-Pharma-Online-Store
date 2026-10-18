@@ -87,6 +87,7 @@ export default async function AdminDashboard() {
           <div className="flex items-center justify-between"><span className="lbl text-muted-foreground">New sign-ups</span><span className="ic text-[color:var(--g-plum3)]"><UserPlus className="h-5 w-5" /></span></div>
           <p className="num text-[color:var(--g-plum)]">{kpis.signups.value}</p>
           <Change value={kpis.signups.change} />
+          <span className="sub block">New accounts and newsletter subscribers</span>
         </Link>
       </div>
 
@@ -96,7 +97,7 @@ export default async function AdminDashboard() {
           <div className="mb-4 flex items-end justify-between gap-3">
             <div>
               <h2>Daily revenue</h2>
-              <p className="text-xs text-muted-foreground">Paid orders, last 30 days (South African time)</p>
+              <p className="text-xs text-muted-foreground">Paid orders by the day they were placed, last 30 days (South African time)</p>
             </div>
             <Link href="/admin/insights" className="text-sm font-semibold text-[color:var(--g-plum3)] hover:underline">Trends →</Link>
           </div>

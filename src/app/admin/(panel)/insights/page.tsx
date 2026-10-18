@@ -40,7 +40,7 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
         <div>
           <h1>Insights &amp; trends</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Patterns in what sells, when, to whom and where — paid orders, {periodLabel}, in South African time.
+            Patterns in what sells, when, to whom and where. Paid orders, {periodLabel}, counted on the day each order was placed (South African time).
           </p>
         </div>
         <nav className="flex flex-wrap gap-1.5" aria-label="Period">
@@ -62,7 +62,7 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
 
       {/* Headline numbers */}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Stat label="Revenue" value={formatPrice(d.revenue)} note={`${d.orders} paid order${d.orders === 1 ? "" : "s"}`} />
+        <Stat label="Revenue" value={formatPrice(d.revenue)} note={`${d.orders} paid order${d.orders === 1 ? "" : "s"} · incl. delivery, after discounts`} />
         <Stat label="Average order" value={d.orders ? formatPrice(d.aov) : "—"} note={`${d.units} units sold`} />
         <Stat label="Repeat customers" value={`${d.customers.repeatRate}%`} note={`of ${d.customers.buyersEver} buyers ever ordered again`} />
         <Stat label="Lifetime value" value={d.customers.buyersEver ? formatPrice(d.customers.lifetimeValue) : "—"} note="average spend per customer, all time" />
@@ -100,7 +100,7 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
 
       {/* When */}
       <div className="grid gap-6 xl:grid-cols-[1.6fr_1fr]">
-        <Card title="When people buy" note="Paid orders by day of the week and hour of the day.">
+        <Card title="When people buy" note="When paid orders were placed, by day of the week and hour of the day.">
           <Heatmap grid={d.heat} rows={WEEKDAYS} />
         </Card>
         <Card title="Busiest days">
@@ -173,7 +173,7 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
           <BarList rows={d.codes.map((c) => ({ label: c.code, value: c.uses, display: `${c.uses}×`, sub: `${formatPrice(c.discount)} off` }))} empty="No codes used in this period." />
           <p className="mt-3 text-xs text-muted-foreground">Rewards: {d.rewards.claimed} codes claimed, {d.rewards.redeemed} used at checkout.</p>
         </Card>
-        <Card title="Newsletter" note={`${d.newsletter.total} subscribers · ${d.wishlist} wishlist saves`}>
+        <Card title="Newsletter" note={`${d.newsletter.total} current subscribers, by the month they joined · ${d.wishlist} wishlist saves`}>
           <ColumnChart points={d.newsletter.growth} tip={(x) => `${x.label}: ${x.value} subscribers (+${x.count ?? 0})`} height={140} everyNth={3} />
         </Card>
       </div>

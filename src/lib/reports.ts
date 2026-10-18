@@ -13,19 +13,37 @@ export const PERIODS: { id: Period; label: string }[] = [
 const DAY = 864e5;
 const SAST = 2 * 36e5; // South Africa is UTC+2 all year
 
-/** Period start (and the matching previous period, for comparison). */
+/** Midnight (South African time) at the start of the SA calendar day `daysBack` days before `now`. */
+export function saDayStart(now: Date, daysBack = 0): Date {
+  const sa = new Date(now.getTime() + SAST);
+  return new Date(Date.UTC(sa.getUTCFullYear(), sa.getUTCMonth(), sa.getUTCDate() - daysBack) - SAST);
+}
+
+/**
+ * Period start (and the matching previous period, for comparison). Periods are
+ * whole South African calendar days / months, so a "last 30 days" chart and its
+ * totals always cover exactly the same orders.
+ */
 export function periodRange(p: Period, now = new Date()): { from: Date | null; prevFrom: Date | null; prevTo: Date | null } {
   const t = now.getTime();
-  const days = { "30d": 30, "90d": 90, "12m": 365 } as const;
   if (p === "all") return { from: null, prevFrom: null, prevTo: null };
+  if (p === "30d" || p === "90d") {
+    const n = p === "30d" ? 30 : 90;
+    const from = saDayStart(now, n - 1);
+    return { from, prevFrom: new Date(from.getTime() - n * DAY), prevTo: from };
+  }
+  if (p === "12m") {
+    const sa = new Date(t + SAST);
+    const from = new Date(Date.UTC(sa.getUTCFullYear(), sa.getUTCMonth() - 11, 1) - SAST);
+    return { from, prevFrom: new Date(Date.UTC(sa.getUTCFullYear(), sa.getUTCMonth() - 23, 1) - SAST), prevTo: from };
+  }
   if (p === "ytd") {
     const y = new Date(t + SAST).getUTCFullYear();
     const from = new Date(Date.UTC(y, 0, 1) - SAST);
     const len = t - from.getTime();
     return { from, prevFrom: new Date(Date.UTC(y - 1, 0, 1) - SAST), prevTo: new Date(Date.UTC(y - 1, 0, 1) - SAST + len) };
   }
-  const len = days[p] * DAY;
-  return { from: new Date(t - len), prevFrom: new Date(t - 2 * len), prevTo: new Date(t - len) };
+  return { from: null, prevFrom: null, prevTo: null };
 }
 
 type PaidOrder = Awaited<ReturnType<typeof loadPaidOrders>>[number];
@@ -41,7 +59,12 @@ async function loadPaidOrders() {
   });
 }
 
-const paidDate = (o: { paidAt: Date | null; createdAt: Date }) => o.paidAt ?? o.createdAt;
+/**
+ * Reports count an order on the day the customer placed it. (paidAt is when the
+ * payment was confirmed — for EFT/manual payments that is when someone clicked
+ * "paid" in the admin, which would bunch orders onto that day.)
+ */
+const paidDate = (o: { createdAt: Date }) => o.createdAt;
 
 function summarise(orders: PaidOrder[]) {
   const revenue = orders.reduce((n, o) => n + o.total, 0);
