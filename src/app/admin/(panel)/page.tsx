@@ -42,7 +42,7 @@ export default async function AdminDashboard() {
     { n: todo.pendingReviews, label: "reviews waiting for approval", href: "/admin/reviews", icon: Star, tone: "gold" },
     { n: todo.lowStock, label: "products low on stock", href: "/admin/products", icon: AlertTriangle, tone: "gold" },
     { n: todo.waitingAlerts, label: "shoppers waiting for back-in-stock", href: "/admin/voice#demand", icon: Bell, tone: "gold" },
-    { n: todo.unpaid, label: "unpaid orders this week", href: "/admin/orders", icon: CircleDollarSign, tone: "muted" },
+    { n: todo.unpaid, label: "unpaid orders this week", href: "/admin/orders?show=unpaid", icon: CircleDollarSign, tone: "muted" },
   ].filter((t) => t.n > 0);
 
   return (
@@ -140,7 +140,7 @@ export default async function AdminDashboard() {
       <div className="grid gap-6 lg:grid-cols-2">
         <section className="rounded-2xl border border-border bg-surface p-5">
           <div className="mb-3 flex items-center justify-between">
-            <h2>Latest orders</h2>
+            <h2>Latest paid orders</h2>
             <Link href="/admin/orders" className="text-sm font-semibold text-[color:var(--g-plum3)] hover:underline">All orders →</Link>
           </div>
           {d.recent.length === 0 ? (

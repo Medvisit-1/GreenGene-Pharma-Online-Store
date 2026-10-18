@@ -84,7 +84,7 @@ export async function dashboardData(now = new Date()) {
     prisma.product.findMany({ where: { active: true, stock: { lte: 5 } }, orderBy: { stock: "asc" }, take: 6 }),
     prisma.stockAlert.count({ where: { notifiedAt: null } }),
     prisma.contactMessage.count({ where: { handled: false } }).catch(() => 0),
-    prisma.order.findMany({ orderBy: { createdAt: "desc" }, take: 6 }),
+    prisma.order.findMany({ where: { paymentStatus: "paid" }, orderBy: [{ paidAt: { sort: "desc", nulls: "last" } }, { createdAt: "desc" }], take: 6 }),
   ]);
   const cur = orders.filter((o) => paidDate(o) >= from);
   const prev = orders.filter((o) => paidDate(o) >= prevFrom && paidDate(o) < from);
