@@ -55,6 +55,8 @@ export type SiteSettings = {
   // ---- Appearance: storefront colour theme ----
   themePreset: string; // a THEME_PRESETS id, or "custom"
   themeCustom: string; // JSON ThemeColors when themePreset is "custom"
+  adminThemePreset: string; // "" = same as the shop, else a preset id or "custom"
+  adminThemeCustom: string;
 
   // ---- Homepage ("Rewards Garden") ----
   homeTagline: string; // handwritten line under the greeting
@@ -202,6 +204,8 @@ export const DEFAULT_SETTINGS: SiteSettings = {
 
   themePreset: "garden",
   themeCustom: "",
+  adminThemePreset: "",
+  adminThemeCustom: "",
   homeTagline: "your path to healthy living",
   homeSlidesHeading: "For you this week",
   homeSlideRewards: "1",

@@ -71,6 +71,11 @@ export function resolveTheme(preset: string | undefined, custom: string | undefi
   return { id: DEFAULT_THEME.id, colors: DEFAULT_THEME.colors };
 }
 
+/** The admin's theme: its own choice, or the shop's when it hasn't picked one. */
+export function resolveAdminTheme(s: { themePreset: string; themeCustom: string; adminThemePreset: string; adminThemeCustom: string }) {
+  return s.adminThemePreset ? resolveTheme(s.adminThemePreset, s.adminThemeCustom) : resolveTheme(s.themePreset, s.themeCustom);
+}
+
 /** CSS custom properties for the storefront wrapper. */
 export function themeStyle(colors: ThemeColors): Record<string, string> {
   return {

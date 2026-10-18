@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { GardenDefs, Petals, Sprig } from "@/components/garden/art";
 import { gardenFonts } from "@/components/garden/fonts";
 import { getSettings } from "@/lib/settings";
-import { resolveTheme, themeStyle } from "@/lib/themes";
+import { resolveAdminTheme, themeStyle } from "@/lib/themes";
 import "@/components/garden/tokens.css";
 import "../admin.css";
 
@@ -25,7 +25,7 @@ export default async function AdminLoginPage({
     <div
       className={`gg-admin ${gardenFonts} relative flex min-h-screen items-center justify-center overflow-hidden px-4`}
       style={{
-        ...(themeStyle(resolveTheme(s.themePreset, s.themeCustom).colors) as React.CSSProperties),
+        ...(themeStyle(resolveAdminTheme(s).colors) as React.CSSProperties),
         background: "radial-gradient(120% 90% at 80% 0%, var(--g-plum-hi) 0%, var(--g-plum) 50%, var(--g-plum-lo) 100%)",
       }}
     >

@@ -10,7 +10,7 @@ import { GardenDefs, Sprig } from "@/components/garden/art";
 import { gardenFonts } from "@/components/garden/fonts";
 import { logoutAction } from "@/app/admin/actions";
 import { getSettings } from "@/lib/settings";
-import { resolveTheme, themeStyle } from "@/lib/themes";
+import { resolveAdminTheme, themeStyle } from "@/lib/themes";
 import "@/components/garden/tokens.css";
 import "../admin.css";
 
@@ -35,10 +35,10 @@ export default async function AdminLayout({
   const counts = { reviews, voice, fulfil };
 
   return (
-    // The admin wears the same colour theme as the shop (Admin → Appearance)
+    // The admin's colour theme (Admin → Appearance): its own, or the shop's
     <div
       className={`gg-admin ${gardenFonts} flex min-h-screen`}
-      style={themeStyle(resolveTheme(settings.themePreset, settings.themeCustom).colors) as React.CSSProperties}
+      style={themeStyle(resolveAdminTheme(settings).colors) as React.CSSProperties}
     >
       <GardenDefs />
       {/* Sidebar */}

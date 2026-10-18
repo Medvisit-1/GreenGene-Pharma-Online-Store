@@ -70,7 +70,7 @@ export function ThemePicker({ current, custom }: { current: string; custom: Them
         <input type="hidden" name="preset" value={preset} />
         <section className="rounded-2xl border border-border bg-surface p-5">
           <h2>Themes</h2>
-          <p className="mb-4 text-xs text-muted-foreground">Pick a ready-made colour scheme. It changes the whole shop (every page, the header and the footer) and this admin too. Emails keep their own colours.</p>
+          <p className="mb-4 text-xs text-muted-foreground">Pick a ready-made colour scheme. Apply it to the shop (every page, the header and the footer), to this admin, or to both. Emails keep their own colours.</p>
           <div className="grid gap-3 sm:grid-cols-2 2xl:grid-cols-3">
             {THEME_PRESETS.map((t) => (
               <button
@@ -139,9 +139,19 @@ export function ThemePicker({ current, custom }: { current: string; custom: Them
         <section className="rounded-2xl border border-border bg-surface p-5">
           <h2 className="mb-3">Live preview</h2>
           <Preview c={active} />
-          <button type="submit" className="mt-4 w-full rounded-full bg-[color:var(--g-plum)] px-6 py-3 text-sm font-semibold text-white hover:bg-[color:var(--g-plum-dark)]">
-            Apply to my shop
-          </button>
+          <div className="mt-4 grid gap-2">
+            <button type="submit" name="target" value="both" className="w-full rounded-full bg-[color:var(--g-plum)] px-6 py-3 text-sm font-semibold text-white hover:bg-[color:var(--g-plum-dark)]">
+              Apply to both
+            </button>
+            <div className="grid grid-cols-2 gap-2">
+              <button type="submit" name="target" value="shop" className="rounded-full border border-border bg-white px-4 py-2.5 text-sm font-semibold hover:bg-muted">
+                Apply to shop only
+              </button>
+              <button type="submit" name="target" value="admin" className="rounded-full border border-border bg-white px-4 py-2.5 text-sm font-semibold hover:bg-muted">
+                Apply to admin only
+              </button>
+            </div>
+          </div>
           <p className="mt-2 text-center text-xs text-muted-foreground">You can switch back any time.</p>
         </section>
       </div>
