@@ -31,14 +31,6 @@ export default async function AdminSettings({
 
       <form action={saveSettings} className="max-w-2xl space-y-5">
         <div className="rounded-2xl border border-border bg-surface p-6">
-          <h2 className="mb-4 font-bold">Announcement bar</h2>
-          <div>
-            <label className={label}>Top banner text</label>
-            <input name="announcement" defaultValue={s.announcement} className={input} />
-          </div>
-        </div>
-
-        <div className="rounded-2xl border border-border bg-surface p-6">
           <h2 className="mb-1 font-bold">Shipping</h2>
           <p className="mb-4 text-xs text-muted-foreground">
             Amounts in Rand (R). Set the free-shipping threshold to 0 to never offer free shipping.

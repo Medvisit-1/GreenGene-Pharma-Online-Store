@@ -5,17 +5,45 @@ import { getSettings } from "@/lib/settings";
 import { saveFrontShop } from "@/app/admin/actions";
 import { Button } from "@/components/ui/button";
 import { SingleImageField } from "@/components/admin/single-image";
-import { LinkPicker } from "@/components/admin/link-picker";
 import { NewReleaseEditor } from "@/components/admin/new-release-editor";
 import { parseNewReleaseCards } from "@/lib/new-release";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Front Shop" };
+export const metadata = { title: "Homepage" };
 
 const input =
   "w-full rounded-xl border border-border bg-white px-4 py-2.5 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100";
 const label = "mb-1.5 block text-sm font-medium";
-const card = "rounded-2xl border border-border bg-surface p-6";
+
+function Toggle({ name, on, children, hint }: { name: string; on: boolean; children: React.ReactNode; hint?: string }) {
+  return (
+    <label className="flex cursor-pointer items-start gap-3 rounded-2xl bg-white p-3.5">
+      <span className="relative mt-0.5 inline-flex items-center">
+        <input type="checkbox" name={name} defaultChecked={on} className="peer sr-only" />
+        <span className="h-6 w-11 rounded-full bg-gray-300 transition-colors after:absolute after:left-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow after:transition-all peer-checked:bg-brand-600 peer-checked:after:translate-x-5" />
+      </span>
+      <span>
+        <span className="block text-sm font-semibold">{children}</span>
+        {hint && <span className="block text-xs text-muted-foreground">{hint}</span>}
+      </span>
+    </label>
+  );
+}
+
+function Step({ n, title, note, children }: { n: number; title: string; note?: string; children: React.ReactNode }) {
+  return (
+    <section className="rounded-2xl border border-border bg-surface p-6">
+      <div className="mb-4 flex items-start gap-3">
+        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#5c1a3b] font-[family-name:var(--font-g-serif)] text-lg font-semibold text-[#e3bd78]">{n}</span>
+        <div>
+          <h2>{title}</h2>
+          {note && <p className="text-xs text-muted-foreground">{note}</p>}
+        </div>
+      </div>
+      {children}
+    </section>
+  );
+}
 
 export default async function AdminFrontShop({
   searchParams,
@@ -34,236 +62,99 @@ export default async function AdminFrontShop({
     ...products.map((p) => ({ label: p.name, value: `/products/${p.slug}` })),
   ];
   const newReleaseCards = parseNewReleaseCards(s.newReleaseCards);
+  const on = (v: string) => v !== "0";
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Front Shop</h1>
+          <h1>Homepage</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Edit your homepage hero, feature cards, the trust section, and the floating banner.
+            Everything on your homepage, top to bottom. Products, prices, rewards and articles fill in automatically. Here you
+            choose what shows and what it says.
           </p>
         </div>
-        <Link href="/" target="_blank">
-          <Button variant="outline">
-            <ExternalLink className="h-4 w-4" /> View homepage
-          </Button>
-        </Link>
+        <Link href="/" target="_blank" className="gg-quick"><ExternalLink className="h-4 w-4" /> View homepage</Link>
       </div>
 
       {saved && (
-        <p className="flex items-center gap-2 rounded-xl bg-brand-50 px-4 py-3 text-sm font-medium text-brand-700">
-          <CheckCircle2 className="h-4 w-4" /> Front shop saved.
+        <p className="flex items-center gap-2 rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">
+          <CheckCircle2 className="h-4 w-4" /> Homepage saved.
         </p>
       )}
 
-      <form action={saveFrontShop} className="max-w-3xl space-y-5">
-        {/* Floating banner */}
-        <div className={card}>
-          <h2 className="mb-1 font-bold">Floating announcement banner</h2>
-          <p className="mb-4 text-xs text-muted-foreground">
-            A scrolling bar across the very top of the site for promos & announcements.
-          </p>
-          <label className="mb-4 flex cursor-pointer items-center gap-3">
-            <span className="relative inline-flex items-center">
-              <input
-                type="checkbox"
-                name="marqueeEnabled"
-                defaultChecked={s.marqueeEnabled === "1"}
-                className="peer sr-only"
-              />
-              <span className="h-6 w-11 rounded-full bg-gray-300 transition-colors after:absolute after:left-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow after:transition-all peer-checked:bg-brand-600 peer-checked:after:translate-x-5" />
-            </span>
-            <span className="text-sm font-medium">Show the banner</span>
-          </label>
-          <div className="grid gap-4 sm:grid-cols-[1fr_140px]">
+      <form action={saveFrontShop} className="max-w-4xl space-y-5">
+        <Step n={1} title="Top of every page" note="The thin plum strip above the header, and an optional scrolling promo bar.">
+          <div className="space-y-4">
             <div>
-              <label className={label}>Banner text</label>
-              <input name="marqueeText" defaultValue={s.marqueeText} className={input} />
+              <label className={label}>Announcement strip</label>
+              <input name="announcement" defaultValue={s.announcement} className={input} />
             </div>
-            <div>
-              <label className={label}>Speed (seconds)</label>
-              <input
-                name="marqueeSpeed"
-                inputMode="numeric"
-                defaultValue={s.marqueeSpeed}
-                className={input}
-              />
+            <Toggle name="marqueeEnabled" on={s.marqueeEnabled === "1"} hint="A scrolling bar across the very top, for promos and news.">Scrolling promo bar</Toggle>
+            <div className="grid gap-4 sm:grid-cols-[1fr_140px]">
+              <div>
+                <label className={label}>Promo bar text</label>
+                <input name="marqueeText" defaultValue={s.marqueeText} className={input} />
+              </div>
+              <div>
+                <label className={label}>Speed (seconds)</label>
+                <input name="marqueeSpeed" inputMode="numeric" defaultValue={s.marqueeSpeed} className={input} />
+              </div>
             </div>
           </div>
-        </div>
+        </Step>
 
-        {/* Hero */}
-        <div className={card}>
-          <h2 className="mb-4 font-bold">Hero section</h2>
-          <div className="grid gap-4">
-            <div>
-              <label className={label}>Badge text</label>
-              <input name="heroBadge" defaultValue={s.heroBadge} className={input} />
-            </div>
+        <Step n={2} title="Greeting & rewards card" note="“Good morning, Thandi” with the search box and goal circles (your categories), next to the customer's rewards progress.">
+          <label className={label}>Handwritten line under the greeting</label>
+          <input name="homeTagline" defaultValue={s.homeTagline} maxLength={80} className={input} />
+          <p className="mt-2 text-xs text-muted-foreground">The rewards card follows Admin → Rewards (it becomes a delivery card if rewards are switched off).</p>
+        </Step>
+
+        <Step n={3} title="Banner slider" note="Changes every 6 seconds. Each slide fills itself from your shop.">
+          <div className="space-y-4">
             <div>
               <label className={label}>Heading</label>
-              <input name="heroHeading" defaultValue={s.heroHeading} className={input} />
+              <input name="homeSlidesHeading" defaultValue={s.homeSlidesHeading} maxLength={60} className={input} />
+            </div>
+            <div className="grid gap-3 md:grid-cols-3">
+              <Toggle name="homeSlideRewards" on={on(s.homeSlideRewards)} hint="Welcome gift, refer-a-friend and milestones, from Rewards.">Rewards ad</Toggle>
+              <Toggle name="homeSlideOffer" on={on(s.homeSlideOffer)} hint="The product with the biggest saving (set a “compare at” price).">Best offer</Toggle>
+              <Toggle name="homeSlideArticle" on={on(s.homeSlideArticle)} hint="The latest Wellness Note with a matching product.">Wellness Note</Toggle>
             </div>
             <div>
-              <label className={label}>Subheading</label>
-              <textarea name="heroSubheading" defaultValue={s.heroSubheading} rows={2} className={input} />
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label className={label}>Primary button — text</label>
-                <input name="heroPrimaryLabel" defaultValue={s.heroPrimaryLabel} className={input} />
-              </div>
-              <div>
-                <label className={label}>Primary button — link</label>
-                <input name="heroPrimaryLink" defaultValue={s.heroPrimaryLink} className={input} />
-              </div>
-              <div>
-                <label className={label}>Secondary button — text</label>
-                <input name="heroSecondaryLabel" defaultValue={s.heroSecondaryLabel} className={input} />
-              </div>
-              <div>
-                <label className={label}>Secondary button — link</label>
-                <input name="heroSecondaryLink" defaultValue={s.heroSecondaryLink} className={input} />
-              </div>
-            </div>
-            <div>
-              <label className={label}>Hero image (optional)</label>
-              <SingleImageField name="heroImage" initial={s.heroImage} />
-              <p className="mt-1.5 text-xs text-muted-foreground">
-                Shown under the buttons. Leave empty to keep the clean text-only hero.
-              </p>
+              <label className={label}>Photo on the rewards slide</label>
+              <SingleImageField name="homeRewardsPhoto" initial={s.homeRewardsPhoto} />
+              <p className="mt-1.5 text-xs text-muted-foreground">A portrait photo works best; on phones the top part (the face) is shown.</p>
             </div>
           </div>
-        </div>
+        </Step>
 
-        {/* Feature cards */}
-        <div className={card}>
-          <h2 className="mb-1 font-bold">Feature cards</h2>
-          <p className="mb-4 text-xs text-muted-foreground">The four trust badges under the hero (icons are fixed).</p>
-          <div className="grid gap-4 sm:grid-cols-2">
-            {[1, 2, 3, 4].map((n) => (
-              <div key={n} className="rounded-xl border border-border p-4">
-                <label className={label}>Card {n} — title</label>
-                <input
-                  name={`feat${n}Title`}
-                  defaultValue={s[`feat${n}Title` as keyof typeof s] as string}
-                  className={input}
-                />
-                <label className={`${label} mt-3`}>Card {n} — subtitle</label>
-                <input
-                  name={`feat${n}Text`}
-                  defaultValue={s[`feat${n}Text` as keyof typeof s] as string}
-                  className={input}
-                />
-              </div>
-            ))}
+        <Step n={4} title="More sections">
+          <div className="grid gap-3 md:grid-cols-3">
+            <Toggle name="homeShowJourney" on={on(s.homeShowJourney)} hint="Signup → newsletter → saving, with the animated path.">“Path to healthy savings” band</Toggle>
+            <Toggle name="homeShowRoutine" on={on(s.homeShowRoutine)} hint="Daily routine and refill countdown from the customer's last order.">Routine & refill cards</Toggle>
+            <Toggle name="homeShowPopular" on={on(s.homeShowPopular)} hint="Your featured products (tick “Featured” on a product).">Popular products</Toggle>
           </div>
-        </div>
-
-        {/* Research, Quality & Trust */}
-        <div className={card}>
-          <h2 className="mb-4 font-bold">“Research, Quality &amp; Trust” section</h2>
-          <div className="grid gap-4">
-            <div>
-              <label className={label}>Heading</label>
-              <input name="rqtHeading" defaultValue={s.rqtHeading} className={input} />
-            </div>
-            <div>
-              <label className={label}>Body (separate paragraphs with a blank line)</label>
-              <textarea name="rqtBody" defaultValue={s.rqtBody} rows={6} className={input} />
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label className={label}>Button — text</label>
-                <input name="rqtButtonLabel" defaultValue={s.rqtButtonLabel} className={input} />
-              </div>
-              <div>
-                <label className={label}>Button — link</label>
-                <input name="rqtButtonLink" defaultValue={s.rqtButtonLink} className={input} />
-              </div>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-3">
-              {[1, 2, 3].map((n) => (
-                <div key={n} className="rounded-xl border border-border p-4">
-                  <label className={label}>Stat {n} — value</label>
-                  <input
-                    name={`rqtStat${n}Key`}
-                    defaultValue={s[`rqtStat${n}Key` as keyof typeof s] as string}
-                    className={input}
-                  />
-                  <label className={`${label} mt-3`}>Stat {n} — label</label>
-                  <input
-                    name={`rqtStat${n}Val`}
-                    defaultValue={s[`rqtStat${n}Val` as keyof typeof s] as string}
-                    className={input}
-                  />
-                </div>
-              ))}
-            </div>
+          <div className="mt-4">
+            <label className={label}>Popular products heading</label>
+            <input name="homePopularHeading" defaultValue={s.homePopularHeading} maxLength={60} className={input} />
           </div>
-        </div>
+        </Step>
 
-        {/* Bottom CTA banner */}
-        <div className={card}>
-          <h2 className="mb-1 font-bold">Bottom call-to-action banner</h2>
-          <p className="mb-4 text-xs text-muted-foreground">The green banner near the bottom of the homepage.</p>
-          <div className="grid gap-4">
-            <div>
-              <label className={label}>Heading</label>
-              <input name="ctaHeading" defaultValue={s.ctaHeading} className={input} />
-            </div>
-            <div>
-              <label className={label}>Subheading</label>
-              <input name="ctaSubheading" defaultValue={s.ctaSubheading} className={input} />
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label className={label}>Button — text</label>
-                <input name="ctaButtonLabel" defaultValue={s.ctaButtonLabel} className={input} />
-              </div>
-              <div>
-                <label className={label}>Button — link</label>
-                <input name="ctaButtonLink" defaultValue={s.ctaButtonLink} className={input} />
-              </div>
-            </div>
-            <p className="text-xs text-muted-foreground">Leave the heading and button text empty to hide the banner entirely.</p>
-          </div>
-        </div>
-
-        {/* New Release — swipeable product cards */}
-        <div className={card}>
-          <h2 className="mb-1 font-bold">New Release</h2>
-          <p className="mb-4 text-xs text-muted-foreground">
-            A swipeable row of cards shown between the feature strip and the trust section — add one
-            card per newly released product. Each card shows the product image with its own text,
-            button and link.
-          </p>
-          <label className="mb-4 flex cursor-pointer items-center gap-3">
-            <span className="relative inline-flex items-center">
-              <input
-                type="checkbox"
-                name="newReleaseEnabled"
-                defaultChecked={s.newReleaseEnabled === "1"}
-                className="peer sr-only"
-              />
-              <span className="h-6 w-11 rounded-full bg-gray-300 transition-colors after:absolute after:left-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow after:transition-all peer-checked:bg-brand-600 peer-checked:after:translate-x-5" />
-            </span>
-            <span className="text-sm font-medium">Show on the homepage</span>
-          </label>
-          <div className="mb-4">
+        <Step n={5} title="New Release cards" note="A swipeable row of picture cards at the bottom of the homepage. To change a picture: remove it on the card, then upload a new one.">
+          <Toggle name="newReleaseEnabled" on={s.newReleaseEnabled === "1"}>Show on the homepage</Toggle>
+          <div className="my-4">
             <label className={label}>Section heading</label>
             <input name="newReleaseHeading" defaultValue={s.newReleaseHeading} className={input} />
           </div>
           <label className={label}>Cards</label>
-          <NewReleaseEditor
-            name="newReleaseCards"
-            initial={newReleaseCards}
-            linkOptions={linkOptions}
-          />
-        </div>
+          <NewReleaseEditor name="newReleaseCards" initial={newReleaseCards} linkOptions={linkOptions} />
+        </Step>
 
-        <Button type="submit" size="lg">Save front shop</Button>
+        <div className="sticky bottom-4 z-10 flex items-center gap-3 rounded-full bg-[#5c1a3b] p-2 pl-6 text-sm text-[#f1d9e4] shadow-xl">
+          <span className="flex-1">Changes go live as soon as you save.</span>
+          <Button type="submit" variant="accent" size="md">Save homepage</Button>
+        </div>
       </form>
     </div>
   );

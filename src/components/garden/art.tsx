@@ -34,8 +34,8 @@ export function GardenDefs() {
   return (
     <svg width="0" height="0" aria-hidden style={{ position: "absolute" }}>
       <defs>
-        <linearGradient id="gg-sprig-plum" x1="0" x2="1"><stop offset="0" stopColor="#7a2a55" /><stop offset="1" stopColor="#a64274" /></linearGradient>
-        <linearGradient id="gg-sprig-green" x1="0" x2="1"><stop offset="0" stopColor="#24543a" /><stop offset="1" stopColor="#3b8a5b" /></linearGradient>
+        <linearGradient id="gg-sprig-plum" x1="0" x2="1"><stop offset="0" style={{ stopColor: "var(--g-plum2, #7a2a55)" }} /><stop offset="1" style={{ stopColor: "var(--g-plum3, #a64274)" }} /></linearGradient>
+        <linearGradient id="gg-sprig-green" x1="0" x2="1"><stop offset="0" style={{ stopColor: "var(--g-forest, #24543a)" }} /><stop offset="1" style={{ stopColor: "var(--g-leaf2, #3b8a5b)" }} /></linearGradient>
       </defs>
     </svg>
   );
@@ -48,7 +48,7 @@ export function Sprig({ kind, className, style }: { kind: "plum" | "green"; clas
   return (
     <div aria-hidden className={`gg-sprig ${className ?? ""}`} style={style}>
       <svg viewBox="0 0 160 200">
-        <path d="M24 196 C 52 154, 86 112, 132 30" stroke={kind === "plum" ? "#7a2a55" : "#24543a"} strokeWidth="3" fill="none" strokeLinecap="round" />
+        <path d="M24 196 C 52 154, 86 112, 132 30" style={{ stroke: kind === "plum" ? "var(--g-plum2, #7a2a55)" : "var(--g-forest, #24543a)" }} strokeWidth="3" fill="none" strokeLinecap="round" />
         {LEAVES.map(([x, y, r], i) => (
           <g key={i} transform={`translate(${x} ${y}) rotate(${r})`}>
             <path className="gg-lf" style={{ animationDelay: `${-i * 0.6}s` }}
@@ -85,9 +85,9 @@ export function Petals({ colors, leaf, count = 14, height = 420 }: { colors: str
         return (
           <span key={i} className="gg-petal" style={style}>
             {isLeaf ? (
-              <svg width="20" height="20" viewBox="0 0 20 20"><path d="M2 18 C4 8 10 3 18 2 C17 10 12 16 2 18Z" fill={leaf} opacity=".85" /></svg>
+              <svg width="20" height="20" viewBox="0 0 20 20"><path d="M2 18 C4 8 10 3 18 2 C17 10 12 16 2 18Z" style={{ fill: leaf }} opacity=".85" /></svg>
             ) : (
-              <svg width="18" height="22" viewBox="0 0 18 22"><path d="M9 21 C2 15 0 8 4 3 C6 1 8 2 9 4 C10 2 12 1 14 3 C18 8 16 15 9 21Z" fill={colors[i % colors.length]} opacity=".9" /></svg>
+              <svg width="18" height="22" viewBox="0 0 18 22"><path d="M9 21 C2 15 0 8 4 3 C6 1 8 2 9 4 C10 2 12 1 14 3 C18 8 16 15 9 21Z" style={{ fill: colors[i % colors.length] }} opacity=".9" /></svg>
             )}
           </span>
         );
@@ -100,9 +100,9 @@ export function Petals({ colors, leaf, count = 14, height = 420 }: { colors: str
 export function GiftBox({ className }: { className?: string }) {
   return (
     <svg className={`gg-gift ${className ?? ""}`} viewBox="0 0 100 100" aria-hidden>
-      <g className="gg-gift-box"><rect x="18" y="46" width="64" height="46" rx="5" fill="#8e3263" /><rect x="45" y="46" width="10" height="46" fill="#2f6b47" /></g>
-      <g className="gg-gift-lid"><rect x="12" y="34" width="76" height="16" rx="4" fill="#a64274" /><rect x="45" y="34" width="10" height="16" fill="#3b8a5b" /><path d="M50 34 C40 18 24 22 32 32 C36 36 46 35 50 34 Z M50 34 C60 18 76 22 68 32 C64 36 54 35 50 34 Z" fill="#3b8a5b" /></g>
-      <g fill="#e3bd78"><path className="gg-spark" d="M30 18 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3z" /><path className="gg-spark" d="M72 10 l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2z" /><path className="gg-spark" d="M84 30 l2 4 4 2 -4 2 -2 4 -2 -4 -4 -2 4 -2z" /><path className="gg-spark" d="M14 26 l2 4 4 2 -4 2 -2 4 -2 -4 -4 -2 4 -2z" /></g>
+      <g className="gg-gift-box"><rect x="18" y="46" width="64" height="46" rx="5" style={{ fill: "var(--g-plum-hi, #8e3263)" }} /><rect x="45" y="46" width="10" height="46" style={{ fill: "var(--g-leaf, #2f6b47)" }} /></g>
+      <g className="gg-gift-lid"><rect x="12" y="34" width="76" height="16" rx="4" style={{ fill: "var(--g-plum3, #a64274)" }} /><rect x="45" y="34" width="10" height="16" style={{ fill: "var(--g-leaf2, #3b8a5b)" }} /><path d="M50 34 C40 18 24 22 32 32 C36 36 46 35 50 34 Z M50 34 C60 18 76 22 68 32 C64 36 54 35 50 34 Z" style={{ fill: "var(--g-leaf2, #3b8a5b)" }} /></g>
+      <g style={{ fill: "var(--g-gold, #e3bd78)" }}><path className="gg-spark" d="M30 18 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3z" /><path className="gg-spark" d="M72 10 l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2z" /><path className="gg-spark" d="M84 30 l2 4 4 2 -4 2 -2 4 -2 -4 -4 -2 4 -2z" /><path className="gg-spark" d="M14 26 l2 4 4 2 -4 2 -2 4 -2 -4 -4 -2 4 -2z" /></g>
     </svg>
   );
 }

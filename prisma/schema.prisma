@@ -396,3 +396,27 @@ model Faq {
 
   @@index([sortOrder])
 }
+
+// Contact-form messages (also emailed to the store inbox)
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  subject   String?
+  message   String
+  handled   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([handled, createdAt])
+}
+
+// What shoppers search for (to spot demand and gaps in the range)
+model SearchQuery {
+  id        String   @id @default(cuid())
+  term      String
+  results   Int
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}

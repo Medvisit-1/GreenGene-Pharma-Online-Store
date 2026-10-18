@@ -12,7 +12,8 @@ import { CUSTOMER_COOKIE } from "@/lib/customer-auth";
 import { CartSync } from "@/components/cart-sync";
 import { GardenDefs } from "@/components/garden/art";
 import { GardenMotion } from "@/components/garden/motion";
-import { gardenFonts } from "./fonts";
+import { gardenFonts } from "@/components/garden/fonts";
+import { resolveTheme, themeStyle } from "@/lib/themes";
 import "./garden.css";
 
 // Storefront reads live settings from the DB, so render at request time
@@ -31,7 +32,10 @@ export default async function StorefrontLayout({
   ]);
   const showReferral = referral && jar.get(REF_BANNER_HIDE_COOKIE)?.value !== referral.code;
   return (
-    <div className={`gg-theme ${gardenFonts} flex min-h-full flex-col`}>
+    <div
+      className={`gg-theme ${gardenFonts} flex min-h-full flex-col`}
+      style={themeStyle(resolveTheme(settings.themePreset, settings.themeCustom).colors) as React.CSSProperties}
+    >
       <GardenDefs />
       {settings.marqueeEnabled === "1" && (
         <MarqueeBar text={settings.marqueeText} speed={Number(settings.marqueeSpeed)} />

@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import { Trash2 } from "lucide-react";
-import { formatPrice } from "@/lib/utils";
 import { deleteOrder } from "@/app/admin/actions";
 
 const statusColor: Record<string, string> = {
@@ -14,11 +13,12 @@ export type OrderRowData = {
   id: string;
   orderNumber: string;
   email: string;
-  createdAt: string; // ISO
+  /** Formatted on the server so the browser's Intl data can't cause a hydration mismatch */
+  createdLabel: string;
   itemCount: number;
   status: string;
   paymentStatus: string;
-  total: number;
+  totalLabel: string;
 };
 
 export function OrderRow({ order }: { order: OrderRowData }) {
@@ -30,11 +30,7 @@ export function OrderRow({ order }: { order: OrderRowData }) {
       <td className="px-4 py-3 font-semibold text-brand-700">{order.orderNumber}</td>
       <td className="px-4 py-3 text-muted-foreground">{order.email}</td>
       <td className="px-4 py-3 text-muted-foreground">
-        {new Date(order.createdAt).toLocaleString("en-ZA", {
-          dateStyle: "medium",
-          timeStyle: "short",
-          timeZone: "Africa/Johannesburg",
-        })}
+        {order.createdLabel}
       </td>
       <td className="px-4 py-3">{order.itemCount}</td>
       <td className="px-4 py-3">
@@ -47,7 +43,7 @@ export function OrderRow({ order }: { order: OrderRowData }) {
           {order.paymentStatus}
         </span>
       </td>
-      <td className="px-4 py-3 text-right font-medium">{formatPrice(order.total)}</td>
+      <td className="px-4 py-3 text-right font-medium">{order.totalLabel}</td>
       <td className="px-2 py-3 text-right">
         <form action={deleteOrder} className="inline">
           <input type="hidden" name="id" value={order.id} />

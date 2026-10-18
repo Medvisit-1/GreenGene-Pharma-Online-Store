@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { after } from "next/server";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { ProductCard } from "@/components/product-card";
@@ -53,6 +54,13 @@ export default async function ProductsPage({
       ? prisma.category.findUnique({ where: { slug: category } })
       : Promise.resolve(null),
   ]);
+
+  // Remember what people search for (Admin → Customer voice). Only the first
+  // results page, not re-sorts or category clicks within a search.
+  const term = q?.trim().toLowerCase().slice(0, 80);
+  if (term && !sort && !category) {
+    after(() => prisma.searchQuery.create({ data: { term, results: products.length } }).catch(() => {}));
+  }
 
   const ratings = await getRatingMap(products.map((p) => p.id));
   const productsWithRatings = products.map((p) => ({

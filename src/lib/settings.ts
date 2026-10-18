@@ -52,6 +52,22 @@ export type SiteSettings = {
   newReleaseHeading: string;
   newReleaseCards: string; // JSON array of { image, title, text, buttonLabel, buttonLink }
 
+  // ---- Appearance: storefront colour theme ----
+  themePreset: string; // a THEME_PRESETS id, or "custom"
+  themeCustom: string; // JSON ThemeColors when themePreset is "custom"
+
+  // ---- Homepage ("Rewards Garden") ----
+  homeTagline: string; // handwritten line under the greeting
+  homeSlidesHeading: string;
+  homeSlideRewards: string; // "1" | "0"
+  homeSlideOffer: string;
+  homeSlideArticle: string;
+  homeShowJourney: string;
+  homeShowRoutine: string;
+  homeShowPopular: string;
+  homePopularHeading: string;
+  homeRewardsPhoto: string; // photo on the rewards slide
+
   // ---- Floating marquee banner ----
   marqueeEnabled: string; // "1" | "0"
   marqueeText: string;
@@ -184,6 +200,18 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   newsletterDays: "2,5",
   newsletterHour: "8",
 
+  themePreset: "garden",
+  themeCustom: "",
+  homeTagline: "your path to healthy living",
+  homeSlidesHeading: "For you this week",
+  homeSlideRewards: "1",
+  homeSlideOffer: "1",
+  homeSlideArticle: "1",
+  homeShowJourney: "1",
+  homeShowRoutine: "1",
+  homeShowPopular: "1",
+  homePopularHeading: "Popular right now",
+  homeRewardsPhoto: "/img/rewards-photo.webp",
   refillRemindersEnabled: "1",
   refillDefaultDays: "30",
   cartRemindersEnabled: "1",

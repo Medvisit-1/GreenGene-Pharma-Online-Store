@@ -1,5 +1,6 @@
 import { CheckCheck, Download } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import { formatPrice } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { OrderRow } from "@/components/admin/order-row";
 import { ConfirmSubmit } from "@/components/admin/confirm-submit";
@@ -87,11 +88,11 @@ export default async function AdminOrders({ searchParams }: { searchParams: Prom
                     id: o.id,
                     orderNumber: o.orderNumber,
                     email: o.email,
-                    createdAt: o.createdAt.toISOString(),
+                    createdLabel: o.createdAt.toLocaleString("en-ZA", { dateStyle: "medium", timeStyle: "short", timeZone: "Africa/Johannesburg" }),
                     itemCount: o._count.items,
                     status: o.status,
                     paymentStatus: o.paymentStatus,
-                    total: o.total,
+                    totalLabel: formatPrice(o.total),
                   }}
                 />
               ))}

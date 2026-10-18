@@ -6,7 +6,10 @@ import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { AdminNav } from "@/components/admin-nav";
 import { AdminToast } from "@/components/admin/admin-toast";
+import { GardenDefs, Sprig } from "@/components/garden/art";
+import { gardenFonts } from "@/components/garden/fonts";
 import { logoutAction } from "@/app/admin/actions";
+import "../admin.css";
 
 export const dynamic = "force-dynamic";
 
@@ -20,42 +23,47 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   await requireAdmin();
-  const pendingReviews = await prisma.review.count({ where: { status: "pending" } });
+  const [reviews, voice, fulfil] = await Promise.all([
+    prisma.review.count({ where: { status: "pending" } }),
+    prisma.contactMessage.count({ where: { handled: false } }).catch(() => 0),
+    prisma.order.count({ where: { paymentStatus: "paid", status: "unfulfilled" } }),
+  ]);
+  const counts = { reviews, voice, fulfil };
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className={`gg-admin ${gardenFonts} flex min-h-screen`}>
+      <GardenDefs />
       {/* Sidebar */}
-      <aside className="hidden w-64 shrink-0 flex-col bg-header p-4 md:flex print:hidden!">
-        <div className="mb-6 px-2 pt-2">
-          <Image src="/logo.png" alt="GreenGene Pharma" width={1547} height={756} className="h-9 w-auto" />
+      <aside className="gg-side hidden md:flex print:hidden!">
+        <div className="gg-side-logo">
+          <Image src="/logo.png" alt="GreenGene Pharma" width={1547} height={756} className="h-10 w-auto" priority />
         </div>
-        <AdminNav pendingReviews={pendingReviews} />
-        <form action={logoutAction} className="mt-auto">
-          <button className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-white/70 hover:bg-white/10 hover:text-white">
+        <AdminNav counts={counts} />
+        <form action={logoutAction} className="relative z-10 mt-2 border-t border-white/10 pt-2">
+          <button>
             <LogOut className="h-4 w-4" /> Sign out
           </button>
         </form>
+        <Sprig kind="plum" style={{ right: -40, bottom: -40, width: 150, transform: "rotate(-14deg)" }} />
       </aside>
 
-      {/* Mobile top bar */}
-      <div className="flex flex-1 flex-col">
-        <header className="flex items-center justify-between gap-4 bg-header px-4 py-3 md:hidden print:hidden">
-          <Image src="/logo.png" alt="GreenGene Pharma" width={1547} height={756} className="h-8 w-auto" />
-          <form action={logoutAction}>
-            <button className="rounded-lg p-2 text-white/80 hover:bg-white/10">
-              <LogOut className="h-5 w-5" />
-            </button>
-          </form>
-        </header>
-        <div className="md:hidden print:hidden">
-          <div className="overflow-x-auto bg-header px-2 pb-3">
-            <div className="min-w-max">
-              <AdminNav pendingReviews={pendingReviews} />
-            </div>
+      <div className="flex min-w-0 flex-1 flex-col">
+        {/* Mobile top bar */}
+        <header className="gg-admin-top md:hidden print:hidden">
+          <div className="flex items-center justify-between gap-4 px-4 py-3">
+            <span className="rounded-2xl bg-[#f3ebe1] px-3 py-1.5">
+              <Image src="/logo.png" alt="GreenGene Pharma" width={1547} height={756} className="h-7 w-auto" />
+            </span>
+            <form action={logoutAction}>
+              <button className="rounded-full p-2 text-white/80 hover:bg-white/10" aria-label="Sign out">
+                <LogOut className="h-5 w-5" />
+              </button>
+            </form>
           </div>
-        </div>
+          <AdminNav counts={counts} compact />
+        </header>
 
-        <main className="flex-1 p-4 md:p-8 print:p-0">{children}</main>
+        <main className="mx-auto w-full max-w-[1400px] flex-1 p-4 md:p-8 print:p-0">{children}</main>
       </div>
 
       <Toaster position="bottom-right" richColors closeButton />
