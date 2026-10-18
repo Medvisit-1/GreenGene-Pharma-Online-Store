@@ -201,10 +201,16 @@ export function Heatmap({ grid, rows }: { grid: number[][]; rows: string[] }) {
   return (
     <figure>
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[560px] border-separate" style={{ borderSpacing: 2 }}>
+        {/* Fixed layout: all 24 hour columns get equal width (auto layout gave the
+            unlabelled hours zero width, hiding two-thirds of the day) */}
+        <table className="w-full min-w-[560px] table-fixed border-separate" style={{ borderSpacing: 2 }}>
+          <colgroup>
+            <col style={{ width: 40 }} />
+            {Array.from({ length: 24 }, (_, h) => <col key={h} />)}
+          </colgroup>
           <thead>
             <tr>
-              <th className="w-10" />
+              <th />
               {Array.from({ length: 24 }, (_, h) => (
                 <th key={h} scope="col" className="text-[10px] font-normal text-muted-foreground">{h % 3 === 0 ? String(h).padStart(2, "0") : ""}</th>
               ))}

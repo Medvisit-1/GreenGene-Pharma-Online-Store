@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Lightbulb } from "lucide-react";
 import { PERIODS, type Period } from "@/lib/reports";
-import { WEEKDAYS, hourLabel, insightsData, short } from "@/lib/insights";
+import { WEEKDAYS, insightsData, peakHoursText, short } from "@/lib/insights";
 import { cn, formatPrice } from "@/lib/utils";
 import { BarList, ColumnChart, DataTable, Heatmap, StackedColumns, compactRand } from "@/components/admin/charts";
 
@@ -104,9 +104,9 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
           <Heatmap grid={d.heat} rows={WEEKDAYS} />
         </Card>
         <Card title="Busiest days">
-          <BarList rows={WEEKDAYS.map((w, i) => ({ label: w, value: d.byWeekday[i], display: String(d.byWeekday[i]), sub: "orders" }))} />
+          <BarList rows={WEEKDAYS.map((w, i) => ({ label: w, value: d.byWeekday[i], display: `${d.byWeekday[i]} order${d.byWeekday[i] === 1 ? "" : "s"}` }))} />
           <p className="mt-4 text-xs text-muted-foreground">
-            Peak hour: <strong className="text-foreground">{d.orders ? hourLabel(d.byHour.indexOf(Math.max(...d.byHour))) : "—"}</strong>
+            Peak hour: <strong className="text-foreground">{peakHoursText(d.byHour)}</strong>
           </p>
         </Card>
       </div>
