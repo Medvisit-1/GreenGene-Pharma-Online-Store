@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { ProductCard } from "@/components/product-card";
 import { getRatingMap } from "@/lib/reviews";
+import { accentClass, accentFor } from "@/lib/themes";
 
 export const dynamic = "force-dynamic";
 
@@ -15,6 +16,7 @@ export default async function CombosPage() {
   const combos = await prisma.product.findMany({
     where: { active: true, isCombo: true },
     orderBy: { createdAt: "desc" },
+    include: { category: true },
   });
 
   const ratings = await getRatingMap(combos.map((p) => p.id));
@@ -45,7 +47,10 @@ export default async function CombosPage() {
       ) : (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
           {withRatings.map((p) => (
-            <ProductCard key={p.id} product={p} />
+            // "for Her" combos keep the plum look; "for Him" ones the men's accent
+            <div key={p.id} className={accentClass(accentFor(p))}>
+              <ProductCard product={p} />
+            </div>
           ))}
         </div>
       )}

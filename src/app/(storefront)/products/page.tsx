@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { after } from "next/server";
+import { accentClass, accentFor } from "@/lib/themes";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { ProductCard } from "@/components/product-card";
@@ -78,7 +79,7 @@ export default async function ProductsPage({
   };
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-10">
+    <div className={`mx-auto max-w-7xl px-4 py-10 ${activeCategory ? accentClass(accentFor({ name: "", category: activeCategory })) : ""}`}>
       {/* Heading */}
       <div className="mb-8">
         <nav className="mb-2 text-xs text-muted-foreground">

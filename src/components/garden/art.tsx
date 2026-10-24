@@ -48,11 +48,17 @@ export function Sprig({ kind, className, style }: { kind: "plum" | "green"; clas
   return (
     <div aria-hidden className={`gg-sprig ${className ?? ""}`} style={style}>
       <svg viewBox="0 0 160 200">
-        <path d="M24 196 C 52 154, 86 112, 132 30" style={{ stroke: kind === "plum" ? "var(--g-plum2, #7a2a55)" : "var(--g-forest, #24543a)" }} strokeWidth="3" fill="none" strokeLinecap="round" />
+        <path d="M24 196 C 52 154, 86 112, 132 30" style={{ stroke: kind === "plum" ? "var(--g-plum2, #7a2a55)" : "var(--g-foliage, #24543a)" }} strokeWidth="3" fill="none" strokeLinecap="round" />
         {LEAVES.map(([x, y, r], i) => (
           <g key={i} transform={`translate(${x} ${y}) rotate(${r})`}>
-            <path className="gg-lf" style={{ animationDelay: `${-i * 0.6}s` }}
-              d="M0 0 C 10 -13, 34 -14, 46 0 C 34 14, 10 13, 0 0Z" fill={`url(#gg-sprig-${kind})`} />
+            {/* Solid fills (two alternating shades) so a section's colour accent applies */}
+            <path className="gg-lf" d="M0 0 C 10 -13, 34 -14, 46 0 C 34 14, 10 13, 0 0Z"
+              style={{
+                animationDelay: `${-i * 0.6}s`,
+                fill: kind === "plum"
+                  ? i % 2 ? "var(--g-plum3, #a64274)" : "var(--g-plum2, #7a2a55)"
+                  : i % 2 ? "var(--g-leaf2, #3b8a5b)" : "var(--g-foliage, #24543a)",
+              }} />
           </g>
         ))}
       </svg>
@@ -88,6 +94,42 @@ export function Petals({ colors, leaf, count = 14, height = 420 }: { colors: str
               <svg width="20" height="20" viewBox="0 0 20 20"><path d="M2 18 C4 8 10 3 18 2 C17 10 12 16 2 18Z" style={{ fill: leaf }} opacity=".85" /></svg>
             ) : (
               <svg width="18" height="22" viewBox="0 0 18 22"><path d="M9 21 C2 15 0 8 4 3 C6 1 8 2 9 4 C10 2 12 1 14 3 C18 8 16 15 9 21Z" style={{ fill: colors[i % colors.length] }} opacity=".9" /></svg>
+            )}
+          </span>
+        );
+      })}
+    </div>
+  );
+}
+
+/** Leaves and supplement capsules drifting down behind a card (neutral, no petals). */
+export function FallingLeaves({ count = 12, height = 420 }: { count?: number; height?: number }) {
+  return (
+    <div aria-hidden className="gg-petals">
+      {Array.from({ length: count }, (_, i) => {
+        const capsule = i % 3 === 1;
+        const style = {
+          left: `${(rand(i, 1) * 100).toFixed(1)}%`,
+          scale: (0.6 + rand(i, 2) * 0.7).toFixed(2),
+          "--h": `${height}px`,
+          "--dur": `${(11 + rand(i, 3) * 9).toFixed(1)}s`,
+          "--delay": `${(-rand(i, 4) * 20).toFixed(1)}s`,
+          "--drift": `${Math.round(-80 + rand(i, 5) * 160)}px`,
+          "--rot": `${Math.round(rand(i, 6) * 540 - 270)}deg`,
+          "--fl": `${(1.6 + rand(i, 7) * 1.6).toFixed(1)}s`,
+        } as React.CSSProperties;
+        return (
+          <span key={i} className="gg-petal" style={style}>
+            {capsule ? (
+              <svg width="22" height="10" viewBox="0 0 22 10">
+                <rect x="1" y="1" width="20" height="8" rx="4" style={{ fill: "var(--g-card, #fbf7f1)", stroke: "var(--g-line, #dccdbf)" }} strokeWidth="1" />
+                <path d="M11 1 H17 A4 4 0 0 1 17 9 H11 Z" style={{ fill: i % 2 ? "var(--g-leaf2, #3b8a5b)" : "var(--g-gold, #c6a15b)" }} />
+              </svg>
+            ) : (
+              <svg width="20" height="20" viewBox="0 0 20 20">
+                <path d="M2 18 C4 8 10 3 18 2 C17 10 12 16 2 18Z" style={{ fill: i % 2 ? "var(--g-leaf, #2f6b47)" : "var(--g-leaf2, #3b8a5b)" }} opacity=".85" />
+                <path d="M3 17 L15 5" style={{ stroke: "var(--g-foliage, #24543a)" }} strokeWidth=".8" opacity=".5" />
+              </svg>
             )}
           </span>
         );

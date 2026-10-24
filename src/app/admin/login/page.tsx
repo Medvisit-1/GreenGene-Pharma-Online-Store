@@ -36,7 +36,7 @@ export default async function AdminLoginPage({
 
       <div className="relative z-10 w-full max-w-sm rounded-[28px] bg-[color:var(--g-card)] p-8 shadow-2xl">
         <div className="mb-5 flex justify-center">
-          <Image src="/logo.png" alt="GreenGene Pharma" width={1547} height={756} className="h-12 w-auto" priority />
+          <Image src="/logo-contrast.png" alt="GreenGene Pharma" width={1547} height={756} className="h-12 w-auto" priority />
         </div>
         <h1 className="text-center font-[family-name:var(--font-g-serif)] text-3xl font-semibold text-[color:var(--g-plum)]">Welcome back</h1>
         <p className="text-center font-[family-name:var(--font-g-script)] text-xl text-[color:var(--g-leaf)]">let&apos;s grow your shop</p>

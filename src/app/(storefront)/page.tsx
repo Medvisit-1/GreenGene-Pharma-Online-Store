@@ -11,14 +11,17 @@ import {
   productTitle, rewardStatus, shortPrice, timeOfDay, type LastOrder, type RewardStatus,
 } from "@/lib/home";
 import { formatPrice, reorderHref } from "@/lib/utils";
+import { accentClass, accentFor } from "@/lib/themes";
 import { parseNewReleaseCards } from "@/lib/new-release";
 import { NewReleaseCarousel } from "@/components/new-release-carousel";
 import { WishlistButton } from "@/components/wishlist-button";
-import { GIcon, GiftBox, Petals, Sprig, type GIconName } from "@/components/garden/art";
+import { FallingLeaves, GIcon, GiftBox, Sprig, type GIconName } from "@/components/garden/art";
 import { HomeSlider, type Slide } from "@/components/garden/home-slider";
 import { AddPlus, RoutineCheck } from "@/components/garden/home-bits";
 
 export const dynamic = "force-dynamic";
+
+type Acc = (p: Pick<Product, "name" | "categoryId">) => string;
 
 const TINTS = ["var(--g-blush)", "var(--g-sage)", "#f3eadf", "var(--g-lilac)"];
 
@@ -47,7 +50,10 @@ export default async function HomePage() {
     bestOffer(),
     featuredArticle().catch(() => null),
   ]);
-    const firstName = customer?.name?.trim().split(/\s+/)[0];
+  const firstName = customer?.name?.trim().split(/\s+/)[0];
+  // Women's Health products keep their plum look, Men's Health gets charcoal & gold
+  const catById = new Map(categories.map((c) => [c.id, c]));
+  const acc: Acc = (p) => accentClass(accentFor({ name: p.name, category: p.categoryId ? catById.get(p.categoryId) : null }));
   const defaultDays = Math.max(7, parseInt(s.refillDefaultDays, 10) || 30);
   const newReleaseCards = parseNewReleaseCards(s.newReleaseCards);
 
@@ -59,7 +65,7 @@ export default async function HomePage() {
     const img = firstImage(offer);
     slides.push({
       key: "offer",
-      className: "gg-s2",
+      className: `gg-s2 ${acc(offer)}`,
       label: `${t.name} offer`,
       content: (
         <>
@@ -81,7 +87,7 @@ export default async function HomePage() {
     const img = article.product ? firstImage(article.product) : null;
     slides.push({
       key: "article",
-      className: "gg-s3",
+      className: `gg-s3 ${article.product ? acc(article.product) : ""}`,
       label: article.article.title,
       content: (
         <>
@@ -104,9 +110,9 @@ export default async function HomePage() {
       {/* Row 1: greeting + rewards */}
       <div className="gg-top">
         <section className="gg-hello">
-          <Petals colors={["var(--g-plum3)", "var(--g-plum-soft)", "var(--g-plum-pale)"]} leaf="var(--g-leaf)" count={14} height={460} />
+          <FallingLeaves count={10} height={460} />
           <Sprig kind="green" style={{ right: -34, top: -44, width: 150, transform: "rotate(180deg) scaleX(-1)" }} />
-          <Sprig kind="plum" className="gg-hide-m" style={{ right: 40, bottom: -30, width: 150, transform: "rotate(-10deg)" }} />
+          <Sprig kind="green" className="gg-hide-m" style={{ right: 40, bottom: -30, width: 150, transform: "rotate(-10deg)" }} />
           <div className="gg-caps">{greeting()}</div>
           <h1>{customer ? `Welcome back${firstName ? `, ${firstName}` : ""}` : "Welcome to GreenGene"}</h1>
           <div className="gg-script"><span className="gg-write">{s.homeTagline}</span></div>
@@ -149,8 +155,8 @@ export default async function HomePage() {
       {/* Routine + refill */}
       {s.homeShowRoutine !== "0" && (
         <div className="gg-two">
-          <Routine order={order} fallback={popular} signedIn={!!customer} />
-          <RefillCard order={order} defaultDays={defaultDays} signedIn={!!customer} fallback={popular[1] ?? popular[0]} />
+          <Routine order={order} fallback={popular} signedIn={!!customer} acc={acc} />
+          <RefillCard order={order} defaultDays={defaultDays} signedIn={!!customer} fallback={popular[1] ?? popular[0]} acc={acc} />
         </div>
       )}
 
@@ -159,7 +165,7 @@ export default async function HomePage() {
         <>
           <div className="gg-sh"><h2>{s.homePopularHeading || "Popular right now"}</h2><Link href="/products">Shop all →</Link></div>
           <div className="gg-grid">
-            {popular.map((p, i) => <Tile key={p.id} product={p} index={i} />)}
+            {popular.map((p, i) => <Tile key={p.id} product={p} index={i} accent={acc(p)} />)}
           </div>
         </>
       )}
@@ -315,14 +321,14 @@ function Journey({ signedIn }: { signedIn: boolean }) {
         <div className="gg-steps">
           <div className="gg-step"><span className="c"><GIcon name="percent" size={30} /></span><b>EASY<br />SIGNUP</b></div>
           <div className="gg-step"><span className="c"><GIcon name="mail" size={30} /></span><b>JOIN<br />NEWSLETTER</b></div>
-          <div className="gg-step"><span className="c"><GIcon name="heart" size={30} /></span><b>START<br />SAVING</b></div>
+          <div className="gg-step"><span className="c"><GIcon name="gift" size={30} /></span><b>START<br />SAVING</b></div>
         </div>
       </div>
     </section>
   );
 }
 
-function Routine({ order, fallback, signedIn }: { order: LastOrder | null; fallback: Product[]; signedIn: boolean }) {
+function Routine({ order, fallback, signedIn, acc }: { order: LastOrder | null; fallback: Product[]; signedIn: boolean; acc: Acc }) {
   const products = order ? order.items.map((i) => i.product).slice(0, 3) : fallback.slice(0, 2);
   const tints = ["var(--g-blush)", "var(--g-lilac)", "var(--g-sage)"];
   return (
@@ -341,7 +347,7 @@ function Routine({ order, fallback, signedIn }: { order: LastOrder | null; fallb
         const how = directions(p);
         const img = firstImage(p);
         return (
-          <div key={p.id} className="gg-slot" style={{ background: tints[i % tints.length] }}>
+          <div key={p.id} className={`gg-slot ${acc(p)}`} style={{ background: acc(p) ? "var(--g-blush)" : tints[i % tints.length] }}>
             <Link href={`/products/${p.slug}`} className="pv">{img && <img src={img} alt={t.name} />}</Link>
             <div className="min-w-0">
               <b>{timeOfDay(how)}{t.name}</b>
@@ -355,7 +361,7 @@ function Routine({ order, fallback, signedIn }: { order: LastOrder | null; fallb
   );
 }
 
-function RefillCard({ order, defaultDays, signedIn, fallback }: { order: LastOrder | null; defaultDays: number; signedIn: boolean; fallback?: Product }) {
+function RefillCard({ order, defaultDays, signedIn, fallback, acc }: { order: LastOrder | null; defaultDays: number; signedIn: boolean; fallback?: Product; acc: Acc }) {
   const refill = order ? nextRefill(order, defaultDays) : null;
   if (!refill) {
     const img = fallback ? firstImage(fallback) : null;
@@ -381,7 +387,7 @@ function RefillCard({ order, defaultDays, signedIn, fallback }: { order: LastOrd
         : `Time to restock ${t.name}?`;
   const href = reorderHref([{ productId: item.product.id, quantity: item.quantity }]) ?? `/products/${item.product.slug}`;
   return (
-    <section className="gg-refill gg-reveal" data-delay=".15">
+    <section className={`gg-refill gg-reveal ${acc(item.product)}`} data-delay=".15">
       <div>
         <div className="gg-caps">{daysLeft > 7 ? "Your supply" : "Refill soon"}</div>
         <h2>{heading}</h2>
@@ -396,14 +402,14 @@ function RefillCard({ order, defaultDays, signedIn, fallback }: { order: LastOrd
   );
 }
 
-function Tile({ product: p, index }: { product: Product; index: number }) {
+function Tile({ product: p, index, accent }: { product: Product; index: number; accent: string }) {
   const t = productTitle(p.name);
   const img = firstImage(p);
   return (
-    <div className="gg-tile gg-reveal" data-delay={(index * 0.1).toFixed(1)}>
+    <div className={`gg-tile gg-reveal ${accent}`} data-delay={(index * 0.1).toFixed(1)}>
       <WishlistButton productId={p.id} className="heart" />
       <Link href={`/products/${p.slug}`} className="block">
-        <div className="pv" style={{ background: TINTS[index % TINTS.length] }}>{img && <img src={img} alt={t.name} />}</div>
+        <div className="pv" style={{ background: accent ? "var(--g-blush)" : TINTS[index % TINTS.length] }}>{img && <img src={img} alt={t.name} />}</div>
         <h3>{t.name}</h3>
         <span className="t">{t.tagline || p.shortDescription}</span>
       </Link>

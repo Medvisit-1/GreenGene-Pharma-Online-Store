@@ -281,3 +281,78 @@ export function DataTable({ head, rows }: { head: string[]; rows: (string | numb
     </details>
   );
 }
+
+export const DAY_PARTS = [
+  { label: "Night", hours: "12am–6am", from: 0, to: 6 },
+  { label: "Morning", hours: "6am–12pm", from: 6, to: 12 },
+  { label: "Afternoon", hours: "12pm–6pm", from: 12, to: 18 },
+  { label: "Evening", hours: "6pm–12am", from: 18, to: 24 },
+] as const;
+
+/**
+ * Orders by weekday × part of the day, with the count written in every box and
+ * totals for each day and each part of the day. Shading only reinforces the number.
+ */
+export function WhenTable({ grid, days }: { grid: number[][]; days: string[] }) {
+  const cell = grid.map((row) => DAY_PARTS.map((p) => row.slice(p.from, p.to).reduce((a, b) => a + b, 0)));
+  const dayTotal = cell.map((r) => r.reduce((a, b) => a + b, 0));
+  const partTotal = DAY_PARTS.map((_, j) => cell.reduce((n, r) => n + r[j], 0));
+  const total = dayTotal.reduce((a, b) => a + b, 0);
+  const max = Math.max(1, ...cell.flat());
+  const shade = (v: number) => {
+    if (!v) return { background: "rgba(0,0,0,.03)", color: "var(--g-muted, #7c6870)" };
+    const s = Math.min(RAMP.length - 1, Math.max(1, Math.round((v / max) * (RAMP.length - 1))));
+    return { background: RAMP[s], color: s >= 4 ? "#fff" : "var(--g-ink, #2d1724)" };
+  };
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full min-w-[480px] table-fixed border-separate text-sm" style={{ borderSpacing: 4 }}>
+        <colgroup>
+          <col style={{ width: 96 }} />
+          {DAY_PARTS.map((p) => <col key={p.label} />)}
+          <col style={{ width: 70 }} />
+        </colgroup>
+        <thead>
+          <tr>
+            <th />
+            {DAY_PARTS.map((p) => (
+              <th key={p.label} scope="col" className="pb-1 text-center font-semibold">
+                {p.label}
+                <span className="block text-[11px] font-normal text-muted-foreground">{p.hours}</span>
+              </th>
+            ))}
+            <th scope="col" className="pb-1 text-right font-semibold">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {cell.map((row, d) => (
+            <tr key={days[d]}>
+              <th scope="row" className="text-left font-medium">{days[d]}</th>
+              {row.map((v, j) => (
+                <td
+                  key={j}
+                  data-day={days[d]}
+                  data-part={DAY_PARTS[j].label}
+                  data-count={v}
+                  title={`${days[d]} ${DAY_PARTS[j].label.toLowerCase()} (${DAY_PARTS[j].hours}): ${v} order${v === 1 ? "" : "s"}`}
+                  className="h-10 rounded-lg text-center font-semibold tabular-nums"
+                  style={shade(v)}
+                >
+                  {v || "–"}
+                </td>
+              ))}
+              <td className="text-right font-bold tabular-nums" data-day-total={days[d]}>{dayTotal[d]}</td>
+            </tr>
+          ))}
+        </tbody>
+        <tfoot>
+          <tr>
+            <th scope="row" className="pt-1 text-left font-semibold">Total</th>
+            {partTotal.map((v, j) => <td key={j} className="pt-1 text-center font-bold tabular-nums" data-part-total={DAY_PARTS[j].label}>{v}</td>)}
+            <td className="pt-1 text-right font-bold tabular-nums" data-grand-total>{total}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  );
+}

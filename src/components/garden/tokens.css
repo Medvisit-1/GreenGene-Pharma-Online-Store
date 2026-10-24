@@ -1,10 +1,11 @@
 /* ============================================================
-   Theme colour tokens shared by the shop (.gg-theme) and the admin
+   Theme colour tokens (also recomputed inside .gg-accent-women /
+   .gg-accent-men, the Women's and Men's Health accents) shared by the shop (.gg-theme) and the admin
    (.gg-admin). Five base colours come from Admin → Appearance; every
    tint, shade and gradient is derived here, so any theme stays in
    harmony and the admin always matches the shop.
    ============================================================ */
-.gg-theme, .gg-admin {
+.gg-theme, .gg-admin, .gg-accent-women, .gg-accent-men {
   /* Base colours (Admin → Appearance overrides these five) */
   --g-primary: #5c1a3b; --g-accent: #e3bd78; --g-secondary: #24543a; --g-bg: #f3ebe1; --g-ink: #2d1724;
 
@@ -18,8 +19,11 @@
   --g-plum-hi: color-mix(in oklab, var(--g-primary) 80%, #fff);
   --g-plum-lo: color-mix(in oklab, var(--g-primary) 76%, #000);
   --g-forest: var(--g-secondary);
-  --g-leaf: color-mix(in oklab, var(--g-secondary) 86%, #fff);
-  --g-leaf2: color-mix(in oklab, var(--g-secondary) 70%, #fff);
+  --g-secondary-hi: color-mix(in oklab, var(--g-secondary) 86%, #fff);
+  /* Leaf branches: their own colour when the theme sets one (Evergreen), else the second colour */
+  --g-foliage: var(--g-secondary);
+  --g-leaf: color-mix(in oklab, var(--g-foliage) 86%, #fff);
+  --g-leaf2: color-mix(in oklab, var(--g-foliage) 70%, #fff);
   --g-plum-soft: color-mix(in oklab, var(--g-primary) 50%, #fff);
   --g-plum-pale: color-mix(in oklab, var(--g-primary) 32%, #fff);
   --g-forest-lo: color-mix(in oklab, var(--g-secondary) 66%, #000);

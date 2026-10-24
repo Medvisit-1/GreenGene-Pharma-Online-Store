@@ -3,15 +3,19 @@ import { Lightbulb } from "lucide-react";
 import { PERIODS, type Period } from "@/lib/reports";
 import { WEEKDAYS, insightsData, peakHoursText, short } from "@/lib/insights";
 import { cn, formatPrice } from "@/lib/utils";
-import { BarList, ColumnChart, DataTable, Heatmap, StackedColumns, compactRand } from "@/components/admin/charts";
+import { BarList, ColumnChart, DAY_PARTS, DataTable, StackedColumns, WhenTable, compactRand } from "@/components/admin/charts";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Insights & trends" };
 
-function Card({ title, note, children, className, id }: { title: string; note?: string; children: React.ReactNode; className?: string; id?: string }) {
+/** A chart card; `span` names the time it covers, so every figure says what it counts. */
+function Card({ title, note, span, children, className, id }: { title: string; note?: string; span?: string; children: React.ReactNode; className?: string; id?: string }) {
   return (
     <section id={id} className={cn("rounded-2xl border border-border bg-surface p-5", className)}>
-      <h2>{title}</h2>
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <h2>{title}</h2>
+        {span && <span className="shrink-0 rounded-full bg-muted px-2.5 py-1 text-[11px] font-semibold text-muted-foreground">{span}</span>}
+      </div>
       {note && <p className="mt-0.5 text-xs text-muted-foreground">{note}</p>}
       <div className="mt-4">{children}</div>
     </section>
@@ -32,7 +36,14 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
   const { p } = await searchParams;
   const period = (PERIODS.some((x) => x.id === p) ? p : "90d") as Period;
   const d = await insightsData(period);
-  const periodLabel = PERIODS.find((x) => x.id === period)!.label.toLowerCase();
+  const periodName = PERIODS.find((x) => x.id === period)!.label;
+  const periodLabel = periodName.toLowerCase();
+  const plural = (n: number) => `${n} order${n === 1 ? "" : "s"}`;
+  const topDay = Math.max(...d.byWeekday);
+  const busiestDays = `${WEEKDAYS.filter((_, i) => d.byWeekday[i] === topDay).join(", ")} (${plural(topDay)}${WEEKDAYS.filter((_, i) => d.byWeekday[i] === topDay).length > 1 ? " each" : ""})`;
+  const partTotals = DAY_PARTS.map((p) => d.byHour.slice(p.from, p.to).reduce((a, b) => a + b, 0));
+  const topPart = Math.max(...partTotals);
+  const busiestPart = `${DAY_PARTS.filter((_, i) => partTotals[i] === topPart).map((p) => `${p.label} (${p.hours})`).join(", ")} · ${plural(topPart)}`;
 
   return (
     <div className="space-y-6">
@@ -88,7 +99,7 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
       </section>
 
       {/* Trend */}
-      <Card title={d.trendBy === "day" ? "Revenue per day" : "Revenue per month"} note="Hover a column for revenue and order count.">
+      <Card title={d.trendBy === "day" ? "Revenue per day" : "Revenue per month"} span={periodName} note="Hover a column for revenue and order count.">
         <ColumnChart
           points={d.trend}
           format={compactRand}
@@ -99,30 +110,33 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
       </Card>
 
       {/* When */}
-      <div className="grid gap-6 xl:grid-cols-[1.6fr_1fr]">
-        <Card title="When people buy" note="When orders were marked paid, by day of the week and hour of the day.">
-          <Heatmap grid={d.heat} rows={WEEKDAYS} />
-        </Card>
-        <Card title="Busiest days">
-          <BarList rows={WEEKDAYS.map((w, i) => ({ label: w, value: d.byWeekday[i], display: `${d.byWeekday[i]} order${d.byWeekday[i] === 1 ? "" : "s"}` }))} />
-          <p className="mt-4 text-xs text-muted-foreground">
-            Peak hour: <strong className="text-foreground">{peakHoursText(d.byHour)}</strong>
-          </p>
-        </Card>
-      </div>
+      <Card
+        title="When orders are paid"
+        span={periodName}
+        note={`${d.orders} paid order${d.orders === 1 ? "" : "s"}, by the day of the week and time of day each was marked paid (South African time).`}
+      >
+        <WhenTable grid={d.heat} days={WEEKDAYS} />
+        {d.orders > 0 && (
+          <div className="mt-4 grid gap-2 text-sm sm:grid-cols-3">
+            <p className="rounded-2xl bg-white px-4 py-3">Busiest day<br /><strong>{busiestDays}</strong></p>
+            <p className="rounded-2xl bg-white px-4 py-3">Busiest time of day<br /><strong>{busiestPart}</strong></p>
+            <p className="rounded-2xl bg-white px-4 py-3">Busiest single hour<br /><strong>{peakHoursText(d.byHour)}</strong></p>
+          </div>
+        )}
+      </Card>
 
       {/* What */}
       <div className="grid gap-6 lg:grid-cols-2">
-        <Card title="Best sellers" note="By product sales before order discounts.">
+        <Card title="Best sellers" span={periodName} note="By product sales before order discounts.">
           <BarList rows={d.topProducts.map((x) => ({ label: short(x.name), value: x.revenue, display: formatPrice(x.revenue), sub: `${x.units} sold` }))} empty="No sales in this period." />
         </Card>
-        <Card title="Sales by category">
+        <Card title="Sales by category" span={periodName}>
           <BarList rows={d.categories.map((x) => ({ label: x.name, value: x.revenue, display: formatPrice(x.revenue) }))} empty="No sales in this period." />
         </Card>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <Card title="Bought together" note={`${d.basketShare}% of orders had more than one product.`}>
+        <Card title="Bought together" span={periodName} note={`${d.basketShare}% of orders had more than one product.`}>
           {d.together.length === 0 ? (
             <p className="text-sm text-muted-foreground">No multi-product orders yet.</p>
           ) : (
@@ -139,18 +153,18 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
           )}
           <p className="mt-3 text-xs text-muted-foreground">Pairs that sell together are good candidates for a combo (Products → Combos).</p>
         </Card>
-        <Card title="Where orders go" note="By delivery province.">
+        <Card title="Where orders go" span={periodName} note="By delivery province.">
           <BarList rows={d.provinces.slice(0, 9).map((x) => ({ label: x.name, value: x.orders, display: String(x.orders), sub: formatPrice(x.revenue) }))} empty="No deliveries in this period." />
         </Card>
       </div>
 
       {/* Who */}
       <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-        <Card title="First-time vs returning buyers" note="Paid orders per month, last 12 months.">
+        <Card title="First-time vs returning buyers" span={"Last 12 months"} note="Paid orders per month, last 12 months.">
           <StackedColumns points={d.newVsReturning.map((m) => ({ key: m.key, label: m.label, a: m.first, b: m.returning }))} names={["First order", "Returning"]} />
           <DataTable head={["Month", "First order", "Returning"]} rows={d.newVsReturning.map((m) => [m.label, m.first, m.returning])} />
         </Card>
-        <Card title="Customer loyalty">
+        <Card title="Customer loyalty" span={"All time"}>
           <div className="grid grid-cols-2 gap-3">
             <Stat label="Accounts" value={String(d.customers.accounts)} />
             <Stat label="Buyers" value={String(d.customers.buyersEver)} />
@@ -162,18 +176,18 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
 
       {/* Marketing */}
       <div className="grid gap-6 lg:grid-cols-3">
-        <Card title="Checkout completion" note={`Orders started vs paid, ${periodLabel}.`}>
+        <Card title="Checkout completion" span={periodName} note={`Orders started vs paid, ${periodLabel}.`}>
           <p className="font-[family-name:var(--font-g-serif)] text-5xl font-semibold text-[color:var(--g-plum)]">{d.checkout.rate === null ? "—" : `${d.checkout.rate}%`}</p>
           <p className="mt-1 text-sm text-muted-foreground">{d.checkout.paid} paid of {d.checkout.created} orders placed</p>
           <div className="mt-3 h-2.5 rounded-full bg-black/[0.05]">
             <div className="h-2.5 rounded-full bg-[color:var(--g-chart)]" style={{ width: `${d.checkout.rate ?? 0}%` }} />
           </div>
         </Card>
-        <Card title="Discount codes" note="Most used in this period.">
+        <Card title="Discount codes" span={periodName} note="Most used codes.">
           <BarList rows={d.codes.map((c) => ({ label: c.code, value: c.uses, display: `${c.uses}×`, sub: `${formatPrice(c.discount)} off` }))} empty="No codes used in this period." />
           <p className="mt-3 text-xs text-muted-foreground">Rewards: {d.rewards.claimed} codes claimed, {d.rewards.redeemed} used at checkout.</p>
         </Card>
-        <Card title="Newsletter" note={`${d.newsletter.total} current subscribers, by the month they joined · ${d.wishlist} wishlist saves`}>
+        <Card title="Newsletter" span={"Last 12 months"} note={`${d.newsletter.total} current subscribers, by the month they joined · ${d.wishlist} wishlist saves`}>
           <ColumnChart points={d.newsletter.growth} tip={(x) => `${x.label}: ${x.value} subscribers (+${x.count ?? 0})`} height={140} everyNth={3} />
         </Card>
       </div>

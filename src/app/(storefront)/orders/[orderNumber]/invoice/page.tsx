@@ -43,7 +43,7 @@ export default async function InvoicePage({ params, searchParams }: { params: Pa
         <div className="flex items-start justify-between border-b border-border pb-6">
           <div>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.png" alt="GreenGene Pharma" className="h-14 w-auto" />
+            <img src="/logo-contrast.png" alt="GreenGene Pharma" className="h-14 w-auto" />
             <p className="mt-3 text-xs text-muted-foreground">
               {settings.contactAddress}
               <br />

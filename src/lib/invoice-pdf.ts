@@ -59,7 +59,7 @@ export async function renderInvoicePdf(inv: InvoiceRecord): Promise<Buffer> {
   // ---- Header: logo + company (left), INVOICE meta (right) ----
   let leftY = 50;
   try {
-    const logo = readFileSync(path.join(process.cwd(), "public", "logo.png"));
+    const logo = readFileSync(path.join(process.cwd(), "public", "logo-contrast.png"));
     doc.image(logo, L, 46, { height: 34 });
     leftY = 90;
   } catch {
