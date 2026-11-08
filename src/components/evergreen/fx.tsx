@@ -51,61 +51,79 @@ export function EvergreenFx() {
     // ---- fireflies ----
     const T_FORM = 0.9, T_DISP = 3.8, T_UI = 4.3, T_END = 5.5;
     let W = 0, H = 0, DPR = 1, mx = -999, my = -999, sprite: HTMLCanvasElement | null = null, spriteKey = "";
-    type P = { tx: number; ty: number; sx: number; sy: number; cx: number; cy: number; d: number; dur: number; e: number; hx: number; hy: number; size: number; ph: number; ax: number; ay: number; sp: number; amb: boolean; ox: number; oy: number };
+    type P = { tx: number; ty: number; sx: number; sy: number; cx: number; cy: number; d: number; dur: number; e: number; hx: number; hy: number; size: number; ph: number; ax: number; ay: number; sp: number; amb: boolean; ox: number; oy: number; c: number };
     let parts: P[] = [];
     const rnd = (a: number, b: number) => a + Math.random() * (b - a);
     const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
     const clamp = (v: number, a = 0, b = 1) => Math.min(b, Math.max(a, v));
 
-    function sproutPoints() {
-      const s = document.createElement("canvas");
-      s.width = s.height = 360;
-      const g = s.getContext("2d")!;
-      g.fillStyle = g.strokeStyle = "#fff"; g.lineCap = "round"; g.lineWidth = 11;
-      g.beginPath(); g.moveTo(180, 335); g.quadraticCurveTo(168, 240, 180, 130); g.stroke();
-      const leaf = (x: number, y: number, ang: number, len: number, wid: number) => {
-        g.save(); g.translate(x, y); g.rotate(ang); g.beginPath(); g.moveTo(0, 0);
-        g.quadraticCurveTo(len * 0.5, -wid, len, 0); g.quadraticCurveTo(len * 0.5, wid, 0, 0); g.fill(); g.restore();
+    // The real GreenGene Pharma logo, sampled into points with their brand colour
+    // (0 = lime "Pharma"/helix, 1 = teal cross/helix, 2 = lettering, shown light on the dark ground).
+    const SW = 400;
+    let SH = 196, logoPts: [number, number, number][] = [], lightLogo: HTMLCanvasElement | null = null;
+    const BRAND = ["140,198,63", "38,170,170", "236,242,238"];
+    function sampleLogo(img: HTMLImageElement) {
+      SH = Math.round((SW * img.naturalHeight) / img.naturalWidth);
+      const s = document.createElement("canvas"); s.width = SW; s.height = SH;
+      const g = s.getContext("2d", { willReadFrequently: true })!;
+      g.drawImage(img, 0, 0, SW, SH);
+      const im = g.getImageData(0, 0, SW, SH), d = im.data;
+      const kind = (i: number) => {
+        const r = d[i], gg = d[i + 1], b = d[i + 2];
+        if (gg - r > 40 && gg - b > 40) return 0;
+        if (b > r + 40 && gg > r + 40) return 1;
+        return 2;
       };
-      leaf(176, 215, -Math.PI * 0.78, 125, 52); leaf(176, 170, -Math.PI * 0.22, 138, 58); leaf(179, 132, -Math.PI * 0.5, 70, 30);
-      const d = g.getImageData(0, 0, 360, 360).data, pts: [number, number][] = [];
-      for (let y = 0; y < 360; y += 3) for (let x = 0; x < 360; x += 3) if (d[(y * 360 + x) * 4 + 3] > 128) pts.push([x, y]);
-      return pts;
+      for (let i = 0; i < d.length; i += 4) {
+        if (d[i + 3] < 40) continue;
+        if (kind(i) === 2) { d[i] = 236; d[i + 1] = 242; d[i + 2] = 238; }
+      }
+      g.putImageData(im, 0, 0);
+      lightLogo = s;
+      logoPts = [];
+      for (let y = 0; y < SH; y += 2) for (let x = 0; x < SW; x += 2) {
+        const i = (y * SW + x) * 4;
+        if (d[i + 3] > 140) logoPts.push([x, y, kind(i)]);
+      }
     }
+    let lx = 0, ly = 0, lw = 0, lh = 0;
     function build(introCount: boolean) {
       DPR = Math.min(devicePixelRatio || 1, 1.5); W = innerWidth; H = innerHeight;
       cv!.width = W * DPR; cv!.height = H * DPR; cv!.style.width = W + "px"; cv!.style.height = H + "px";
       const small = W < 700;
       const amb = small ? 70 : 140;
-      const pts = sproutPoints().sort(() => Math.random() - 0.5).slice(0, introCount ? (small ? 800 : 1300) : amb);
-      const sc = (Math.min(W, H) * (small ? 0.52 : 0.62)) / 360, ox = W / 2 - 180 * sc, oy = H / 2 - 205 * sc;
-      const ys = pts.map((p) => p[1]), minY = Math.min(...ys), maxY = Math.max(...ys);
-      const sx = W / 2, sy = H / 2 + 60 * sc;
+      const src = logoPts.length ? logoPts : Array.from({ length: amb }, () => [rnd(0, SW), rnd(0, SH), 0] as [number, number, number]);
+      const pts = [...src].sort(() => Math.random() - 0.5).slice(0, introCount ? (small ? 1100 : 1900) : amb);
+      lw = Math.min(W * 0.82, 640); lh = (lw * SH) / SW; lx = W / 2 - lw / 2; ly = H / 2 - lh / 2 - 30;
+      const sc = lw / SW, sx = W / 2, sy = ly + lh + 70;
       parts = pts.map((p, i) => {
-        const tx = ox + p[0] * sc, ty = oy + p[1] * sc, a = Math.random() * 6.28, r = rnd(40, 170);
+        const tx = lx + p[0] * sc, ty = ly + p[1] * sc, a = Math.random() * 6.28, r = rnd(40, 170);
         return {
           tx, ty, sx, sy, cx: (sx + tx) / 2 + Math.cos(a) * r, cy: (sy + ty) / 2 + Math.sin(a) * r - 60,
-          d: T_FORM + ((maxY - p[1]) / (maxY - minY || 1)) * 0.95 + Math.random() * 0.25, dur: rnd(0.9, 1.3),
-          e: Math.random() * 0.35, hx: rnd(0, W), hy: rnd(0, H), size: rnd(2.2, 5.2), ph: rnd(0, 6.28),
-          ax: rnd(10, 40), ay: rnd(10, 40), sp: rnd(0.2, 0.7), amb: i < amb, ox: 0, oy: 0,
+          d: T_FORM + (p[0] / SW) * 0.8 + Math.random() * 0.3, dur: rnd(0.9, 1.3),
+          e: Math.random() * 0.35, hx: rnd(0, W), hy: rnd(0, H), size: rnd(1.6, 3.2), ph: rnd(0, 6.28),
+          ax: rnd(10, 40), ay: rnd(10, 40), sp: rnd(0.2, 0.7), amb: i < amb, ox: 0, oy: 0, c: p[2],
         };
       });
     }
-    function makeSprite(rgb: string) {
-      if (rgb === spriteKey) return;
-      spriteKey = rgb;
+    const brandSprites = BRAND.map((rgb) => glow(rgb));
+    function glow(rgb: string) {
       const c = document.createElement("canvas"); c.width = c.height = 48;
       const g = c.getContext("2d")!, gr = g.createRadialGradient(24, 24, 0, 24, 24, 24);
-      gr.addColorStop(0, "rgba(255,255,235,1)"); gr.addColorStop(0.22, `rgba(${rgb},.85)`); gr.addColorStop(1, `rgba(${rgb},0)`);
-      g.fillStyle = gr; g.fillRect(0, 0, 48, 48); sprite = c;
+      gr.addColorStop(0, "rgba(255,255,240,1)"); gr.addColorStop(0.22, `rgba(${rgb},.85)`); gr.addColorStop(1, `rgba(${rgb},0)`);
+      g.fillStyle = gr; g.fillRect(0, 0, 48, 48); return c;
+    }
+    function makeSprite(rgb: string) {
+      if (rgb === spriteKey) return;
+      spriteKey = rgb; sprite = glow(rgb);
     }
     function frame(t: number) {
-      makeSprite(getComputedStyle(root!).getPropertyValue("--acc-rgb").trim() || "79,220,155");
+      makeSprite(getComputedStyle(root!).getPropertyValue("--acc-rgb").trim() || "140,198,63");
       cx!.setTransform(DPR, 0, 0, DPR, 0, 0); cx!.clearRect(0, 0, W, H); cx!.globalCompositeOperation = "lighter";
       if (t < T_FORM + 0.5 && parts.length) {
         const pulse = 1 + 0.35 * Math.sin(t * 5.2), a = t < T_FORM ? 1 : 1 - (t - T_FORM) / 0.5;
         const r = 9 * pulse * (1 + Math.max(0, t - T_FORM + 0.2) * 2);
-        cx!.globalAlpha = clamp(a) * clamp(t / 0.4); cx!.drawImage(sprite!, parts[0].sx - r * 3, parts[0].sy - r * 3, r * 6, r * 6);
+        cx!.globalAlpha = clamp(a) * clamp(t / 0.4); cx!.drawImage(brandSprites[0], parts[0].sx - r * 3, parts[0].sy - r * 3, r * 6, r * 6);
       }
       for (const p of parts) {
         let x: number, y: number, al = 1, sz = p.size;
@@ -127,9 +145,17 @@ export function EvergreenFx() {
           p.ox += (px - p.ox) * 0.12; p.oy += (py - p.oy) * 0.12; x += p.ox; y += p.oy;
         }
         if (al <= 0.01) continue;
-        const r = sz * 3.2; cx!.globalAlpha = clamp(al); cx!.drawImage(sprite!, x - r, y - r, r * 2, r * 2);
+        const forming = t < T_DISP + p.e;
+        const r = sz * (forming ? 2.6 : 3.2); cx!.globalAlpha = clamp(al);
+        cx!.drawImage(forming || !p.amb ? brandSprites[p.c] : sprite!, x - r, y - r, r * 2, r * 2);
       }
       cx!.globalAlpha = 1; cx!.globalCompositeOperation = "source-over";
+      // the crisp logo settles over the fireflies, then lets them go
+      if (lightLogo && t > 2.4 && t < T_DISP + 0.6) {
+        cx!.globalAlpha = clamp((t - 2.4) / 0.7) * (1 - clamp((t - T_DISP) / 0.5));
+        cx!.drawImage(lightLogo, lx, ly, lw, lh);
+        cx!.globalAlpha = 1;
+      }
       word!.style.opacity = String(clamp((t - 2.6) / 0.7) * (1 - clamp((t - T_DISP - 0.1) / 0.5)));
       bg!.style.opacity = String(1 - clamp((t - T_UI + 0.4) / 1.1));
     }
@@ -172,15 +198,26 @@ export function EvergreenFx() {
       root.querySelectorAll(".rv").forEach((el) => el.classList.add("in"));
       return () => { io.disconnect(); root.removeEventListener("pointermove", onCardMove); };
     }
-    build(playIntro);
-    if (!playIntro) end();
+    let cancelled = false;
+    const start = () => {
+      if (cancelled) return;
+      build(playIntro);
+      if (!playIntro) end();
+      raf = requestAnimationFrame(loop);
+    };
+    if (playIntro) {
+      const img = new Image();
+      img.onload = () => { try { sampleLogo(img); } catch {} start(); };
+      img.onerror = start;
+      img.src = "/logo-contrast.png";
+    } else start();
     addEventListener("pointermove", onMove);
     addEventListener("pointermove", onPar);
     document.addEventListener("pointerleave", onLeave);
     addEventListener("resize", onResize);
     skipBtn.addEventListener("click", onSkip);
-    raf = requestAnimationFrame(loop);
     return () => {
+      cancelled = true;
       cancelAnimationFrame(raf); io.disconnect();
       root.removeEventListener("pointermove", onCardMove);
       removeEventListener("pointermove", onMove); removeEventListener("pointermove", onPar);
@@ -194,7 +231,7 @@ export function EvergreenFx() {
       <div className="gx-grid" aria-hidden="true" />
       <canvas ref={cvRef} className="gx-fx" aria-hidden="true" />
       <div ref={bgRef} className="gx-introbg" aria-hidden="true" />
-      <div ref={wordRef} className="gx-introword" aria-hidden="true">Green<i>Gene</i> <span>Pharma</span></div>
+      <div ref={wordRef} className="gx-introword" aria-hidden="true">Empower your wellness, live better</div>
       <button ref={skipRef} type="button" className="gx-skip">Skip intro</button>
     </>
   );

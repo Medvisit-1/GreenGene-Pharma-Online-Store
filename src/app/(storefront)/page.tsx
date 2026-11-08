@@ -26,7 +26,7 @@ function goalLook(slug: string): Pick<GoalData, "rgb" | "icon"> {
   if (/mind|mood|stress|sleep/.test(slug)) return { rgb: "90,209,200", icon: "mind" };
   if (/skin|beauty/.test(slug)) return { rgb: "230,192,123", icon: "skin" };
   if (/men|energy|perform/.test(slug)) return { rgb: "120,170,255", icon: "men" };
-  return { rgb: "79,220,155", icon: "leaf" };
+  return { rgb: "140,198,63", icon: "leaf" };
 }
 
 const price = (p: Pick<Product, "price" | "compareAtPrice">) => ({

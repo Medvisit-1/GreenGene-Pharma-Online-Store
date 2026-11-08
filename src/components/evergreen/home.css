@@ -4,7 +4,7 @@
   --bg: #040806; --ink: #eaf4ee; --muted: #8aa196; --dim: #5d7268;
   --line: rgba(255,255,255,.085); --line2: rgba(255,255,255,.16);
   --glass: rgba(255,255,255,.035); --glass2: rgba(255,255,255,.06);
-  --acc-rgb: 79,220,155; --acc: rgb(var(--acc-rgb)); --gold: #e6c07b;
+  --acc-rgb: 140,198,63; --acc: rgb(var(--acc-rgb)); --gold: #e6c07b;
   --serif: var(--gx-serif), Georgia, serif; --sans: var(--gx-sans), system-ui, sans-serif; --r: 22px;
   position: relative; color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.55; -webkit-font-smoothing: antialiased; overflow-x: clip;
 }
@@ -36,7 +36,7 @@
   -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 20%, #000 0%, transparent 75%); mask-image: radial-gradient(ellipse 70% 60% at 50% 20%, #000 0%, transparent 75%); opacity: .55; }
 .gx-fx { position: fixed; inset: 0; z-index: 60; pointer-events: none; }
 .gx-introbg { position: fixed; inset: 0; z-index: 59; background: #000; pointer-events: none; }
-.gx-introword { position: fixed; left: 0; right: 0; top: calc(50% + min(26vw, 26vh)); z-index: 61; text-align: center; font-family: var(--serif); font-size: clamp(30px, 4vw, 48px); letter-spacing: .02em; opacity: 0; pointer-events: none; color: var(--ink); }
+.gx-introword { position: fixed; left: 0; right: 0; top: calc(50% + min(20vw, 160px)); z-index: 61; padding: 0 16px; text-align: center; font-family: var(--serif); font-style: italic; font-size: clamp(22px, 3vw, 32px); letter-spacing: .01em; color: #cfe3c0 !important; opacity: 0; pointer-events: none; color: var(--ink); }
 .gx-introword i { color: var(--acc); }
 .gx-introword span { font-size: .62em; letter-spacing: .28em; text-transform: uppercase; color: var(--muted); margin-left: .4em; vertical-align: middle; font-family: var(--sans); }
 .gx-skip { position: fixed; right: max(22px, env(safe-area-inset-right, 0px)); bottom: calc(22px + env(safe-area-inset-bottom, 0px)); z-index: 62; padding: 9px 16px; border-radius: 999px;
