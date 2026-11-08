@@ -74,10 +74,10 @@ export function SiteHeader({ announcement, signedIn }: { announcement?: string; 
             <button type="button" onClick={() => setSearchOpen(true)} aria-label="Search products" className="gg-hicon">
               <Search className="h-5 w-5" />
             </button>
-            <Link href="/account" aria-label="My account" className="gg-hicon gg-sm-up">
+            <Link href="/account" aria-label="My account" title="Sign in / My account" className="gg-hicon">
               <User className="h-5 w-5" />
             </Link>
-            <Link href="/account?tab=wishlist" aria-label={saved ? `Wishlist (${saved} saved)` : "Wishlist"} title="Wishlist" className="gg-hicon">
+            <Link href="/account?tab=wishlist" aria-label={saved ? `Wishlist (${saved} saved)` : "Wishlist"} title="Wishlist" className="gg-hicon gg-sm-up">
               <Heart className="h-5 w-5" />
               {saved > 0 && <span className="gg-dot">{saved}</span>}
             </Link>
