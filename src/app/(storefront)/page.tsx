@@ -20,7 +20,6 @@ import { HomeSlider, type Slide } from "@/components/garden/home-slider";
 import { AddPlus, RoutineCheck } from "@/components/garden/home-bits";
 import { NightIntro } from "@/components/night/intro";
 import { HelloName } from "@/components/night/hello-name";
-import { ProductImg } from "@/components/night/pic";
 import "@/components/night/night.css";
 
 export const dynamic = "force-dynamic";
@@ -124,12 +123,6 @@ export default async function HomePage() {
             <Search className="h-5 w-5 shrink-0" />
             <input name="q" type="search" placeholder="Search products, ingredients or goals…" aria-label="Search products" />
           </form>
-          <div className="gn-fan" aria-hidden="true">
-            {popular.slice(0, 3).map((p, i) => {
-              const src = firstImage(p);
-              return src ? <ProductImg key={p.id} src={src} alt="" eager={i === 1} /> : null;
-            })}
-          </div>
           <nav className="gg-goals" aria-label="Shop by goal">
             {categories.map((c) => (
               <Link key={c.id} href={`/products?category=${c.slug}`} className="gg-goal">

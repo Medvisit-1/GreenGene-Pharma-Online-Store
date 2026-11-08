@@ -98,3 +98,15 @@ html[data-mode="dark"] .gn-home .gg-script, html[data-mode="dark"] .gn-home .gg-
 .gn-skip:hover { color: #fff; border-color: rgba(255,255,255,.4); }
 @media (max-width: 520px) { .gn-mark { top: 38%; } .gn-copy { top: calc(38% + 35vw + 22px); } .gn-iris { background: radial-gradient(circle at 50% 38%, transparent var(--gn-r), var(--ground) calc(var(--gn-r) + 2px)); } }
 @media (prefers-reduced-motion: reduce) { .gn-intro { display: none; } }
+
+/* hero, matched to the approved preview: clean card, pill search, pill goals */
+.gn-home .gg-hello .gg-sprig, .gn-home .gg-hello .gg-petals { display: none; }
+.gn-home .gg-hello { border: 1px solid var(--g-line); background: linear-gradient(140deg, var(--g-card), var(--g-cream) 60%, var(--g-cream2)); }
+.gn-home .gg-hello h1 { font-family: var(--font-g-serif), Georgia, serif; font-size: clamp(38px, 5vw, 56px); max-width: 100%; letter-spacing: -.01em; }
+.gn-home .gg-hello .gg-script { font-size: clamp(22px, 2.6vw, 30px); }
+.gn-home .gg-search { border-radius: 999px; background: var(--g-card); border: 1px solid var(--g-line); box-shadow: none; height: 52px; }
+.gn-home .gg-goals { gap: 10px; }
+.gn-home .gg-goal { flex-direction: row; width: auto; padding: 9px 16px; border-radius: 999px; border: 1px solid var(--g-line); background: var(--g-card);
+  font-size: 13.5px; font-weight: 500; transition: border-color .25s, transform .25s; }
+.gn-home .gg-goal .ic { display: none; }
+.gn-home .gg-goal:hover { border-color: var(--g-gold); transform: translateY(-2px); }

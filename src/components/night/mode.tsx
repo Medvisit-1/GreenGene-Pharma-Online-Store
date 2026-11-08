@@ -5,7 +5,7 @@ import { Moon, Sun } from "lucide-react";
 
 /** Runs before first paint (inline in the layout) so there is no light/dark flash. */
 export const MODE_SCRIPT =
-  "(function(){try{var m=localStorage.getItem('gg-mode');if(m!=='light'&&m!=='dark')m=matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';document.documentElement.dataset.mode=m}catch(e){}})();";
+  "(function(){try{var m=localStorage.getItem('gg-mode');if(m!=='light'&&m!=='dark')m='dark';document.documentElement.dataset.mode=m}catch(e){}})();";
 
 /** Light / dark switch for the storefront header. The choice is remembered on this device. */
 export function ModeToggle({ className }: { className?: string }) {
