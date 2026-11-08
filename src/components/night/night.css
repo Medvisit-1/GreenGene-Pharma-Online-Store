@@ -38,7 +38,7 @@ html[data-mode="dark"] .gn-home .gg-hello { border: 1px solid var(--g-line); }
 .gn-bottle { position: absolute; z-index: 3; width: 150px; height: 281px; left: -75px; top: -140px; opacity: 0; transform: translateY(46px) scale(.94);
   animation: gn-rise 1s cubic-bezier(.2,.8,.2,1) .35s forwards; }
 @keyframes gn-rise { to { opacity: 1; transform: none; } }
-.gn-bottle img { position: absolute; inset: 0; width: 100%; height: 100%; filter: drop-shadow(0 24px 24px rgba(0,0,0,.55)); }
+.gn-bottle img { position: absolute; inset: 0; width: 100%; height: 100%; -webkit-mask-image: radial-gradient(ellipse 54% 52% at 50% 50%, #000 70%, transparent 100%); mask-image: radial-gradient(ellipse 54% 52% at 50% 50%, #000 70%, transparent 100%); }
 .gn-body { clip-path: inset(15.5% 0 0 0); }
 .gn-cap { clip-path: inset(0 0 84.5% 0); transform-origin: 50% 90%; animation: gn-cap .9s cubic-bezier(.3,.7,.25,1) 1.1s forwards; }
 @keyframes gn-cap { 25% { transform: translateY(-4px) scaleX(.94); } 45% { transform: translateY(-16px) scaleX(1); } 62% { transform: translateY(-34px) scaleX(.9); }
