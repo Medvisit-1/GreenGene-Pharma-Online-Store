@@ -2,7 +2,7 @@
    (Admin → Appearance for the garden tokens, globals.css for the Tailwind ramp),
    so it follows the brand theme. Switched by <html data-mode="dark">. */
 html[data-mode="dark"] { background: #090b0a; color-scheme: dark; }
-html[data-mode="dark"] .gg-theme {
+html[data-mode="dark"] :is(.gg-theme, .gg-accent-women, .gg-accent-men) {
   color-scheme: dark;
   --g-bg: color-mix(in oklab, var(--g-secondary) 12%, #090b0a) !important;
   --g-ink: color-mix(in oklab, var(--g-primary) 8%, #f3f1ed) !important;
@@ -30,8 +30,9 @@ html[data-mode="dark"] .gg-theme {
   --brand-200: color-mix(in oklab, #3f8566 36%, var(--g-bg));
   --plum-50: color-mix(in oklab, #b36088 14%, var(--g-bg)); --plum-100: color-mix(in oklab, #b36088 22%, var(--g-bg));
   --plum-200: color-mix(in oklab, #b36088 34%, var(--g-bg));
-  background: var(--g-bg); color: var(--g-ink);
+
 }
+html[data-mode="dark"] .gg-theme { background: var(--g-bg); color: var(--g-ink); }
 /* text colours that were dark-on-light become light-on-dark; solid brand fills keep their deep colour */
 html[data-mode="dark"] .gg-theme :is(.text-brand-500,.text-brand-600,.text-brand-700,.text-brand-800,.text-brand-900) { color: #a9ddc0; }
 html[data-mode="dark"] .gg-theme :is(.text-brand-800,.text-brand-900) { color: #cdeedb; }
@@ -51,7 +52,7 @@ html[data-mode="dark"] .gg-theme input, html[data-mode="dark"] .gg-theme select,
 /* the logo artwork has dark lettering: sit it on a cream plate */
 html[data-mode="dark"] .gg-theme img[src*="logo"] { background: #f6f3ea; border-radius: 10px; padding: 3px 8px; }
 /* solid brand surfaces (rewards card, banners, bars) stay deep with white text */
-html[data-mode="dark"] .gg-theme { --g-plum-hi: color-mix(in oklab, var(--g-primary) 52%, #0a0a0a); --g-plum-lo: color-mix(in oklab, var(--g-primary) 38%, #0a0a0a);
+html[data-mode="dark"] :is(.gg-theme, .gg-accent-women, .gg-accent-men) { --g-plum-hi: color-mix(in oklab, var(--g-primary) 52%, #0a0a0a); --g-plum-lo: color-mix(in oklab, var(--g-primary) 38%, #0a0a0a);
   --g-plum-dark: color-mix(in oklab, var(--g-primary) 30%, #0a0a0a); --g-plum2: color-mix(in oklab, var(--g-primary) 60%, #0a0a0a); }
 html[data-mode="dark"] .gg-theme .gg-tabs a:hover,
 html[data-mode="dark"] .gg-theme .gg-hicons,

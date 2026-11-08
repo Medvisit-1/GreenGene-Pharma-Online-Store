@@ -22,7 +22,7 @@ export function ProductGallery({
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="overflow-hidden rounded-2xl">
+      <div className="gg-stage overflow-hidden rounded-2xl">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={images[active]}

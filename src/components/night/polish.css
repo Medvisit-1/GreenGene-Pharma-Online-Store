@@ -1,0 +1,49 @@
+/* Premium polish across the storefront (both light and dark modes).
+   Motion is transform/opacity only and switched off for reduced-motion visitors. */
+.gg-theme { -webkit-tap-highlight-color: transparent; }
+.gg-theme :is(h1, h2, h3) { text-wrap: balance; letter-spacing: -.012em; }
+.gg-theme p { text-wrap: pretty; }
+.gg-theme :is(a, button, [role="button"]):focus-visible { outline: 2px solid var(--g-gold); outline-offset: 3px; border-radius: 10px; }
+.gg-theme ::selection { background: color-mix(in srgb, var(--g-gold) 40%, transparent); }
+
+/* form fields: one calm style with a soft brand focus ring */
+.gg-theme :is(input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"]), select, textarea) {
+  transition: border-color .2s, box-shadow .2s, background-color .2s; }
+.gg-theme :is(input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"]), select, textarea):focus {
+  outline: none; border-color: var(--g-gold); box-shadow: 0 0 0 4px color-mix(in srgb, var(--g-gold) 22%, transparent); }
+
+/* panels and cards: softer depth */
+.gg-theme :is(.rounded-2xl, .rounded-3xl).border { box-shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 18px 40px -28px rgba(0,0,0,.35); }
+
+/* product cards */
+.gg-pcard { padding: 10px 10px 14px; border-radius: 24px; background: var(--g-card); border: 1px solid var(--g-line);
+  transition: transform .45s cubic-bezier(.2,.8,.2,1), box-shadow .45s, border-color .3s; }
+.gg-pcard:hover { transform: translateY(-6px); border-color: color-mix(in srgb, var(--g-gold) 45%, var(--g-line));
+  box-shadow: 0 28px 50px -28px rgba(0,0,0,.45), 0 0 0 1px color-mix(in srgb, var(--g-gold) 15%, transparent); }
+.gg-pcard-stage { border-radius: 18px; overflow: hidden;
+  background: radial-gradient(70% 60% at 50% 55%, color-mix(in srgb, var(--g-gold) 18%, transparent), transparent 70%),
+              linear-gradient(180deg, var(--g-cream2), var(--g-cream)); }
+.gg-pcard-stage img { padding: 8%; transition: transform .7s cubic-bezier(.2,.8,.2,1); filter: drop-shadow(0 14px 16px rgba(0,0,0,.18)); }
+.gg-pcard:hover .gg-pcard-stage img { transform: scale(1.06) translateY(-3px); }
+.gg-pcard-body h3 { font-size: 15px; }
+
+/* product page image stage */
+.gg-stage { border-radius: 28px; border: 1px solid var(--g-line);
+  background: radial-gradient(60% 55% at 50% 55%, color-mix(in srgb, var(--g-gold) 20%, transparent), transparent 72%),
+              linear-gradient(180deg, var(--g-cream2), var(--g-cream)); }
+.gg-stage img { padding: 6%; filter: drop-shadow(0 22px 24px rgba(0,0,0,.22)); animation: gg-settle .8s cubic-bezier(.16,1,.3,1); }
+@keyframes gg-settle { from { opacity: 0; transform: translateY(10px) scale(.98); } }
+
+/* homepage cards breathe a little on hover */
+.gg-theme :is(.gg-tile, .gg-routine, .gg-refill, .gg-rewards) { transition: transform .45s cubic-bezier(.2,.8,.2,1), box-shadow .45s; }
+.gg-theme .gg-tile:hover { transform: translateY(-5px); box-shadow: 0 28px 50px -30px rgba(0,0,0,.45); }
+
+/* header: frosted when it sticks */
+.gg-theme .gg-header { backdrop-filter: saturate(1.4) blur(14px); -webkit-backdrop-filter: saturate(1.4) blur(14px); }
+@media (max-width: 760px) { .gg-theme .gg-header { backdrop-filter: none; -webkit-backdrop-filter: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .gg-pcard, .gg-pcard-stage img, .gg-theme .gg-tile { transition: none; }
+  .gg-pcard:hover, .gg-pcard:hover .gg-pcard-stage img, .gg-theme .gg-tile:hover { transform: none; }
+  .gg-stage img { animation: none; }
+}

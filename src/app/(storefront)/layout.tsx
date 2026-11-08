@@ -17,6 +17,7 @@ import { resolveTheme, themeStyle } from "@/lib/themes";
 import "@/components/garden/tokens.css";
 import "./garden.css";
 import "@/components/night/dark.css";
+import "@/components/night/polish.css";
 import { MODE_SCRIPT } from "@/components/night/mode";
 
 // Storefront reads live settings from the DB, so render at request time
