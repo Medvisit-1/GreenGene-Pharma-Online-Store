@@ -1,0 +1,197 @@
+/* ============================================================
+   Admin in the Evergreen Night look (matches the homepage): deep ground,
+   glass cards, lime accent, Instrument Serif headings. Dark by default; the
+   shop's light/dark switch (html[data-mode]) also applies here.
+   Loaded after admin.css and scoped to .gg-admin.gx-admin, so it outranks the
+   theme tokens and Tailwind's layered utilities without touching the shop.
+   ============================================================ */
+
+/* ---------- Palette: light values first, dark below ---------- */
+.gg-admin.gx-admin {
+  --gx-bg: #f7faf6; --gx-ink: #10201a; --gx-muted: #55685e; --gx-dim: #7b8d84;
+  --gx-card: #ffffff; --gx-card2: #eef3ee; --gx-line: rgba(16, 32, 26, .1); --gx-line2: rgba(16, 32, 26, .18);
+  --gx-glass: rgba(255, 255, 255, .8); --gx-glass2: rgba(16, 32, 26, .04);
+  --gx-acc-rgb: 140, 198, 63; --gx-acc: rgb(var(--gx-acc-rgb));
+  --gx-acc-text: color-mix(in srgb, rgb(var(--gx-acc-rgb)) 55%, #10201a);
+  --gx-acc-ink: #06100b; --gx-gold: #a8761c;
+  --gx-side: #0b1510; --gx-side-ink: #eaf4ee; --gx-side-muted: #8aa196;
+  color-scheme: light;
+}
+html:not([data-mode="light"]) .gg-admin.gx-admin {
+  --gx-bg: #040806; --gx-ink: #eaf4ee; --gx-muted: #8aa196; --gx-dim: #5d7268;
+  --gx-card: #0a120e; --gx-card2: #0f1a14; --gx-line: rgba(255, 255, 255, .085); --gx-line2: rgba(255, 255, 255, .16);
+  --gx-glass: rgba(255, 255, 255, .035); --gx-glass2: rgba(255, 255, 255, .06);
+  --gx-acc-text: #a9d86b; --gx-gold: #e6c07b;
+  --gx-side: #060c09;
+  color-scheme: dark;
+}
+
+/* ---------- Re-point the shared tokens the admin is built on ---------- */
+.gg-admin.gx-admin {
+  --background: var(--gx-bg); --foreground: var(--gx-ink);
+  --surface: var(--gx-card); --card: var(--gx-card);
+  --muted: var(--gx-card2); --muted-foreground: var(--gx-muted);
+  --border: var(--gx-line2);
+  --accent: var(--gx-gold); --ring: var(--gx-acc);
+
+  /* Brand ramp: pale tints for fills, lime for text and highlights */
+  --brand-50: color-mix(in srgb, var(--gx-acc) 8%, var(--gx-card));
+  --brand-100: color-mix(in srgb, var(--gx-acc) 15%, var(--gx-card));
+  --brand-200: color-mix(in srgb, var(--gx-acc) 28%, var(--gx-card));
+  --brand-300: color-mix(in srgb, var(--gx-acc) 45%, var(--gx-card));
+  --brand-400: color-mix(in srgb, var(--gx-acc) 70%, var(--gx-card));
+  --brand-500: var(--gx-acc-text); --brand-600: var(--gx-acc-text); --brand-700: var(--gx-acc-text);
+  --brand-800: color-mix(in srgb, var(--gx-acc-text) 70%, var(--gx-ink));
+  --brand-900: color-mix(in srgb, var(--gx-acc-text) 50%, var(--gx-ink));
+  --plum-50: var(--brand-50); --plum-100: var(--brand-100); --plum-200: var(--brand-200); --plum-300: var(--brand-300);
+  --plum-400: var(--brand-400); --plum-500: var(--brand-500); --plum-600: var(--brand-600); --plum-700: var(--brand-700);
+  --plum-800: var(--brand-800); --plum-900: var(--brand-900);
+
+  /* Garden tokens used directly by admin pages */
+  --g-cream: var(--gx-bg); --g-cream2: var(--gx-card2); --g-card: var(--gx-card);
+  --g-ink: var(--gx-ink); --g-muted: var(--gx-muted); --g-line: var(--gx-line2);
+  --g-plum: var(--gx-ink); --g-plum2: var(--gx-acc-text); --g-plum3: var(--gx-acc-text);
+  --g-plum-dark: var(--gx-ink); --g-plum-soft: var(--brand-300); --g-plum-pale: var(--brand-200);
+  --g-plum-hi: var(--gx-card2); --g-plum-lo: var(--gx-card);
+  --g-gold: var(--gx-gold); --g-gold-soft: color-mix(in srgb, var(--gx-gold) 18%, var(--gx-card));
+  --g-gold-ink: var(--gx-gold);
+  --g-blush: var(--brand-100); --g-sage: var(--brand-50); --g-lilac: var(--brand-50);
+  --g-on-primary: var(--gx-ink); --g-on-primary-2: var(--gx-muted);
+  --g-hello-a: var(--gx-card); --g-hello-c: var(--gx-card2);
+  --g-check-line: var(--brand-300);
+  --g-foliage: var(--gx-acc); --g-leaf: var(--gx-acc); --g-leaf2: color-mix(in srgb, var(--gx-acc) 60%, var(--gx-bg));
+  --g-forest: #1d3a28; --g-forest-lo: #0d1f15;
+
+  /* Charts: lime series, ramp from ground to lime */
+  --g-chart: var(--gx-acc);
+  --g-ramp-1: color-mix(in srgb, var(--gx-acc) 8%, var(--gx-card));
+  --g-ramp-2: color-mix(in srgb, var(--gx-acc) 20%, var(--gx-card));
+  --g-ramp-3: color-mix(in srgb, var(--gx-acc) 34%, var(--gx-card));
+  --g-ramp-4: color-mix(in srgb, var(--gx-acc) 50%, var(--gx-card));
+  --g-ramp-5: color-mix(in srgb, var(--gx-acc) 66%, var(--gx-card));
+  --g-ramp-6: color-mix(in srgb, var(--gx-acc) 82%, var(--gx-card));
+  --g-ramp-7: var(--gx-acc);
+
+  /* Homepage type: Instrument Serif display, Inter UI */
+  --font-body: var(--gx-sans); --font-sans: var(--gx-sans);
+  --font-heading: var(--gx-serif); --font-display: var(--gx-serif);
+
+  background: var(--gx-bg);
+  color: var(--gx-ink);
+  font-family: var(--gx-sans), system-ui, sans-serif;
+}
+html:not([data-mode="light"]) body:has(.gx-admin) { background: #040806; }
+
+/* ---------- Type ---------- */
+.gg-admin.gx-admin :is(h1, h2, h3, .font-display) { font-family: var(--gx-serif), Georgia, serif; }
+.gg-admin.gx-admin main h1 { font-weight: 400; font-size: 2.6rem; letter-spacing: -.015em; color: var(--gx-ink); }
+.gg-admin.gx-admin main :is(h2, h3) { font-weight: 400; color: var(--gx-ink); letter-spacing: -.005em; }
+.gg-admin.gx-admin main h2.font-bold, .gg-admin.gx-admin main h2.text-lg, .gg-admin.gx-admin main section > h2 { font-size: 1.55rem; }
+.gg-admin.gx-admin main :is(h1, h2, h3) em { font-style: italic; color: var(--gx-acc-text); }
+/* Handwritten accents become the homepage's italic serif line */
+.gg-admin.gx-admin [class*="font-g-script"] { font-family: var(--gx-serif), Georgia, serif; font-style: italic; font-weight: 400; color: var(--gx-acc-text); }
+/* Solid main-colour chips (e.g. "paid orders to fulfil") */
+.gg-admin.gx-admin .bg-\[color\:var\(--g-plum\)\] { background: var(--gx-acc); color: var(--gx-acc-ink); }
+.gg-admin.gx-admin ::selection { background: rgba(var(--gx-acc-rgb), .3); }
+.gg-admin.gx-admin :focus-visible { outline: 2px solid var(--gx-acc); outline-offset: 2px; }
+
+/* ---------- Surfaces: glass cards with hairline borders ---------- */
+.gg-admin.gx-admin main :is(.bg-surface, .bg-white, .bg-card) {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--gx-card) 92%, #fff 8%), var(--gx-card));
+  border-color: var(--gx-line2);
+  box-shadow: none;
+}
+html[data-mode="light"] .gg-admin.gx-admin main :is(.bg-surface, .bg-white, .bg-card) { background: #fff; box-shadow: 0 18px 40px -32px rgba(16, 32, 26, .35); }
+.gg-admin.gx-admin main .bg-surface:not([class*="border"]) { box-shadow: inset 0 0 0 1px var(--gx-line); }
+.gg-admin.gx-admin :is(.bg-white\/60, .bg-white\/10) { background: var(--gx-glass); }
+.gg-admin.gx-admin :is(.bg-gray-100, .bg-gray-200, .bg-slate-200) { background: var(--gx-card2); }
+.gg-admin.gx-admin .bg-gray-300 { background: var(--gx-line2); }
+.gg-admin.gx-admin :is(.text-gray-500, .text-gray-600, .text-slate-700) { color: var(--gx-muted); }
+.gg-admin.gx-admin .border-black { border-color: var(--gx-ink); }
+.gg-admin.gx-admin :is(input, select, textarea):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]) {
+  background: var(--gx-glass); color: var(--gx-ink); border-color: var(--gx-line2);
+}
+html:not([data-mode="light"]) .gg-admin.gx-admin :is(input, select, textarea):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]) { background: rgba(255, 255, 255, .03); }
+.gg-admin.gx-admin :is(input, select, textarea):focus { border-color: var(--gx-acc) !important; box-shadow: 0 0 0 3px rgba(var(--gx-acc-rgb), .18) !important; }
+.gg-admin.gx-admin ::placeholder { color: var(--gx-dim); }
+.gg-admin.gx-admin input[type="checkbox"], .gg-admin.gx-admin input[type="radio"] { accent-color: var(--gx-acc); }
+.gg-admin.gx-admin table thead { color: var(--gx-muted); }
+
+/* Solid brand buttons: lime fill with dark text (white on lime is unreadable) */
+.gg-admin.gx-admin :is(.bg-brand-500, .bg-brand-600, .bg-brand-700, .bg-brand-800, .bg-plum-600, .bg-plum-700) {
+  background: var(--gx-acc); color: var(--gx-acc-ink);
+  box-shadow: 0 10px 30px -12px rgba(var(--gx-acc-rgb), .7);
+}
+.gg-admin.gx-admin :is(.bg-brand-500, .bg-brand-600, .bg-brand-700, .bg-brand-800, .bg-plum-600, .bg-plum-700) :is(*, .text-white) { color: inherit; }
+.gg-admin.gx-admin :is(.bg-brand-500, .bg-brand-600, .bg-brand-700, .bg-brand-800):hover { background: color-mix(in srgb, var(--gx-acc) 88%, #fff); }
+.gg-admin.gx-admin :is(.hover\:bg-brand-700, .hover\:bg-brand-800):hover { background: color-mix(in srgb, var(--gx-acc) 88%, #fff); color: var(--gx-acc-ink); }
+.gg-admin.gx-admin :is(.bg-foreground, .bg-black) { background: var(--gx-ink); color: var(--gx-bg); }
+.gg-admin.gx-admin .text-background { color: var(--gx-bg); }
+
+/* Status colours, readable on the dark ground */
+html:not([data-mode="light"]) .gg-admin.gx-admin :is(.text-red-400, .text-red-600, .text-red-700, .text-rose-500) { color: #ff9d9d; }
+html:not([data-mode="light"]) .gg-admin.gx-admin :is(.bg-red-50, .bg-red-100) { background-color: rgba(239, 68, 68, .14); }
+html:not([data-mode="light"]) .gg-admin.gx-admin :is(.border-red-200, .ring-red-200, .border-rose-200) { border-color: rgba(239, 68, 68, .35); --tw-ring-color: rgba(239, 68, 68, .35); }
+html:not([data-mode="light"]) .gg-admin.gx-admin :is(.text-amber-500, .text-amber-700, .text-amber-800, .text-amber-900) { color: #f5c76e; }
+html:not([data-mode="light"]) .gg-admin.gx-admin :is(.bg-amber-50, .bg-amber-100) { background-color: rgba(245, 158, 11, .14); }
+html:not([data-mode="light"]) .gg-admin.gx-admin .border-amber-200 { border-color: rgba(245, 158, 11, .35); }
+html:not([data-mode="light"]) .gg-admin.gx-admin :is(.text-emerald-700, .text-emerald-800) { color: #8fe0b0; }
+html:not([data-mode="light"]) .gg-admin.gx-admin :is(.bg-emerald-50, .bg-emerald-100) { background-color: rgba(16, 185, 129, .14); }
+
+/* ---------- Sidebar: deep glass rail (dark in both modes, like the homepage header) ---------- */
+.gg-admin.gx-admin .gg-side {
+  color: var(--gx-side-ink);
+  background:
+    radial-gradient(90% 40% at 0% 0%, rgba(var(--gx-acc-rgb), .16), transparent 70%),
+    var(--gx-side);
+  border-right: 1px solid rgba(255, 255, 255, .07);
+}
+.gg-admin.gx-admin .gg-side-logo { background: #f3f1ea; border-radius: 16px; }
+.gg-admin.gx-admin .gg-side-nav a, .gg-admin.gx-admin .gg-side button { color: var(--gx-side-muted); }
+.gg-admin.gx-admin .gg-side-nav a:hover, .gg-admin.gx-admin .gg-side button:hover { background: rgba(255, 255, 255, .06); color: var(--gx-side-ink); }
+.gg-admin.gx-admin .gg-side-nav a.on { background: rgba(255, 255, 255, .08); color: var(--gx-side-ink); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .16); }
+.gg-admin.gx-admin .gg-side-nav a.on svg { color: var(--gx-acc); }
+.gg-admin.gx-admin .gg-side-nav .badge { background: var(--gx-acc); color: var(--gx-acc-ink); }
+.gg-admin.gx-admin .gg-side :is(p, span, div)[class*="uppercase"] { color: rgba(var(--gx-acc-rgb), .75); }
+.gg-admin.gx-admin .gg-side .gg-sprig { opacity: .18; }
+.gg-admin.gx-admin .gg-side :is(.border-white\/10) { border-color: rgba(255, 255, 255, .07); }
+
+/* Mobile bar */
+.gg-admin.gx-admin .gg-admin-top { background: var(--gx-side); color: var(--gx-side-ink); border-bottom: 1px solid rgba(255, 255, 255, .07); }
+.gg-admin.gx-admin .gg-admin-top .bg-\[color\:var\(--g-cream\)\] { background: #f3f1ea; }
+
+/* Light/dark switch */
+.gx-mode { display: inline-grid; place-items: center; width: 36px; height: 36px; border-radius: 999px; color: var(--gx-side-muted); border: 1px solid rgba(255, 255, 255, .12); background: rgba(255, 255, 255, .04); transition: color .2s, background .2s; }
+.gx-mode:hover { color: var(--gx-side-ink); background: rgba(255, 255, 255, .08); }
+.gg-admin.gx-admin .gg-side .gx-mode { display: inline-grid; flex: none; width: 36px; height: 36px; padding: 0; border-radius: 999px; justify-content: center; }
+
+/* ---------- Dashboard ---------- */
+.gg-admin.gx-admin .gg-dash-hello {
+  border: 1px solid var(--gx-line);
+  background:
+    radial-gradient(60% 120% at 50% -20%, rgba(var(--gx-acc-rgb), .22), transparent 70%),
+    linear-gradient(180deg, color-mix(in srgb, var(--gx-card) 85%, #fff 4%), var(--gx-card));
+}
+.gg-admin.gx-admin .gg-dash-hello .gg-sprig { opacity: .25; }
+.gg-admin.gx-admin .gg-dash-tile { background: var(--gx-card); border: 1px solid var(--gx-line); box-shadow: none; }
+.gg-admin.gx-admin .gg-dash-tile:hover { border-color: var(--gx-line2); box-shadow: 0 18px 40px -24px rgba(var(--gx-acc-rgb), .45); }
+.gg-admin.gx-admin .gg-dash-tile.plum {
+  color: var(--gx-ink);
+  background: radial-gradient(120% 110% at 85% 0%, rgba(var(--gx-acc-rgb), .35) 0%, rgba(var(--gx-acc-rgb), .08) 55%, transparent 100%), var(--gx-card);
+  border-color: rgba(var(--gx-acc-rgb), .35);
+}
+.gg-admin.gx-admin .gg-dash-tile.forest {
+  color: #eaf4ee;
+  background: radial-gradient(120% 110% at 15% 100%, rgba(77, 182, 160, .35), transparent 70%), linear-gradient(135deg, #12291d, #0b1812);
+  border-color: rgba(77, 182, 160, .3);
+}
+.gg-admin.gx-admin .gg-dash-tile .num { font-family: var(--gx-serif), Georgia, serif; font-weight: 400; font-size: 44px; letter-spacing: -.01em; }
+.gg-admin.gx-admin .gg-dash-tile .lbl { letter-spacing: .22em; font-weight: 500; }
+.gg-admin.gx-admin .gg-quick {
+  background: var(--gx-glass); color: var(--gx-ink); border: 1px solid var(--gx-line2);
+  box-shadow: none; backdrop-filter: blur(10px);
+}
+.gg-admin.gx-admin .gg-quick:hover { background: var(--gx-glass2); border-color: rgba(var(--gx-acc-rgb), .5); }
+.gg-admin.gx-admin .gg-quick svg { color: var(--gx-acc-text); }
+.gg-admin.gx-admin .gg-section-tag { color: var(--gx-acc-text); }
+.gg-admin.gx-admin .gg-petal { opacity: .35; }
