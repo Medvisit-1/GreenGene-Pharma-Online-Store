@@ -1,5 +1,6 @@
 "use client";
 
+import { ModeToggle } from "@/components/night/mode";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState, useSyncExternalStore } from "react";
@@ -69,6 +70,7 @@ export function SiteHeader({ announcement, signedIn }: { announcement?: string; 
           </nav>
 
           <div className="gg-hicons">
+            <ModeToggle className="gg-hicon" />
             <button type="button" onClick={() => setSearchOpen(true)} aria-label="Search products" className="gg-hicon">
               <Search className="h-5 w-5" />
             </button>

@@ -110,7 +110,7 @@ export default async function HomePage() {
 
   return (
     <div className="gg-wrap gn-home">
-      <NightIntro />
+      <NightIntro greeting={greeting()} name={customer ? firstName : undefined} />
       {/* Row 1: greeting + rewards */}
       <div className="gg-top">
         <section className="gg-hello">
