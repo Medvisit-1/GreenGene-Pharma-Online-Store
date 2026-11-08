@@ -8,11 +8,14 @@ import { AdminNav } from "@/components/admin-nav";
 import { AdminToast } from "@/components/admin/admin-toast";
 import { GardenDefs, Sprig } from "@/components/garden/art";
 import { gardenFonts } from "@/components/garden/fonts";
+import { gxFonts } from "@/components/evergreen/fonts";
+import { MODE_SCRIPT, ModeToggle } from "@/components/night/mode";
 import { logoutAction } from "@/app/admin/actions";
 import { getSettings } from "@/lib/settings";
 import { resolveAdminTheme, themeStyle } from "@/lib/themes";
 import "@/components/garden/tokens.css";
 import "../admin.css";
+import "../evergreen-admin.css";
 
 export const dynamic = "force-dynamic";
 
@@ -35,11 +38,13 @@ export default async function AdminLayout({
   const counts = { reviews, voice, fulfil };
 
   return (
-    // The admin's colour theme (Admin → Appearance): its own, or the shop's
+    // Evergreen Night look (matches the homepage) on top of the theme tokens; see evergreen-admin.css
     <div
-      className={`gg-admin ${gardenFonts} flex min-h-screen`}
+      className={`gg-admin gx-admin ${gardenFonts} ${gxFonts} flex min-h-screen`}
       style={themeStyle(resolveAdminTheme(settings).colors) as React.CSSProperties}
     >
+      {/* Same light/dark choice as the shop (dark by default), set before first paint */}
+      <script suppressHydrationWarning dangerouslySetInnerHTML={{ __html: MODE_SCRIPT }} />
       <GardenDefs />
       {/* Sidebar */}
       <aside className="gg-side hidden md:flex print:hidden!">
@@ -47,11 +52,14 @@ export default async function AdminLayout({
           <Image src="/logo-contrast.png" alt="GreenGene Pharma" width={1547} height={756} className="h-10 w-auto" priority />
         </div>
         <AdminNav counts={counts} />
-        <form action={logoutAction} className="relative z-10 mt-2 border-t border-white/10 pt-2">
-          <button>
-            <LogOut className="h-4 w-4" /> Sign out
-          </button>
-        </form>
+        <div className="relative z-10 mt-2 flex items-center gap-2 border-t border-white/10 pt-2">
+          <form action={logoutAction} className="flex-1">
+            <button>
+              <LogOut className="h-4 w-4" /> Sign out
+            </button>
+          </form>
+          <ModeToggle className="gx-mode" />
+        </div>
         <Sprig kind="plum" style={{ right: -40, bottom: -40, width: 150, transform: "rotate(-14deg)" }} />
       </aside>
 
@@ -62,11 +70,14 @@ export default async function AdminLayout({
             <span className="rounded-2xl bg-[color:var(--g-cream)] px-3 py-1.5">
               <Image src="/logo-contrast.png" alt="GreenGene Pharma" width={1547} height={756} className="h-7 w-auto" />
             </span>
-            <form action={logoutAction}>
-              <button className="rounded-full p-2 text-white/80 hover:bg-white/10" aria-label="Sign out">
-                <LogOut className="h-5 w-5" />
-              </button>
-            </form>
+            <div className="flex items-center gap-2">
+              <ModeToggle className="gx-mode" />
+              <form action={logoutAction}>
+                <button className="rounded-full p-2 text-white/80 hover:bg-white/10" aria-label="Sign out">
+                  <LogOut className="h-5 w-5" />
+                </button>
+              </form>
+            </div>
           </div>
           <AdminNav counts={counts} compact />
         </header>
