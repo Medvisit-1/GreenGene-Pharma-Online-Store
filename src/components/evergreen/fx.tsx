@@ -119,7 +119,11 @@ export function EvergreenFx() {
     }
     function frame(t: number) {
       makeSprite(getComputedStyle(root!).getPropertyValue("--acc-rgb").trim() || "140,198,63");
-      cx!.setTransform(DPR, 0, 0, DPR, 0, 0); cx!.clearRect(0, 0, W, H); cx!.globalCompositeOperation = "lighter";
+      cx!.setTransform(DPR, 0, 0, DPR, 0, 0); cx!.clearRect(0, 0, W, H);
+      // glowing light on the dark ground; on the light page, soft coloured dots instead
+      const light = ended && document.documentElement.dataset.mode === "light";
+      cx!.globalCompositeOperation = light ? "source-over" : "lighter";
+      const dim = light ? 0.55 : 1;
       if (t < T_FORM + 0.5 && parts.length) {
         const pulse = 1 + 0.35 * Math.sin(t * 5.2), a = t < T_FORM ? 1 : 1 - (t - T_FORM) / 0.5;
         const r = 9 * pulse * (1 + Math.max(0, t - T_FORM + 0.2) * 2);
@@ -146,7 +150,7 @@ export function EvergreenFx() {
         }
         if (al <= 0.01) continue;
         const forming = t < T_DISP + p.e;
-        const r = sz * (forming ? 2.6 : 3.2); cx!.globalAlpha = clamp(al);
+        const r = sz * (forming ? 2.6 : 3.2); cx!.globalAlpha = clamp(al) * dim;
         cx!.drawImage(forming || !p.amb ? brandSprites[p.c] : sprite!, x - r, y - r, r * 2, r * 2);
       }
       cx!.globalAlpha = 1; cx!.globalCompositeOperation = "source-over";

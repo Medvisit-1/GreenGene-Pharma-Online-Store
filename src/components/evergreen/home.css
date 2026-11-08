@@ -209,3 +209,31 @@
   .gx *, .gx *:before, .gx *:after { animation: none !important; transition: none !important; }
   .gx .rv { opacity: 1; transform: none; }
 }
+
+/* ---------- light mode (header moon/sun toggle) ---------- */
+html[data-mode="light"] .gx {
+  --bg: #f7faf6; --ink: #10201a; --muted: #55685e; --dim: #7a8b82;
+  --line: rgba(16,32,26,.09); --line2: rgba(16,32,26,.16);
+  --glass: rgba(255,255,255,.7); --glass2: rgba(255,255,255,.95);
+}
+html[data-mode="light"] .gg-theme:has(.gx) { background: #f7faf6 !important; color-scheme: light; }
+html[data-mode="light"] .gg-theme:has(.gx) .gg-header { background: rgba(247,250,246,.75) !important; border-bottom-color: rgba(16,32,26,.08); }
+html[data-mode="light"] .gg-theme:has(.gx) .gg-announce { background: rgba(16,32,26,.03) !important; color: #55685e !important; border-bottom-color: rgba(16,32,26,.08); }
+html[data-mode="light"] .gg-theme:has(.gx) .gg-tabs { background: rgba(255,255,255,.8) !important; border-color: rgba(16,32,26,.1) !important; }
+html[data-mode="light"] .gg-theme:has(.gx) .gg-tabs a { color: #55685e !important; }
+html[data-mode="light"] .gg-theme:has(.gx) .gg-tabs a.on { background: #10201a !important; color: #fff !important; box-shadow: none; }
+html[data-mode="light"] .gg-theme:has(.gx) .gg-hicons { color: #10201a !important; }
+html[data-mode="light"] .gx-grid { background-image: linear-gradient(rgba(16,32,26,.07) 1px, transparent 1px), linear-gradient(90deg, rgba(16,32,26,.07) 1px, transparent 1px); }
+html[data-mode="light"] .gx .hero h1 { background: linear-gradient(180deg, #10201a 30%, #3d5a4a 100%); -webkit-background-clip: text; background-clip: text; }
+html[data-mode="light"] .gx .hero h1 em { background: linear-gradient(180deg, rgb(var(--acc-rgb)), color-mix(in srgb, rgb(var(--acc-rgb)) 60%, #10201a)); -webkit-background-clip: text; background-clip: text; }
+html[data-mode="light"] .gx :is(.script, .head h2 em) { color: color-mix(in srgb, rgb(var(--acc-rgb)) 75%, #10201a); }
+html[data-mode="light"] .gx .spot { opacity: .55; }
+html[data-mode="light"] .gx .btn.p { background: #10201a; color: #fff; box-shadow: 0 10px 30px -10px rgba(var(--acc-rgb),.7); }
+html[data-mode="light"] .gx .btn.p:hover { box-shadow: 0 16px 40px -10px rgba(var(--acc-rgb),.9); }
+html[data-mode="light"] .gx .frame { background: linear-gradient(180deg, #fff, rgba(255,255,255,.75)); box-shadow: 0 24px 50px -36px rgba(16,32,26,.35); }
+html[data-mode="light"] .gx .card3d { background: linear-gradient(160deg, #fff, rgba(255,255,255,.7) 55%); box-shadow: 0 40px 80px -40px rgba(16,32,26,.45), inset 0 1px 0 #fff; }
+html[data-mode="light"] .gx .card3d img, html[data-mode="light"] .gx .show .vis img, html[data-mode="light"] .gx .pc .im img { filter: drop-shadow(0 18px 20px rgba(16,32,26,.25)); }
+html[data-mode="light"] .gx .pc .im { background: radial-gradient(circle at 50% 30%, rgba(var(--acc-rgb),.12), rgba(16,32,26,.03)); }
+html[data-mode="light"] .gx .pc .gg-plus { background: #10201a !important; color: #fff !important; }
+html[data-mode="light"] .gx .offer .vis img { box-shadow: 0 30px 60px -30px rgba(16,32,26,.5); }
+html[data-mode="light"] .gx .chk img, html[data-mode="light"] .gx .chk .ph { background: rgba(16,32,26,.04); }
