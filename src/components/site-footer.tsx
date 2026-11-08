@@ -4,7 +4,7 @@ import { Logo } from "@/components/logo";
 import { getSettings } from "@/lib/settings";
 import { businessIdentity } from "@/lib/legal";
 import { rewardHighlights, shortDiscount } from "@/lib/rewards";
-import { Petals, Sprig } from "@/components/garden/art";
+import { FallingLeaves, Sprig } from "@/components/garden/art";
 import { JoinForm } from "@/components/garden/join-form";
 
 export async function SiteFooter() {
@@ -13,9 +13,9 @@ export async function SiteFooter() {
   const welcome = rewards?.welcome;
   return (
     <footer className="gg-footer">
-      <Petals colors={["var(--g-plum3)", "var(--g-plum-soft)"]} leaf="var(--g-leaf2)" count={12} height={760} />
+      <FallingLeaves count={10} height={760} />
       <Sprig kind="green" style={{ left: -20, bottom: -30, width: 180, transform: "rotate(10deg)", opacity: 0.6 }} />
-      <Sprig kind="plum" style={{ right: -10, top: -20, width: 170, transform: "rotate(190deg)", opacity: 0.8 }} />
+      <Sprig kind="green" style={{ right: -10, top: -20, width: 170, transform: "rotate(190deg)", opacity: 0.8 }} />
 
       <div className="gg-wrap">
         <div className="band">

@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 const LOGO_W = 1547;
 const LOGO_H = 756;
 
-/** GreenGene Pharma brand logo (official transparent PNG in /public/logo.png). */
+/** GreenGene Pharma logo, high-contrast version for light backgrounds (/public/logo-contrast.png). */
 export function Logo({
   className,
   height = 44,
@@ -22,7 +22,7 @@ export function Logo({
       className={cn("inline-flex items-center", className)}
     >
       <Image
-        src="/logo.png"
+        src="/logo-contrast.png"
         alt="GreenGene Pharma"
         width={LOGO_W}
         height={LOGO_H}

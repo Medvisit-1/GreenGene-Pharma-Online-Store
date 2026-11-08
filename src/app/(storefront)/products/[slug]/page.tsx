@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { accentClass, accentFor } from "@/lib/themes";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { Truck, ShieldCheck, RotateCcw, Check, BadgeCheck, Info, Pill, TriangleAlert, CircleHelp, ChevronDown, FileDown } from "lucide-react";
@@ -80,7 +81,8 @@ export default async function ProductPage({ params }: { params: Params }) {
       : 0;
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-10">
+    // Women's Health products keep the plum look; Men's Health gets charcoal & gold
+    <div className={`mx-auto max-w-7xl px-4 py-10 ${accentClass(accentFor(product))}`}>
       <nav className="mb-6 text-xs text-muted-foreground">
         <Link href="/" className="hover:text-brand-700">Home</Link>
         <span className="px-1.5">/</span>

@@ -7,11 +7,19 @@ export type ThemeColors = {
   secondary: string; // offer slide, refill card, leaves (forest)
   background: string; // page background (cream)
   ink: string; // body text
+  /** Leaf branches (defaults to the second colour when a theme doesn't set it) */
+  foliage?: string;
 };
 
 export type ThemePreset = { id: string; name: string; mood: string; colors: ThemeColors };
 
 export const THEME_PRESETS: ThemePreset[] = [
+  {
+    id: "evergreen",
+    name: "Evergreen",
+    mood: "Deep green with cream and charcoal — matches the logo, neutral for everyone",
+    colors: { primary: "#1f4a36", accent: "#c6a15b", secondary: "#2b302d", background: "#f3efe6", ink: "#232826", foliage: "#2f6b47" },
+  },
   {
     id: "garden",
     name: "Rewards Garden",
@@ -52,6 +60,22 @@ export const THEME_PRESETS: ThemePreset[] = [
 
 export const DEFAULT_THEME = THEME_PRESETS[0];
 
+/**
+ * Category accents: Women's Health keeps the plum look, Men's Health gets
+ * charcoal with green and gold. Everything else uses the shop theme.
+ */
+export type Accent = "women" | "men";
+export function accentFor(p: { name: string; category?: { slug: string; name?: string } | null }): Accent | null {
+  const cat = `${p.category?.slug ?? ""} ${p.category?.name ?? ""}`.toLowerCase();
+  if (/women|female/.test(cat)) return "women";
+  if (/\bmen|male/.test(cat)) return "men";
+  const name = p.name.toLowerCase();
+  if (/\bfor her\b|\bwomen|estrogene|estrolean|gynoshield|fertilitygene/.test(name)) return "women";
+  if (/\bfor him\b|\bmen\b|anabolean|mangene|testosterone/.test(name)) return "men";
+  return null;
+}
+export const accentClass = (a: Accent | null) => (a ? `gg-accent-${a}` : "");
+
 const HEX = /^#[0-9a-f]{6}$/i;
 
 /** The saved theme (preset or custom colours), always valid. */
@@ -84,5 +108,6 @@ export function themeStyle(colors: ThemeColors): Record<string, string> {
     "--g-secondary": colors.secondary,
     "--g-bg": colors.background,
     "--g-ink": colors.ink,
+    ...(colors.foliage ? { "--g-foliage": colors.foliage } : {}),
   };
 }

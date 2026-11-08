@@ -44,7 +44,7 @@ export default async function AdminLayout({
       {/* Sidebar */}
       <aside className="gg-side hidden md:flex print:hidden!">
         <div className="gg-side-logo">
-          <Image src="/logo.png" alt="GreenGene Pharma" width={1547} height={756} className="h-10 w-auto" priority />
+          <Image src="/logo-contrast.png" alt="GreenGene Pharma" width={1547} height={756} className="h-10 w-auto" priority />
         </div>
         <AdminNav counts={counts} />
         <form action={logoutAction} className="relative z-10 mt-2 border-t border-white/10 pt-2">
@@ -60,7 +60,7 @@ export default async function AdminLayout({
         <header className="gg-admin-top md:hidden print:hidden">
           <div className="flex items-center justify-between gap-4 px-4 py-3">
             <span className="rounded-2xl bg-[color:var(--g-cream)] px-3 py-1.5">
-              <Image src="/logo.png" alt="GreenGene Pharma" width={1547} height={756} className="h-7 w-auto" />
+              <Image src="/logo-contrast.png" alt="GreenGene Pharma" width={1547} height={756} className="h-7 w-auto" />
             </span>
             <form action={logoutAction}>
               <button className="rounded-full p-2 text-white/80 hover:bg-white/10" aria-label="Sign out">

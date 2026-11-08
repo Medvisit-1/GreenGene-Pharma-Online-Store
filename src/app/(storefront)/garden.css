@@ -1,9 +1,15 @@
 /* ============================================================
-   "Rewards Garden" storefront theme: cream, plum & gold, serif
-   headings, handwritten accents, leaf sprigs and falling petals.
+   Storefront theme: deep green, cream & charcoal by default (Admin →
+   Appearance), serif headings, leaf branches with falling leaves and
+   capsules. Women's Health keeps plum; Men's Health gets charcoal with gold.
    Everything is namespaced (gg-). Colour tokens live in garden/tokens.css.
    ============================================================ */
-.gg-theme {
+/* Category accents. Base colours only; every shade is re-derived (tokens.css).
+   Background and text follow the shop theme. */
+.gg-accent-women { --g-primary: #5c1a3b; --g-secondary: #7a2a55; --g-accent: #e3bd78; --g-foliage: #2f6b47; --g-bg: inherit; --g-ink: inherit; }
+.gg-accent-men { --g-primary: #26292b; --g-secondary: #2b2f31; --g-accent: #c6a15b; --g-foliage: #2f6b47; --g-bg: inherit; --g-ink: inherit; }
+
+.gg-theme, .gg-accent-women, .gg-accent-men {
   /* Re-point the shared tokens so every storefront page picks up the theme */
   --background: var(--g-cream);
   --foreground: var(--g-ink);
@@ -39,14 +45,16 @@
   --font-heading: var(--font-g-serif);
   --font-sans: var(--font-g-body);
   --font-display: var(--font-g-serif);
-
+}
+.gg-theme {
   background: var(--g-cream);
   color: var(--g-ink);
   font-family: var(--font-g-body), system-ui, sans-serif;
 }
 .gg-theme :is(h1, h2, h3, .font-display) { font-family: var(--font-g-serif), Georgia, serif; }
 .gg-serif { font-family: var(--font-g-serif), Georgia, serif; }
-.gg-script { font-family: var(--font-g-script), cursive; }
+/* Accent lines: elegant serif italic (was a handwritten script) */
+.gg-script { font-family: var(--font-g-serif), Georgia, serif; font-style: italic; font-weight: 500; }
 .gg-caps { letter-spacing: .22em; text-transform: uppercase; font-size: 12px; font-weight: 600; }
 .gg-wrap { max-width: 1200px; margin: 0 auto; padding: 0 22px; }
 .gg-btn { display: inline-flex; align-items: center; gap: 8px; border-radius: 999px; padding: 12px 22px; font-weight: 600; font-size: 14px; letter-spacing: .02em; transition: transform .2s, filter .2s; }
@@ -169,7 +177,7 @@
 .gg-s1 .photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 18%; }
 .gg-s1 .tc { position: absolute; left: 44px; bottom: 16px; font-size: 11px; color: var(--g-on-primary-2); z-index: 3; }
 .gg-s1 .tc a { text-decoration: underline; }
-.gg-s2 { background: radial-gradient(110% 120% at 80% 50%, var(--g-leaf) 0%, var(--g-forest) 55%, var(--g-forest-lo) 100%); color: var(--g-cream); display: grid; grid-template-columns: 1fr 420px; align-items: center; }
+.gg-s2 { background: radial-gradient(110% 120% at 80% 50%, var(--g-secondary-hi) 0%, var(--g-forest) 55%, var(--g-forest-lo) 100%); color: var(--g-cream); display: grid; grid-template-columns: 1fr 420px; align-items: center; }
 .gg-s3 { background: linear-gradient(120deg, var(--g-blush), var(--g-hello-a)); color: var(--g-plum); display: grid; grid-template-columns: 1fr 420px; align-items: center; }
 .gg-s2 .t, .gg-s3 .t { padding: 50px 54px; position: relative; z-index: 2; }
 .gg-s2 h3, .gg-s3 h3 { font-size: 60px; line-height: .95; color: #fff; margin: 10px 0 14px; }
@@ -210,7 +218,7 @@
 .gg-slot b { display: block; font-weight: 600; } .gg-slot .sub { font-size: 13px; color: var(--g-muted); display: block; }
 .gg-check { margin-left: auto; flex-shrink: 0; width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--g-check-line); background: transparent; display: grid; place-items: center; color: #fff; font-weight: 700; cursor: pointer; }
 .gg-check.done { background: var(--g-leaf); border-color: var(--g-leaf); animation: gg-pop .6s cubic-bezier(.3, 1.6, .5, 1) both; }
-.gg-refill { position: relative; overflow: hidden; border-radius: 30px; padding: 26px; color: var(--g-cream); background: linear-gradient(135deg, var(--g-forest), var(--g-leaf)); display: grid; grid-template-columns: 1fr 120px; gap: 10px; }
+.gg-refill { position: relative; overflow: hidden; border-radius: 30px; padding: 26px; color: var(--g-cream); background: linear-gradient(135deg, var(--g-forest), var(--g-secondary-hi)); display: grid; grid-template-columns: 1fr 120px; gap: 10px; }
 .gg-refill .gg-caps { color: var(--g-gold); }
 .gg-refill h2 { color: #fff; margin-top: 6px; }
 .gg-refill .bar { height: 10px; background: rgba(255, 255, 255, .2); border-radius: 9px; margin: 16px 0 8px; overflow: hidden; }

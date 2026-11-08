@@ -202,7 +202,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   newsletterDays: "2,5",
   newsletterHour: "8",
 
-  themePreset: "garden",
+  themePreset: "evergreen",
   themeCustom: "",
   adminThemePreset: "",
   adminThemeCustom: "",

@@ -99,7 +99,7 @@ export default async function InvoiceView({
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="text-sm leading-relaxed">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.png" alt="GreenGene Pharma" className="mb-3 h-11 w-auto" />
+            <img src="/logo-contrast.png" alt="GreenGene Pharma" className="mb-3 h-11 w-auto" />
             <div className="text-lg font-bold text-brand-800">{companyName}</div>
             {company.address && <div className="text-muted-foreground">{company.address}</div>}
             {company.regNo && <div className="text-muted-foreground">Reg. No: {company.regNo}</div>}

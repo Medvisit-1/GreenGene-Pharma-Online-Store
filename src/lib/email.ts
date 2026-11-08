@@ -269,7 +269,7 @@ export async function sendInvoiceEmail(invoiceId: string): Promise<boolean> {
   const body = `
     <table style="width:100%;font-size:13px;margin-bottom:16px"><tr>
       <td style="vertical-align:top">
-        <img src="${APP_URL}/logo.png" alt="GreenGene Pharma" style="height:38px;width:auto;display:block;margin-bottom:10px"/>
+        <img src="${APP_URL}/logo-contrast.png" alt="GreenGene Pharma" style="height:38px;width:auto;display:block;margin-bottom:10px"/>
         <strong style="font-size:15px;color:#104536">${esc(companyName)}</strong><br/>
         ${company.address ? esc(company.address) + "<br/>" : ""}
         ${company.regNo ? "Reg. No: " + esc(company.regNo) + "<br/>" : ""}
@@ -406,7 +406,7 @@ export async function sendQuotationEmail(quoteId: string): Promise<boolean> {
   const body = `
     <table style="width:100%;font-size:13px;margin-bottom:16px"><tr>
       <td style="vertical-align:top">
-        <img src="${APP_URL}/logo.png" alt="GreenGene Pharma" style="height:38px;width:auto;display:block;margin-bottom:10px"/>
+        <img src="${APP_URL}/logo-contrast.png" alt="GreenGene Pharma" style="height:38px;width:auto;display:block;margin-bottom:10px"/>
         <strong style="font-size:15px;color:#104536">${esc(companyName)}</strong><br/>
         ${company.address ? esc(company.address) + "<br/>" : ""}
         ${company.regNo ? "Reg. No: " + esc(company.regNo) + "<br/>" : ""}
