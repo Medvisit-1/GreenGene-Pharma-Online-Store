@@ -1,0 +1,29 @@
+# Deploys the store to Railway on every push to main.
+# Needs one repo secret: RAILWAY_TOKEN (a Railway project token for the production environment).
+name: Deploy to Railway
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+concurrency:
+  group: railway-production
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Deploy
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          if [ -z "$RAILWAY_TOKEN" ]; then
+            echo "::warning::RAILWAY_TOKEN secret is not set, so nothing was deployed."
+            exit 0
+          fi
+          npx -y @railway/cli@5.71.0 up --ci \
+            --service f90384c2-d0ed-4ea5-b88f-2c5e3a259088 \
+            --environment c367c324-c360-426e-854d-5358a1ddd0f2
