@@ -19,6 +19,7 @@ import { GIcon, GiftBox, Sprig, type GIconName } from "@/components/garden/art";
 import { HomeSlider, type Slide } from "@/components/garden/home-slider";
 import { AddPlus, RoutineCheck } from "@/components/garden/home-bits";
 import { NightIntro } from "@/components/night/intro";
+import { HelloName } from "@/components/night/hello-name";
 import { ProductImg } from "@/components/night/pic";
 import "@/components/night/night.css";
 
@@ -117,7 +118,7 @@ export default async function HomePage() {
           <Sprig kind="green" style={{ right: -34, top: -44, width: 150, transform: "rotate(180deg) scaleX(-1)" }} />
           <Sprig kind="green" className="gg-hide-m" style={{ right: 40, bottom: -30, width: 150, transform: "rotate(-10deg)" }} />
           <div className="gg-caps">{greeting()}</div>
-          <h1>{customer ? `Welcome back${firstName ? `, ${firstName}` : ""}` : "Welcome to GreenGene"}</h1>
+          <HelloName accountName={customer ? firstName : undefined} signedIn={!!customer} />
           <div className="gg-script"><span className="gg-write">{s.homeTagline}</span></div>
           <form action="/products" className="gg-search" role="search">
             <Search className="h-5 w-5 shrink-0" />

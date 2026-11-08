@@ -26,16 +26,18 @@ export function ProductCard({ product }: { product: ProductCardData }) {
   const outOfStock = product.stock <= 0;
 
   return (
-    <div className="animate-fade-in-up group relative flex h-full flex-col">
+    <div className="gg-pcard animate-fade-in-up group relative flex h-full flex-col">
       <WishlistButton productId={product.id} className="absolute right-2 top-2 z-10" />
       {/* Transparent image — sits directly on the page background */}
-      <Link href={`/products/${product.slug}`} className="relative block aspect-square">
+      <Link href={`/products/${product.slug}`} className="gg-pcard-stage relative block aspect-square">
         {cover ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={cover}
             alt={product.name}
-            className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105"
+            loading="lazy"
+            decoding="async"
+            className="h-full w-full object-contain"
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center rounded-2xl bg-surface">
@@ -58,7 +60,7 @@ export function ProductCard({ product }: { product: ProductCardData }) {
         </div>
       </Link>
 
-      <div className="flex flex-1 flex-col px-1 pt-3 text-center">
+      <div className="gg-pcard-body flex flex-1 flex-col px-1 pt-3 text-center">
         {product.brand && (
           <span className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-brand-500">
             {product.brand}
