@@ -16,6 +16,8 @@ import { gardenFonts } from "@/components/garden/fonts";
 import { resolveTheme, themeStyle } from "@/lib/themes";
 import "@/components/garden/tokens.css";
 import "./garden.css";
+import "@/components/night/dark.css";
+import { MODE_SCRIPT } from "@/components/night/mode";
 
 // Storefront reads live settings from the DB, so render at request time
 // (not at build, where the database isn't reachable).
@@ -37,6 +39,7 @@ export default async function StorefrontLayout({
       className={`gg-theme ${gardenFonts} flex min-h-full flex-col`}
       style={themeStyle(resolveTheme(settings.themePreset, settings.themeCustom).colors) as React.CSSProperties}
     >
+      <script suppressHydrationWarning dangerouslySetInnerHTML={{ __html: MODE_SCRIPT }} />
       <GardenDefs />
       {settings.marqueeEnabled === "1" && (
         <MarqueeBar text={settings.marqueeText} speed={Number(settings.marqueeSpeed)} />

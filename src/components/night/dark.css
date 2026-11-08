@@ -1,0 +1,79 @@
+/* Storefront dark mode. Everything is derived from the store's brand colours
+   (Admin → Appearance for the garden tokens, globals.css for the Tailwind ramp),
+   so it follows the brand theme. Switched by <html data-mode="dark">. */
+html[data-mode="dark"] { background: #090b0a; color-scheme: dark; }
+html[data-mode="dark"] .gg-theme {
+  color-scheme: dark;
+  --g-bg: color-mix(in oklab, var(--g-secondary) 12%, #090b0a) !important;
+  --g-ink: color-mix(in oklab, var(--g-primary) 8%, #f3f1ed) !important;
+  --g-cream: var(--g-bg);
+  --g-cream2: color-mix(in oklab, var(--g-bg) 93%, #fff);
+  --g-card: color-mix(in oklab, var(--g-bg) 90%, #fff);
+  --g-blush: color-mix(in oklab, var(--g-primary) 18%, var(--g-bg));
+  --g-sage: color-mix(in oklab, var(--g-secondary) 24%, var(--g-bg));
+  --g-lilac: color-mix(in oklab, var(--g-primary) 11%, var(--g-bg));
+  --g-muted: color-mix(in oklab, var(--g-ink) 64%, var(--g-bg));
+  --g-line: color-mix(in oklab, var(--g-ink) 15%, var(--g-bg));
+  --g-check-line: color-mix(in oklab, var(--g-primary) 45%, var(--g-bg));
+  --g-hello-a: var(--g-card);
+  --g-hello-c: var(--g-cream2);
+  --g-plum-text: color-mix(in oklab, var(--g-primary) 52%, #fff);
+  --g-plum-pale: color-mix(in oklab, var(--g-primary) 30%, var(--g-bg));
+  --g-gold-soft: color-mix(in oklab, var(--g-accent) 22%, var(--g-bg));
+
+  /* Tailwind-side tokens (globals.css) */
+  --background: var(--g-bg); --foreground: var(--g-ink);
+  --surface: var(--g-card); --card: var(--g-card);
+  --muted: color-mix(in oklab, var(--g-bg) 86%, #fff); --muted-foreground: var(--g-muted);
+  --border: var(--g-line);
+  --brand-50: color-mix(in oklab, #3f8566 16%, var(--g-bg)); --brand-100: color-mix(in oklab, #3f8566 24%, var(--g-bg));
+  --brand-200: color-mix(in oklab, #3f8566 36%, var(--g-bg));
+  --plum-50: color-mix(in oklab, #b36088 14%, var(--g-bg)); --plum-100: color-mix(in oklab, #b36088 22%, var(--g-bg));
+  --plum-200: color-mix(in oklab, #b36088 34%, var(--g-bg));
+  background: var(--g-bg); color: var(--g-ink);
+}
+/* text colours that were dark-on-light become light-on-dark; solid brand fills keep their deep colour */
+html[data-mode="dark"] .gg-theme :is(.text-brand-500,.text-brand-600,.text-brand-700,.text-brand-800,.text-brand-900) { color: #a9ddc0; }
+html[data-mode="dark"] .gg-theme :is(.text-brand-800,.text-brand-900) { color: #cdeedb; }
+html[data-mode="dark"] .gg-theme :is(.text-plum-600,.text-plum-700,.text-plum-800) { color: #f0c4d8; }
+/* Tailwind default colours used around the store */
+html[data-mode="dark"] .gg-theme .bg-white { background-color: var(--g-card); }
+html[data-mode="dark"] .gg-theme .bg-gray-100 { background-color: var(--g-cream2); }
+html[data-mode="dark"] .gg-theme .text-gray-600 { color: var(--g-muted); }
+html[data-mode="dark"] .gg-theme .text-red-500, html[data-mode="dark"] .gg-theme .text-red-600, html[data-mode="dark"] .gg-theme .text-red-700, html[data-mode="dark"] .gg-theme .text-rose-500, html[data-mode="dark"] .gg-theme .text-rose-600 { color: #ff9d9d; }
+html[data-mode="dark"] .gg-theme .bg-red-50, html[data-mode="dark"] .gg-theme .bg-red-100 { background-color: rgba(239, 68, 68, .14); }
+html[data-mode="dark"] .gg-theme .ring-red-200, html[data-mode="dark"] .gg-theme .border-rose-200 { --tw-ring-color: rgba(239, 68, 68, .35); border-color: rgba(239, 68, 68, .35); }
+html[data-mode="dark"] .gg-theme .text-amber-700, html[data-mode="dark"] .gg-theme .text-amber-800, html[data-mode="dark"] .gg-theme .text-amber-900, html[data-mode="dark"] .gg-theme .text-amber-900\/80 { color: #f5c76e; }
+html[data-mode="dark"] .gg-theme .bg-amber-50, html[data-mode="dark"] .gg-theme .bg-amber-100 { background-color: rgba(245, 158, 11, .14); }
+html[data-mode="dark"] .gg-theme .border-amber-200 { border-color: rgba(245, 158, 11, .35); }
+html[data-mode="dark"] .gg-theme .border-black { border-color: var(--g-ink); }
+html[data-mode="dark"] .gg-theme input, html[data-mode="dark"] .gg-theme select, html[data-mode="dark"] .gg-theme textarea { color-scheme: dark; }
+/* the logo artwork has dark lettering: sit it on a cream plate */
+html[data-mode="dark"] .gg-theme img[src*="logo"] { background: #f6f3ea; border-radius: 10px; padding: 3px 8px; }
+/* solid brand surfaces (rewards card, banners, bars) stay deep with white text */
+html[data-mode="dark"] .gg-theme { --g-plum-hi: color-mix(in oklab, var(--g-primary) 52%, #0a0a0a); --g-plum-lo: color-mix(in oklab, var(--g-primary) 38%, #0a0a0a);
+  --g-plum-dark: color-mix(in oklab, var(--g-primary) 30%, #0a0a0a); --g-plum2: color-mix(in oklab, var(--g-primary) 60%, #0a0a0a); }
+html[data-mode="dark"] .gg-theme .gg-tabs a:hover,
+html[data-mode="dark"] .gg-theme .gg-hicons,
+html[data-mode="dark"] .gg-theme .gg-mobile-menu a,
+html[data-mode="dark"] .gg-theme .gg-hello h1,
+html[data-mode="dark"] .gg-theme .gg-goal,
+html[data-mode="dark"] .gg-theme .gg-sh h2,
+html[data-mode="dark"] .gg-theme .gg-s3,
+html[data-mode="dark"] .gg-theme .gg-s3 h3,
+html[data-mode="dark"] .gg-theme .gg-navbtn button,
+html[data-mode="dark"] .gg-theme .gg-routine h2,
+html[data-mode="dark"] .gg-theme .gg-refill h2,
+html[data-mode="dark"] .gg-theme .gg-tile h3 { color: var(--g-plum-text); }
+html[data-mode="dark"] .gg-theme .gg-search { background: var(--g-card); }
+html[data-mode="dark"] .gg-theme .gg-search input { color: var(--g-ink); }
+html[data-mode="dark"] .gg-theme .gg-goal .ic, html[data-mode="dark"] .gg-theme .gg-goal:hover .ic { background: var(--g-card); color: var(--g-plum-text); }
+html[data-mode="dark"] .gg-theme .gg-footer input { background: rgba(255,255,255,.1); color: #fff; }
+html[data-mode="dark"] .gg-theme .gg-footer input::placeholder { color: rgba(255,255,255,.6); }
+html[data-mode="dark"] .gg-theme :is(.gg-rewards .gg-btn, .gg-journey .gg-btn) { background: var(--g-ink); color: var(--g-plum-dark); }
+/* light text that sits on deep brand gradients */
+html[data-mode="dark"] .gg-theme .text-brand-50 { color: #e9f1ec; }
+html[data-mode="dark"] .gg-theme .text-brand-100 { color: #cee2d6; }
+html[data-mode="dark"] .gg-theme .text-brand-200 { color: #a5c9b4; }
+html[data-mode="dark"] .gg-theme .text-plum-50 { color: #faf1f5; }
+html[data-mode="dark"] .gg-theme .text-plum-100 { color: #f3dde8; }
