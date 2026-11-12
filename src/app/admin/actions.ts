@@ -146,7 +146,15 @@ export async function deleteProduct(formData: FormData) {
 export async function deleteOrder(formData: FormData) {
   await requireAdmin();
   const id = String(formData.get("id"));
+  // A paid order deleted before it shipped = cancelled: GeneFlow puts the bottles back (no read when the feature is off)
+  const { geneflowEnabled, sendOrderEvent } = await import("@/lib/geneflow-webhook");
+  const doomed = geneflowEnabled()
+    ? await prisma.order.findUnique({ where: { id }, include: { items: true } }).catch(() => null)
+    : null;
   await prisma.order.delete({ where: { id } });
+  if (doomed?.stockDeducted && doomed.paymentStatus === "paid" && doomed.status !== "fulfilled") {
+    void sendOrderEvent("order.cancelled", doomed);
+  }
   revalidatePath("/admin/orders");
 }
 
@@ -155,11 +163,16 @@ export async function updateOrder(formData: FormData) {
   await requireAdmin();
   const id = String(formData.get("id"));
   const paymentStatus = String(formData.get("paymentStatus") ?? "unpaid");
+  const before = await prisma.order.findUnique({ where: { id }, select: { paymentStatus: true, stockDeducted: true } });
   await prisma.order.update({ where: { id }, data: { paymentStatus } });
   // If the admin marks it paid, deduct stock (idempotent — runs once)
   if (paymentStatus === "paid") {
     const { finalizePaidOrder } = await import("@/lib/inventory");
     await finalizePaidOrder(id);
+  } else if (before?.paymentStatus === "paid" && before.stockDeducted) {
+    // Paid -> refunded (or -> unpaid/failed = cancelled): tell GeneFlow once, on this transition only
+    const { notifyGeneflowReversal } = await import("@/lib/inventory");
+    notifyGeneflowReversal(paymentStatus === "refunded" ? "order.refunded" : "order.cancelled", id);
   }
   revalidatePath(`/admin/orders/${id}`);
   revalidatePath("/admin/orders");
