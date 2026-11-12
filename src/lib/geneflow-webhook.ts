@@ -13,7 +13,8 @@ export type GeneflowTopic = "order.paid" | "order.refunded" | "order.cancelled";
 export type GeneflowOrder = {
   orderNumber: string;
   paidAt: Date | string | null;
-  items: { id: string; productId: string | null; quantity: number; name: string }[];
+  /** price = the line's unit price in cents (OrderItem.price), as in the stock feed. */
+  items: { id: string; productId: string | null; quantity: number; name: string; price?: number | null }[];
 };
 
 type Options = {
@@ -35,14 +36,20 @@ export function geneflowEnabled(env?: Record<string, string | undefined>): boole
   return config(env) !== null;
 }
 
-/** The exact JSON GeneFlow's webhookEvents() reads: only order number, paid time and line ids/qty/name. */
+/**
+ * The exact JSON GeneFlow reads: only order number, paid time and line id/productId/quantity/name/unitPrice.
+ * unitPrice = the unit price in rand (cents / 100, the same value the stock feed gives GeneFlow), or null.
+ */
 export function buildOrderBody(order: GeneflowOrder): string {
   const paidAt = order.paidAt ? new Date(order.paidAt).toISOString() : null;
   return JSON.stringify({
     order: {
       orderNumber: order.orderNumber,
       paidAt,
-      lines: order.items.map((i) => ({ id: i.id, productId: i.productId, quantity: i.quantity, name: i.name })),
+      lines: order.items.map((i) => ({
+        id: i.id, productId: i.productId, quantity: i.quantity, name: i.name,
+        unitPrice: typeof i.price === "number" && Number.isFinite(i.price) ? Math.round(i.price) / 100 : null,
+      })),
     },
   });
 }

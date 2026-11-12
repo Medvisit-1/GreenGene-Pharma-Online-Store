@@ -53,20 +53,28 @@ test("signature verifies with GeneFlow's exact scheme; tampering fails", async (
   assert.equal(signBody(SECRET, init.body), h("x-geneflow-signature"));
 });
 
-test("body has only order number, paidAt and line id/productId/quantity/name (no customer data)", () => {
+test("body has only order number, paidAt and line id/productId/quantity/name/unitPrice (no customer data)", () => {
   const body = JSON.parse(buildOrderBody(order));
   assert.deepEqual(body, {
     order: {
       orderNumber: "GG-1001",
       paidAt: "2026-11-12T08:00:00.000Z",
       lines: [
-        { id: "li_1", productId: "prod_a", quantity: 2, name: "Ashwagandha" },
-        { id: "li_2", productId: null, quantity: 1, name: "Old product" },
+        { id: "li_1", productId: "prod_a", quantity: 2, name: "Ashwagandha", unitPrice: 10 },
+        { id: "li_2", productId: null, quantity: 1, name: "Old product", unitPrice: 5 },
       ],
     },
   });
   const raw = buildOrderBody(order);
   for (const pii of ["customer@example.com", "0820000000", "line1", "12345"]) assert.ok(!raw.includes(pii));
+});
+
+test("unitPrice = unit price in rand (cents / 100, as the stock feed); null when the price is missing", () => {
+  const lines = (items) => JSON.parse(buildOrderBody({ orderNumber: "GG-2", paidAt: null, items })).order.lines;
+  assert.deepEqual(lines([{ id: "a", productId: "p", quantity: 1, name: "A", price: 24950 }]).map((l) => l.unitPrice), [249.5]);
+  assert.deepEqual(lines([{ id: "a", productId: "p", quantity: 1, name: "A", price: 19900.4 }]).map((l) => l.unitPrice), [199]);
+  assert.deepEqual(lines([{ id: "a", productId: "p", quantity: 1, name: "A" }, { id: "b", productId: "p", quantity: 1, name: "B", price: null }, { id: "c", productId: "p", quantity: 1, name: "C", price: Number.NaN }]).map((l) => l.unitPrice), [null, null, null]);
+  assert.deepEqual(Object.keys(lines([{ id: "a", productId: "p", quantity: 1, name: "A", price: 100 }])[0]), ["id", "productId", "quantity", "name", "unitPrice"]);
 });
 
 test("missing or weak env = silent no-op (no request)", async () => {
