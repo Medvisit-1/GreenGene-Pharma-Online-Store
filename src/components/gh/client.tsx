@@ -3,10 +3,18 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
-import { startHero, startDrift } from "./bottle.js";
+import ReactDOM from "react-dom";
+import { startHero, startDrift, startAmbient, THREE_URL } from "./bottle.js";
+
+const LABEL_FAST = "/hero/estrogene-label-1024.webp";
 
 /* ---------- hero: rotating Estrogene bottle + leaf parallax ---------- */
 export function HeroMotion() {
+  /* emitted into <head> during server render: Three.js and the small first-pass label start downloading
+     with the HTML, so the 3D bottle can draw its first frame as soon as the page is interactive */
+  ReactDOM.preconnect("https://cdnjs.cloudflare.com", { crossOrigin: "anonymous" });
+  ReactDOM.preload(THREE_URL, { as: "script", crossOrigin: "anonymous", fetchPriority: "high" });
+  ReactDOM.preload(LABEL_FAST, { as: "image", type: "image/webp", fetchPriority: "high" });
   useEffect(() => {
     const hero = document.getElementById("gh-hero"), host = document.getElementById("bottleHost");
     const still = document.getElementById("bottleStill") as HTMLImageElement | null;
@@ -15,9 +23,15 @@ export function HeroMotion() {
     if (!host || !still) return;
     return startHero({
       hero, host, still, leaves,
-      labelSrc: { big: "/hero/estrogene-label-4096.webp", small: "/hero/estrogene-label-2048.webp" },
+      labelSrc: { fast: LABEL_FAST, big: "/hero/estrogene-label-4096.webp", small: "/hero/estrogene-label-2048.webp" },
     });
   }, []);
+  return null;
+}
+
+/* ---------- subtle scroll-linked background drift: one soft element per section ---------- */
+export function ScrollAmbient() {
+  useEffect(() => startAmbient(Array.from(document.querySelectorAll<HTMLElement>(".gh .amb"))), []);
   return null;
 }
 

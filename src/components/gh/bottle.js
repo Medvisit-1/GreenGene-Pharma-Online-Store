@@ -5,12 +5,12 @@
    wrapped once around the body: front panel facing the camera, Supplements Facts coming round as it turns.
    No label text is typed or generated here. */
 
-const THREE_URL = "https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js";
+export const THREE_URL = "https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js";
 const LABEL_FRONT_U = 0.51; /* centre of the front panel on the flat label (0..1, left to right) */
 
 /**
  * @param {{ hero: HTMLElement, host: HTMLElement, still: HTMLImageElement, leaves?: HTMLElement[],
- *           labelSrc: { big: string, small: string }, fixedAngle?: number, onReady?: () => void }} o
+ *           labelSrc: { fast?: string, big: string, small: string }, fixedAngle?: number, onReady?: () => void }} o
  * @returns {() => void} cleanup
  */
 export function startHero(o) {
@@ -45,7 +45,8 @@ export function startHero(o) {
   }
   if (!reduced) raf = requestAnimationFrame(loop); /* auto-rotation runs on every device, phones included */
 
-  /* lazy-load Three.js only after first paint; if anything fails the flat real pack shot simply stays */
+  /* Three.js (preloaded from <head>) and a small first-pass label start at once; the sharp label
+     (4096, or 2048 on phones) is swapped in after the first frame. If anything fails the real pack shot stays. */
   const loadThree = () => new Promise((res, rej) => {
     if (window.THREE) return res(window.THREE);
     let s = doc.querySelector('script[data-gh-three]');
@@ -54,14 +55,21 @@ export function startHero(o) {
     s.addEventListener("error", rej);
   });
   const loadImg = (src) => new Promise((res, rej) => { const i = new Image(); i.decoding = "async"; i.onload = () => res(i); i.onerror = rej; i.src = src; });
-  const go = () => {
-    if (dead) return;
-    Promise.all([loadThree(), loadImg(small ? o.labelSrc.small : o.labelSrc.big)])
-      .then(([T, img]) => { if (!dead) { try { buildBottle(T, img); } catch (err) { o.host.classList.remove("ready"); renderBottle = null; } } })
-      .catch(() => { /* keep pack shot */ });
-  };
-  const idle = () => { if (window.requestIdleCallback) window.requestIdleCallback(go, { timeout: 2000 }); else setTimeout(go, 600); };
-  if (doc.readyState === "complete") idle(); else on(window, "load", idle);
+  const sharpSrc = small ? o.labelSrc.small : o.labelSrc.big;
+  const firstSrc = o.labelSrc.fast || sharpSrc;
+  let swapLabel = null;
+  Promise.all([loadThree(), loadImg(firstSrc)])
+    .then(([T, img]) => {
+      if (dead) return;
+      try { buildBottle(T, img, firstSrc === sharpSrc ? 0 : 1024); } catch { o.host.classList.remove("ready"); renderBottle = null; return; }
+      /* the sharp label downloads only after the first frame, so it never competes with it */
+      if (firstSrc !== sharpSrc) loadImg(sharpSrc).then((big) => {
+        /* swap on an idle moment so the upload never stalls the turn; same layout and UVs, so no visible jump */
+        const run = () => { if (!dead && swapLabel) swapLabel(big); };
+        if (window.requestIdleCallback) window.requestIdleCallback(run, { timeout: 1500 }); else setTimeout(run, 200);
+      }).catch(() => { /* keep the first-pass label */ });
+    })
+    .catch(() => { /* keep pack shot */ });
 
   /* The real flat label, wrapped once around the label cylinder at its true aspect (no stretching).
      The tiny leftover at the back (the seam) is filled with the label's own black. */
@@ -85,10 +93,10 @@ export function startHero(o) {
     return c;
   }
 
-  function buildBottle(T, labelImg) {
+  function buildBottle(T, labelImg, firstW) {
     const host = o.host;
     const w = host.clientWidth, hgt = host.clientHeight; if (!w || !hgt) return;
-    const label = makeLabel(labelImg, small ? 2048 : 4096);
+    const label = makeLabel(labelImg, firstW || (small ? 2048 : 4096));
 
     const rnd = new T.WebGLRenderer({ antialias: true, alpha: true });
     rnd.setPixelRatio(Math.min(window.devicePixelRatio || 1, small ? 1.5 : 2));
@@ -137,13 +145,24 @@ export function startHero(o) {
     g.add(new T.Mesh(lathe(bp, SEG), new T.MeshPhysicalMaterial({ color: 0x0a0a0b, roughness: 0.5, roughnessMap: rough, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.06, envMapIntensity: 1.15 })));
 
     /* label: the real full wrap-around artwork (mipmapped, anisotropic, sRGB) */
-    const tex = new T.CanvasTexture(label);
-    tex.colorSpace = T.SRGBColorSpace; tex.wrapS = T.RepeatWrapping;
-    tex.generateMipmaps = true; tex.minFilter = T.LinearMipmapLinearFilter; tex.magFilter = T.LinearFilter;
-    tex.anisotropy = rnd.capabilities.getMaxAnisotropy();
-    const lab = new T.Mesh(new T.CylinderGeometry(1.006, 1.006, 2.3, SEG, 1, true),
-      new T.MeshPhysicalMaterial({ map: tex, roughness: 0.36, metalness: 0, clearcoat: 0.5, clearcoatRoughness: 0.22, sheen: 0.08, sheenRoughness: 0.5, sheenColor: new T.Color(0xffffff), envMapIntensity: 0.7 }));
+    const mkTex = (canvas) => {
+      const t = new T.CanvasTexture(canvas);
+      t.colorSpace = T.SRGBColorSpace; t.wrapS = T.RepeatWrapping;
+      t.generateMipmaps = true; t.minFilter = T.LinearMipmapLinearFilter; t.magFilter = T.LinearFilter;
+      t.anisotropy = rnd.capabilities.getMaxAnisotropy();
+      return t;
+    };
+    const tex = mkTex(label);
+    const labMat = new T.MeshPhysicalMaterial({ map: tex, roughness: 0.36, metalness: 0, clearcoat: 0.5, clearcoatRoughness: 0.22, sheen: 0.08, sheenRoughness: 0.5, sheenColor: new T.Color(0xffffff), envMapIntensity: 0.7 });
+    const lab = new T.Mesh(new T.CylinderGeometry(1.006, 1.006, 2.3, SEG, 1, true), labMat);
     lab.position.y = 1.41; g.add(lab);
+    /* sharp label: a new texture on the same material and UVs (the reflection clone shares the material) */
+    swapLabel = (img) => {
+      const old = labMat.map;
+      labMat.map = mkTex(makeLabel(img, small ? 2048 : 4096));
+      if (old) old.dispose();
+      if (reduced) draw(t0, M);
+    };
 
     const RIBS = 64, cg = lathe([[0.74, 3.075], [0.806, 3.075], [0.816, 3.086], [0.816, 3.15], [0.802, 3.17], [0.8, 3.19], [0.8, 3.22], [0.8, 3.4], [0.8, 3.58], [0.8, 3.61],
       [0.794, 3.635], [0.772, 3.667], [0.72, 3.686], [0.4, 3.692], [0, 3.692]], RIBS * (small ? 4 : 6));
@@ -192,7 +211,7 @@ export function startHero(o) {
       rnd.setSize(nw, nh, false); cam.aspect = nw / nh; cam.updateProjectionMatrix();
       if (reduced) draw(t0, M);
     });
-    offs.push(() => { renderBottle = null; rnd.dispose(); rnd.domElement.remove(); host.classList.remove("ready"); });
+    offs.push(() => { renderBottle = null; swapLabel = null; rnd.dispose(); rnd.domElement.remove(); host.classList.remove("ready"); });
     if (o.onReady) o.onReady();
   }
 
@@ -214,4 +233,34 @@ export function startDrift(sec, photo) {
   addEventListener("scroll", onScroll, { passive: true });
   drift();
   return () => removeEventListener("scroll", onScroll);
+}
+
+/** Subtle scroll-linked background: each .amb layer holds ONE soft element that drifts slowly as its
+ *  section passes. transform only, passive listener, one rAF per frame, only sections on screen,
+ *  smaller travel on phones, nothing at all under prefers-reduced-motion. */
+export function startAmbient(layers) {
+  if (!layers.length || matchMedia("(prefers-reduced-motion: reduce)").matches) return () => {};
+  const k = matchMedia("(max-width: 900px), (pointer: coarse)").matches ? 0.45 : 1;
+  const items = layers.map((l) => ({ l, el: l.firstElementChild, on: false })).filter((x) => x.el);
+  let ticking = false;
+  const io = "IntersectionObserver" in window
+    ? new IntersectionObserver((es) => { es.forEach((e) => { const x = items.find((i) => i.l === e.target); if (x) x.on = e.isIntersecting; }); tick(); })
+    : null;
+  items.forEach((x) => { if (io) io.observe(x.l); else x.on = true; });
+  const frame = () => {
+    ticking = false;
+    const vh = innerHeight;
+    for (const x of items) {
+      if (!x.on) continue;
+      const r = x.l.getBoundingClientRect();
+      const p = (vh - r.top) / (vh + r.height) - 0.5; /* -0.5 .. 0.5 while the section crosses the screen */
+      const dx = +(x.el.dataset.dx || 40), dy = +(x.el.dataset.dy || 120), rot = +(x.el.dataset.rot || 0);
+      x.el.style.transform = "translate3d(" + (p * dx * k).toFixed(1) + "px," + (-p * dy * k).toFixed(1) + "px,0) rotate(" + (p * rot).toFixed(2) + "deg)";
+    }
+  };
+  function tick() { if (!ticking) { ticking = true; requestAnimationFrame(frame); } }
+  addEventListener("scroll", tick, { passive: true });
+  addEventListener("resize", tick, { passive: true });
+  tick();
+  return () => { removeEventListener("scroll", tick); removeEventListener("resize", tick); if (io) io.disconnect(); };
 }

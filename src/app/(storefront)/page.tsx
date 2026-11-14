@@ -11,13 +11,24 @@ import { parseNewReleaseCards } from "@/lib/new-release";
 import { EvergreenFx } from "@/components/evergreen/fx";
 import { ProductImg } from "@/components/night/pic";
 import { WishlistButton } from "@/components/wishlist-button";
-import { ComboDrift, Greeting, HeroMotion, Quiz, Routine, type QuizData, type QuizProduct } from "@/components/gh/client";
+import { ComboDrift, Greeting, HeroMotion, Quiz, Routine, ScrollAmbient, type QuizData, type QuizProduct } from "@/components/gh/client";
 import "@/components/gh/home.css";
 
 export const dynamic = "force-dynamic";
 
 const LEAF = <><path d="M30 2C8 30 6 62 30 98 54 62 52 30 30 2Z" /><path className="vein" d="M30 8v86" /></>;
 const BELL = <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15L6 16ZM10 21h4" /></svg>;
+
+/** One soft background element per section; it drifts slowly with scroll (wired by ScrollAmbient). */
+function Amb({ kind, dx, dy, rot = 0, leaf = false }: { kind: string; dx: number; dy: number; rot?: number; leaf?: boolean }) {
+  return (
+    <div className="amb" aria-hidden="true">
+      {leaf
+        ? <svg className={`amb-el ${kind}`} data-dx={dx} data-dy={dy} data-rot={rot} viewBox="0 0 60 100">{LEAF}</svg>
+        : <i className={`amb-el ${kind}`} data-dx={dx} data-dy={dy} data-rot={rot} />}
+    </div>
+  );
+}
 
 const onSale = (p: Pick<Product, "price" | "compareAtPrice">) => p.compareAtPrice != null && p.compareAtPrice > p.price;
 const href = (p: Pick<Product, "slug">) => `/products/${p.slug}`;
@@ -100,6 +111,7 @@ export default async function HomePage() {
       <EvergreenFx rootSelector=".gh" ambient={false} />
       <HeroMotion />
       <ComboDrift />
+      <ScrollAmbient />
 
       {/* 1. HERO */}
       <section className="hero" id="gh-hero">
@@ -159,13 +171,15 @@ export default async function HomePage() {
       </section>
 
       {/* 2. QUIZ */}
-      <section className="sec quiz-sec" id="quiz">
+      <section className="sec quiz-sec amb-host" id="quiz">
+        <Amb kind="glow a1" dy={140} dx={60} />
         <div className="wrap"><Quiz data={quiz} /></div>
       </section>
 
       {/* 3. BEST SELLERS */}
       {s.homeShowPopular !== "0" && grid.length > 0 && (
-        <section className="sec" id="best">
+        <section className="sec amb-host" id="best">
+          <Amb kind="leaf a2" dy={180} dx={-40} rot={14} leaf />
           <div className="wrap">
             <header className="sec-head rv">
               <p className="eyebrow">Best sellers</p>
@@ -203,7 +217,8 @@ export default async function HomePage() {
       )}
 
       {/* 4. BENEFITS (approved copy; the rating line is live) */}
-      <section className="benefits" id="why">
+      <section className="benefits amb-host" id="why">
+        <Amb kind="glow a3" dy={120} dx={-70} />
         <div className="wrap">
           <header className="sec-head rv">
             <p className="eyebrow">Why it works</p>
@@ -275,7 +290,8 @@ export default async function HomePage() {
 
       {/* 7 + 8. ROUTINE TRACKER / REFILL REMINDERS */}
       {s.homeShowRoutine !== "0" && routine.length > 0 && (
-        <section className="sec duo-sec" id="routine">
+        <section className="sec duo-sec amb-host" id="routine">
+          <Amb kind="leaf a4" dy={160} dx={50} rot={-12} leaf />
           <div className="wrap duo-grid">
             <div className="tracker rv">
               <p className="eyebrow">Daily routine</p>
@@ -317,23 +333,33 @@ export default async function HomePage() {
 
       {/* 9. NEW RELEASE (cards from Admin settings) */}
       {newCards.length > 0 && (
-        <section className="sec" id="new">
+        <section className="sec amb-host" id="new">
+          <Amb kind="glow a5" dy={140} dx={60} />
           <div className="wrap">
             <header className="sec-head rv">
               <p className="eyebrow">Just launched</p>
               <h2>{(s.newReleaseHeading || "New Release").replace(/\s*\S+$/, "")} <em>{(s.newReleaseHeading || "New Release").split(/\s+/).pop()}</em></h2>
             </header>
             <div className="new-row">
-              {newCards.map((c, i) => (
-                <article key={i} className={`new rv${i === 0 ? " big" : ""}`}>
-                  <div className="new-copy">
-                    {c.title && <h3>{c.title}</h3>}
-                    {c.text && <p>{c.text}</p>}
-                    {c.buttonLink && <Link className="btn btn-outline" href={c.buttonLink}>{c.buttonLabel || "Get it Now!"}</Link>}
-                  </div>
-                  {c.image && <span className="new-img"><ProductImg src={c.image} alt={c.title} sizes="(max-width: 900px) 60vw, 300px" /></span>}
-                </article>
-              ))}
+              {newCards.map((c, i) => {
+                /* the combo card shows the two real bottles instead of the old flat promo graphic */
+                const isCombo = /combo/i.test(`${c.title} ${c.buttonLink}`) && comboPair.length === 2;
+                const imgs = isCombo ? (comboPair.map((p) => firstImage(p)).filter(Boolean) as string[]) : c.image ? [c.image] : [];
+                return (
+                  <article key={i} className="new rv">
+                    <div className="new-copy">
+                      {c.title && <h3>{c.title}</h3>}
+                      {c.text && <p>{c.text}</p>}
+                      {c.buttonLink && <Link className="btn new-btn" href={c.buttonLink}>{c.buttonLabel || "Get it Now!"}</Link>}
+                    </div>
+                    {imgs.length > 0 && (
+                      <span className={`new-img${imgs.length > 1 ? " duo" : ""}`}>
+                        {imgs.map((src, n) => <ProductImg key={n} src={src} alt={n === 0 ? c.title : ""} sizes="(max-width: 900px) 60vw, 300px" />)}
+                      </span>
+                    )}
+                  </article>
+                );
+              })}
             </div>
           </div>
         </section>
