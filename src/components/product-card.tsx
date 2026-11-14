@@ -26,7 +26,7 @@ export function ProductCard({ product }: { product: ProductCardData }) {
   const outOfStock = product.stock <= 0;
 
   return (
-    <div className="gg-pcard animate-fade-in-up group relative flex h-full flex-col">
+    <div className={`gg-pcard animate-fade-in-up group relative flex h-full flex-col${outOfStock ? " gg-soldout" : ""}`}>
       <WishlistButton productId={product.id} className="absolute right-2 top-2 z-10" />
       {/* Transparent image — sits directly on the page background */}
       <Link href={`/products/${product.slug}`} className="gg-pcard-stage relative block aspect-square">
@@ -48,12 +48,12 @@ export function ProductCard({ product }: { product: ProductCardData }) {
         )}
         <div className="absolute left-2 top-2 flex flex-col gap-1.5">
           {onSale && (
-            <span className="rounded-full bg-surface px-2.5 py-1 text-xs font-bold text-brand-800 shadow-sm">
+            <span className="gg-pill gg-pill-sale">
               Sale
             </span>
           )}
           {outOfStock && (
-            <span className="rounded-full bg-surface px-2.5 py-1 text-xs font-bold text-brand-800 shadow-sm">
+            <span className="gg-pill gg-pill-out">
               Sold out
             </span>
           )}

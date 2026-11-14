@@ -145,7 +145,7 @@ export default async function ProductPage({ params }: { params: Params }) {
                 {product.stock <= 10 && ` — only ${product.stock} left`}
               </span>
             ) : (
-              <span className="font-medium text-red-600">Out of stock</span>
+              <span className="gg-soldout-tag">Sold out · back soon</span>
             )}
           </p>
 
@@ -164,7 +164,7 @@ export default async function ProductPage({ params }: { params: Params }) {
                 stock: product.stock,
               }}
             />
-            {product.stock <= 0 && <NotifyMe productId={product.id} email={customer?.email ?? ""} />}
+            {product.stock <= 0 && <div id="notify" className="scroll-mt-28"><NotifyMe productId={product.id} email={customer?.email ?? ""} /></div>}
             <div className="mt-3">
               <WishlistButton productId={product.id} variant="pill" />
             </div>

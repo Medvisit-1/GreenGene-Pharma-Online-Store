@@ -10,14 +10,14 @@ import { useEffect, useRef } from "react";
  * Later visits skip straight to the floating fireflies.
  * Also wires scroll reveals (.rv), the hero card parallax and the card glow.
  */
-export function EvergreenFx() {
+export function EvergreenFx({ rootSelector = ".gx", ambient = true }: { rootSelector?: string; ambient?: boolean } = {}) {
   const cvRef = useRef<HTMLCanvasElement>(null);
   const bgRef = useRef<HTMLDivElement>(null);
   const wordRef = useRef<HTMLDivElement>(null);
   const skipRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    const root = document.querySelector<HTMLElement>(".gx");
+    const root = document.querySelector<HTMLElement>(rootSelector);
     const cv = cvRef.current, bg = bgRef.current, word = wordRef.current, skipBtn = skipRef.current;
     if (!root || !cv || !bg || !word || !skipBtn) return;
     const cx = cv.getContext("2d");
@@ -164,6 +164,7 @@ export function EvergreenFx() {
       bg!.style.opacity = String(1 - clamp((t - T_UI + 0.4) / 1.1));
     }
 
+    let stopped = false;
     let t0: number | null = null, offset = playIntro ? 0 : T_END + 1, uiShown = false, ended = false, raf = 0, trimmed = false;
     const showUI = () => { if (uiShown) return; uiShown = true; root.classList.remove("pre"); startReveal(); };
     const end = () => {
@@ -171,6 +172,7 @@ export function EvergreenFx() {
       bg.style.display = word.style.display = skipBtn.style.display = "none";
       cv.style.zIndex = "0";
       if (!trimmed) { trimmed = true; parts = parts.filter((p) => p.amb); } // keep only the background fireflies
+      if (!ambient) { cv.style.display = "none"; stopped = true; } // intro only: no background fireflies afterwards
     };
     const loop = (now: number) => {
       if (t0 === null) t0 = now;
@@ -178,6 +180,7 @@ export function EvergreenFx() {
       frame(t);
       if (t > T_UI) showUI();
       if (t > T_END) end();
+      if (stopped) return;
       raf = requestAnimationFrame(loop);
     };
     const onMove = (e: PointerEvent) => { mx = e.clientX; my = e.clientY; };
@@ -228,11 +231,11 @@ export function EvergreenFx() {
       document.removeEventListener("pointerleave", onLeave); removeEventListener("resize", onResize);
       skipBtn.removeEventListener("click", onSkip);
     };
-  }, []);
+  }, [rootSelector, ambient]);
 
   return (
     <>
-      <div className="gx-grid" aria-hidden="true" />
+      {ambient && <div className="gx-grid" aria-hidden="true" />}
       <canvas ref={cvRef} className="gx-fx" aria-hidden="true" />
       <div ref={bgRef} className="gx-introbg" aria-hidden="true" />
       <div ref={wordRef} className="gx-introword" aria-hidden="true">Empower your wellness, live better</div>

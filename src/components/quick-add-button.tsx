@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { ShoppingBag, Check } from "lucide-react";
+import { ShoppingBag, Check, BellRing } from "lucide-react";
+import Link from "next/link";
 import { useCart } from "@/lib/cart-store";
 import { Button } from "@/components/ui/button";
 
@@ -24,9 +25,9 @@ export function QuickAddButton({ product }: Props) {
 
   if (product.stock <= 0) {
     return (
-      <Button variant="outline" size="sm" disabled className="w-full">
-        Sold out
-      </Button>
+      <Link href={`/products/${product.slug}#notify`} className="gg-notify-btn">
+        <BellRing className="h-4 w-4" /> Email me when it’s back
+      </Link>
     );
   }
 

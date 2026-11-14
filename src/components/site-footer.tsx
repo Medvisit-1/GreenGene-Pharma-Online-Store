@@ -1,41 +1,37 @@
 import Link from "next/link";
-import { Mail, MapPin, Phone } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { getSettings } from "@/lib/settings";
 import { businessIdentity } from "@/lib/legal";
 import { rewardHighlights, shortDiscount } from "@/lib/rewards";
-import { FallingLeaves, Sprig } from "@/components/garden/art";
 import { JoinForm } from "@/components/garden/join-form";
 
+const BRANCH = "M60 215c-30-10-45-35-40-70 30 12 45 35 40 70ZM110 160c-32-6-50-30-50-66 32 8 50 32 50 66ZM165 110c-30-2-52-22-58-56 32 2 54 22 58 56ZM225 66c-28 2-50-12-62-42 30-4 52 12 62 42ZM85 195c8-30 32-48 68-46-8 32-32 48-68 46ZM140 140c6-30 28-50 64-52-6 32-28 50-64 52ZM200 92c2-28 20-48 54-58 0 32-20 52-54 58Z";
+
+/** Rust editorial footer (approved homepage design), shared by every storefront page. */
 export async function SiteFooter() {
   const [settings, rewards] = await Promise.all([getSettings(), rewardHighlights()]);
   const id = businessIdentity(settings);
   const welcome = rewards?.welcome;
+  const tel = settings.contactPhone?.replace(/[^\d+]/g, "");
   return (
     <footer className="gg-footer">
-      <FallingLeaves count={10} height={760} />
-      <Sprig kind="green" style={{ left: -20, bottom: -30, width: 180, transform: "rotate(10deg)", opacity: 0.6 }} />
-      <Sprig kind="green" style={{ right: -10, top: -20, width: 170, transform: "rotate(190deg)", opacity: 0.8 }} />
+      <svg className="branch b-tl" viewBox="0 0 300 300" aria-hidden="true"><path d="M10 290C60 200 130 120 290 20" /><path d={BRANCH} /></svg>
+      <svg className="branch b-br" viewBox="0 0 300 300" aria-hidden="true"><path d="M10 290C60 200 130 120 290 20" /><path d={BRANCH} /></svg>
+      <div className="motes" aria-hidden="true"><i className="cap" /><i className="lf" /><i className="cap" /><i className="lf" /><i className="cap" /><i className="lf" /></div>
 
       <div className="gg-wrap">
         <div className="band">
-          <div>
-            <div className="gg-script">Join today.<br />Start saving.</div>
-            <p className="mt-2">
-              Wellness Notes twice a week
-              {welcome ? <>, plus {shortDiscount(welcome)} off when you join.*</> : "."}
-            </p>
+          <h2>Join today.<br />Start saving.</h2>
+          <div className="join-side">
+            <p>Wellness Notes twice a week{welcome ? <>, plus <b>{shortDiscount(welcome)}</b> off when you join.*</> : "."}</p>
+            <JoinForm />
           </div>
-          <JoinForm />
         </div>
 
         <div className="cols">
-          <div>
-            <span className="logo-chip"><Logo height={44} /></span>
-            <p className="mt-4 max-w-xs text-sm">
-              The finest selection of natural health products for you and your family — empowering your journey to
-              holistic well-being.
-            </p>
+          <div className="foot-brand">
+            <Logo height={56} />
+            <p>The finest selection of natural health products for you and your family — empowering your journey to holistic well-being.</p>
           </div>
           <div>
             <h4>Shop</h4>
@@ -62,30 +58,24 @@ export async function SiteFooter() {
           <div>
             <h4>Get in touch</h4>
             <ul>
-              <li className="flex items-center gap-2.5"><Phone className="h-4 w-4 shrink-0 text-[var(--g-gold)]" /> {settings.contactPhone}</li>
-              <li className="flex items-center gap-2.5"><Mail className="h-4 w-4 shrink-0 text-[var(--g-gold)]" /> {settings.contactEmail}</li>
-              <li className="flex items-start gap-2.5"><MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[var(--g-gold)]" /> {settings.contactAddress}</li>
+              {settings.contactPhone && <li>{tel ? <a href={`tel:${tel}`}>{settings.contactPhone}</a> : settings.contactPhone}</li>}
+              {settings.contactEmail && <li><a href={`mailto:${settings.contactEmail}`}>{settings.contactEmail}</a></li>}
+              {settings.contactAddress && <li>{settings.contactAddress}</li>}
             </ul>
           </div>
         </div>
 
-        <div className="legal">
-          <p className="text-[11px] leading-relaxed opacity-80">
-            Our products are not intended to diagnose, treat, cure or prevent any disease. Information on this
-            website is not medical advice — consult your healthcare practitioner before use, especially if you are
-            pregnant, breastfeeding, taking medication or have a medical condition.
-          </p>
-          <div className="row">
-            <span>
-              © {new Date().getFullYear()} {id.legalName}
-              {id.regNo ? ` · Reg. No. ${id.regNo}` : ""}
-              {id.vatNo ? ` · VAT No. ${id.vatNo}` : ""} · Prices in ZAR incl. VAT where applicable
-            </span>
-            {welcome && (
-              <span>*Valid for new subscribers. <Link href="/rewards-terms" className="underline">Terms &amp; Conditions apply</Link>.</span>
-            )}
-          </div>
-        </div>
+        <p className="disclaimer">
+          Our products are not intended to diagnose, treat, cure or prevent any disease. Information on this
+          website is not medical advice — consult your healthcare practitioner before use, especially if you are
+          pregnant, breastfeeding, taking medication or have a medical condition.
+        </p>
+        <p className="legal">
+          © {new Date().getFullYear()} {id.legalName}
+          {id.regNo ? ` · Reg. No. ${id.regNo}` : ""}
+          {id.vatNo ? ` · VAT No. ${id.vatNo}` : ""} · Prices in ZAR incl. VAT where applicable
+          {welcome && <><br />*Valid for new subscribers. <Link href="/rewards-terms">Terms &amp; Conditions apply</Link>.</>}
+        </p>
       </div>
     </footer>
   );

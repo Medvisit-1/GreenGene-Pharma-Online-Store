@@ -44,9 +44,7 @@ export function AddToCart({ product }: Props) {
 
   if (outOfStock) {
     return (
-      <Button disabled variant="outline" size="lg" className="w-full">
-        Out of stock
-      </Button>
+      <p className="gg-soldout-note">Resting for now. Leave your email below and we will let you know the moment it is back.</p>
     );
   }
 

@@ -12,12 +12,13 @@ import { CUSTOMER_COOKIE } from "@/lib/customer-auth";
 import { CartSync } from "@/components/cart-sync";
 import { GardenDefs } from "@/components/garden/art";
 import { GardenMotion } from "@/components/garden/motion";
-import { gardenFonts } from "@/components/garden/fonts";
+import { ghFonts } from "@/components/gh/fonts";
 import { resolveTheme, themeStyle } from "@/lib/themes";
 import "@/components/garden/tokens.css";
 import "./garden.css";
 import "@/components/night/dark.css";
 import "@/components/night/polish.css";
+import "@/components/gh/store.css";
 import { MODE_SCRIPT } from "@/components/night/mode";
 
 // Storefront reads live settings from the DB, so render at request time
@@ -37,7 +38,7 @@ export default async function StorefrontLayout({
   const showReferral = referral && jar.get(REF_BANNER_HIDE_COOKIE)?.value !== referral.code;
   return (
     <div
-      className={`gg-theme ${gardenFonts} flex min-h-full flex-col`}
+      className={`gg-theme ${ghFonts} flex min-h-full flex-col`}
       style={themeStyle(resolveTheme(settings.themePreset, settings.themeCustom).colors) as React.CSSProperties}
     >
       <script suppressHydrationWarning dangerouslySetInnerHTML={{ __html: MODE_SCRIPT }} />
