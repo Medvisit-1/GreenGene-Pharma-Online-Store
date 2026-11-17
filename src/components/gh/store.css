@@ -151,3 +151,10 @@ html[data-mode="dark"] .gg-theme :is(.gg-header, .gg-footer) img[src*="logo"] { 
 
 /* one footer look in light and dark: deep green, hairline on dark so it reads against the dark page */
 html[data-mode="dark"] .gg-theme .gg-footer { border-top: 1px solid rgba(184,227,86,.2); }
+
+/* footer, signed-in members: "View my rewards" in place of the sign-up box */
+.gg-theme .gg-footer .member-cta { display: inline-flex; align-items: center; justify-content: center; align-self: flex-start; margin-top: 18px; height: 56px; padding: 0 30px; border-radius: 999px; background: #B8E356; color: #0A0E09; font: 700 16px var(--font-g-body); text-decoration: none; transition: background-color .2s, transform .15s; }
+.gg-theme .gg-footer .member-cta:hover { background: #CBEE7A; }
+.gg-theme .gg-footer .member-cta:active { transform: scale(.98); }
+.gg-theme .gg-footer .member-cta:focus-visible { outline: 3px solid #B8E356; outline-offset: 3px; }
+@media (max-width: 640px) { .gg-theme .gg-footer .member-cta { width: 100%; height: 58px; font-size: 17px; } }
