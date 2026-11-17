@@ -18,7 +18,7 @@ import { getSettings } from "@/lib/settings";
 import { getCurrentCustomer } from "@/lib/customer-auth";
 import { WishlistButton } from "@/components/wishlist-button";
 import { NotifyMe } from "@/components/notify-me";
-import { importantNote } from "@/lib/label-statements";
+import { effectiveProductNote } from "@/lib/product-notes";
 
 export const dynamic = "force-dynamic";
 
@@ -73,7 +73,7 @@ export default async function ProductPage({ params }: { params: Params }) {
     orderBy: { createdAt: "desc" },
   });
   const { productDisclaimer } = await getSettings();
-  const note = importantNote(product.slug, productDisclaimer);
+  const note = await effectiveProductNote(product, productDisclaimer);
   const faqLabel = productFaqLabel(product.name);
   const customer = product.stock <= 0 ? await getCurrentCustomer() : null;
   const reviewCount = reviews.length;

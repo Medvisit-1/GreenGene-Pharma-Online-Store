@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/utils";
 import { updateSettings, getSettings } from "@/lib/settings";
+import { saveProductNoteOverride, clearProductNoteOverride } from "@/lib/product-notes";
 import { parseNewReleaseCards } from "@/lib/new-release";
 import { THEME_PRESETS, resolveAdminTheme, resolveTheme } from "@/lib/themes";
 import { GATEWAYS, saveGatewayStates } from "@/lib/payments";
@@ -628,4 +629,24 @@ export async function sendQuotation(formData: FormData) {
   const ok = await sendQuotationEmail(id);
   revalidatePath(`/admin/wholesale/${id}`);
   redirect(`/admin/wholesale/${id}?${ok ? "sent=1" : "senterror=1"}`);
+}
+
+/* ---------------- Product "Important" notice ---------------- */
+
+export async function saveProductNote(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  const product = await prisma.product.findUnique({ where: { id }, select: { id: true, slug: true } });
+  if (!product) redirect("/admin/products");
+  if (formData.get("reset") === "on") {
+    await clearProductNoteOverride(product.id);
+  } else {
+    await saveProductNoteOverride(product.id, {
+      statement: String(formData.get("noteStatement") ?? ""),
+      warning: String(formData.get("noteWarning") ?? ""),
+    });
+  }
+  revalidatePath(`/products/${product.slug}`);
+  revalidatePath(`/admin/products/${product.id}`);
+  redirect(`/admin/products/${product.id}?noteSaved=1`);
 }
