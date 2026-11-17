@@ -46,9 +46,6 @@ export function SiteHeader({ announcement, signedIn }: { announcement?: string; 
 
   return (
     <>
-      <div className="gg-announce">
-        {announcement ?? "Welcome to GreenGene Pharma · Empower Your Wellness, Live Better"}
-      </div>
       {/* Desktop: full header with tabs. Phones and tablets: a slim bar (logo, search, cart);
           the menu lives in the bottom tab bar (BottomNav). */}
       <header className="gg-header">
