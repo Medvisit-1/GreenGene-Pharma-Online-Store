@@ -31,7 +31,7 @@ export async function SiteFooter() {
         <div className="cols">
           <div className="foot-brand">
             <Logo height={56} />
-            <p>The finest selection of natural health products for you and your family — empowering your journey to holistic well-being.</p>
+            <p>GreenGene Pharma is a South African registered company. Our supplements are made with plant-based ingredients, including phytoestrogens, in SAHPRA-approved facilities, and delivered to your door.</p>
           </div>
           <div>
             <h4>Shop</h4>
@@ -46,6 +46,7 @@ export async function SiteFooter() {
           <div>
             <h4>Help</h4>
             <ul>
+              <li><Link href="/about">About us</Link></li>
               <li><Link href="/contact">Contact us</Link></li>
               <li><Link href="/faqs">FAQs</Link></li>
               <li><Link href="/shipping-policy">Shipping policy</Link></li>
@@ -65,11 +66,7 @@ export async function SiteFooter() {
           </div>
         </div>
 
-        <p className="disclaimer">
-          Our products are not intended to diagnose, treat, cure or prevent any disease. Information on this
-          website is not medical advice — consult your healthcare practitioner before use, especially if you are
-          pregnant, breastfeeding, taking medication or have a medical condition.
-        </p>
+        <p className="disclaimer">{settings.productDisclaimer}</p>
         <p className="legal">
           © {new Date().getFullYear()} {id.legalName}
           {id.regNo ? ` · Reg. No. ${id.regNo}` : ""}

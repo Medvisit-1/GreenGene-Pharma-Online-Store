@@ -92,6 +92,7 @@ const SHEET = [
   { href: "/wellness", label: "Wellness" },
   { href: "/account?tab=wishlist", label: "Wishlist" },
   { href: "/faqs", label: "FAQs" },
+  { href: "/about", label: "About us" },
   { href: "/contact", label: "Contact" },
 ];
 
