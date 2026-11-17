@@ -14,7 +14,7 @@ const nextConfig: NextConfig = {
   // These file names are not content-hashed: if one is ever replaced, give the new file a new name.
   async headers() {
     const immutable = [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }];
-    return ["brand", "hero", "img", "categories", "payment", "intro"].map((d) => ({ source: `/${d}/:path*`, headers: immutable }));
+    return ["brand", "hero", "img", "categories", "payment", "intro", "vendor"].map((d) => ({ source: `/${d}/:path*`, headers: immutable }));
   },
 };
 

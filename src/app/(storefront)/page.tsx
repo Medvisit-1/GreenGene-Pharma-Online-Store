@@ -109,6 +109,10 @@ export default async function HomePage() {
   // fetch the one that matches the visitor's colour scheme straight away.
   preload("/hero/hero-forest-dark.svg", { as: "image", media: "(prefers-color-scheme: dark)", fetchPriority: "high" });
   preload("/hero/hero-forest-light.svg", { as: "image", media: "(prefers-color-scheme: light)", fetchPriority: "high" });
+  // The 3D bottle needs three.js and the first label image: ask for both in the very first HTML
+  // so they are already downloaded when the bottle starts.
+  preload("/vendor/three-0.160.0.min.js", { as: "script", fetchPriority: "high" });
+  preload("/hero/estrogene-label-1024.webp", { as: "image", fetchPriority: "high" });
 
   return (
     <div className="gh">

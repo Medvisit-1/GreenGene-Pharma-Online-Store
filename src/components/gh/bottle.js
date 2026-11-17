@@ -5,7 +5,7 @@
    wrapped once around the body: front panel facing the camera, Supplements Facts coming round as it turns.
    No label text is typed or generated here. */
 
-export const THREE_URL = "https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js";
+export const THREE_URL = "/vendor/three-0.160.0.min.js"; /* self-hosted copy of three r160 (same file as cdnjs): no extra connection to a third-party host */
 const LABEL_FRONT_U = 0.51; /* centre of the front panel on the flat label (0..1, left to right) */
 
 /**
@@ -51,7 +51,7 @@ export function startHero(o) {
   const loadThree = () => new Promise((res, rej) => {
     if (window.THREE) return res(window.THREE);
     let s = doc.querySelector('script[data-gh-three]');
-    if (!s) { s = doc.createElement("script"); s.src = THREE_URL; s.async = true; s.crossOrigin = "anonymous"; s.dataset.ghThree = "1"; doc.head.appendChild(s); }
+    if (!s) { s = doc.createElement("script"); s.src = THREE_URL; s.async = true; s.dataset.ghThree = "1"; doc.head.appendChild(s); }
     s.addEventListener("load", () => (window.THREE ? res(window.THREE) : rej()));
     s.addEventListener("error", rej);
   });

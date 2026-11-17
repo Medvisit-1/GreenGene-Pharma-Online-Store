@@ -23,11 +23,10 @@ export function HeroMotion() {
         labelSrc: { fast: LABEL_FAST, big: "/hero/estrogene-label-4096.webp", small: "/hero/estrogene-label-2048.webp" },
       });
     };
-    const w = window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number; cancelIdleCallback?: (id: number) => void };
-    const id = w.requestIdleCallback ? w.requestIdleCallback(go, { timeout: 2500 }) : window.setTimeout(go, 1200);
+    /* Start right after the first paint (no idle wait): the files are already preloaded from <head>. */
+    let off = false; const id = window.requestAnimationFrame(() => window.requestAnimationFrame(() => { if (!off) go(); }));
     return () => {
-      if (w.cancelIdleCallback) w.cancelIdleCallback(id);
-      else clearTimeout(id);
+      off = true; window.cancelAnimationFrame(id);
       stop?.();
     };
   }, []);
