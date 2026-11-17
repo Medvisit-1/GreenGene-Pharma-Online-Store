@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/utils";
 import { updateSettings, getSettings } from "@/lib/settings";
+import { importantNote } from "@/lib/label-statements";
 import { saveProductNoteOverride, clearProductNoteOverride } from "@/lib/product-notes";
 import { parseNewReleaseCards } from "@/lib/new-release";
 import { THEME_PRESETS, resolveAdminTheme, resolveTheme } from "@/lib/themes";
@@ -641,10 +642,11 @@ export async function saveProductNote(formData: FormData) {
   if (formData.get("reset") === "on") {
     await clearProductNoteOverride(product.id);
   } else {
+    const { productDisclaimer } = await getSettings();
     await saveProductNoteOverride(product.id, {
       statement: String(formData.get("noteStatement") ?? ""),
       warning: String(formData.get("noteWarning") ?? ""),
-    });
+    }, importantNote(product.slug, productDisclaimer));
   }
   revalidatePath(`/products/${product.slug}`);
   revalidatePath(`/admin/products/${product.id}`);

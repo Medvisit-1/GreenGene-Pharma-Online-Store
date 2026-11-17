@@ -31,9 +31,17 @@ export async function getProductNoteOverride(productId: string): Promise<LabelSt
   }
 }
 
-export async function saveProductNoteOverride(productId: string, note: { statement: string; warning: string }) {
-  const statement = cleanNoteText(note.statement);
-  const warning = cleanNoteText(note.warning);
+export async function saveProductNoteOverride(
+  productId: string,
+  note: { statement: string; warning: string },
+  defaults?: LabelStatement | null,
+) {
+  /* A field left identical to the default is not stored, so later changes to the default still show. */
+  const same = (a: string, b?: string) => a === cleanNoteText(b ?? "");
+  let statement = cleanNoteText(note.statement);
+  let warning = cleanNoteText(note.warning);
+  if (defaults && same(statement, defaults.statement)) statement = "";
+  if (defaults && same(warning, defaults.warning)) warning = "";
   if (!statement && !warning) return clearProductNoteOverride(productId);
   const value = JSON.stringify({ statement, warning });
   await prisma.setting.upsert({
