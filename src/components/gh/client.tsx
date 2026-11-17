@@ -3,28 +3,34 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
-import ReactDOM from "react-dom";
-import { startHero, startDrift, startAmbient, THREE_URL } from "./bottle.js";
+import { startHero, startDrift, startAmbient } from "./bottle.js";
 
 const LABEL_FAST = "/hero/estrogene-label-1024.webp";
 
 /* ---------- hero: rotating Estrogene bottle + leaf parallax ---------- */
 export function HeroMotion() {
-  /* emitted into <head> during server render: Three.js and the small first-pass label start downloading
-     with the HTML, so the 3D bottle can draw its first frame as soon as the page is interactive */
-  ReactDOM.preconnect("https://cdnjs.cloudflare.com", { crossOrigin: "anonymous" });
-  ReactDOM.preload(THREE_URL, { as: "script", crossOrigin: "anonymous", fetchPriority: "high" });
-  ReactDOM.preload(LABEL_FAST, { as: "image", type: "image/webp", fetchPriority: "high" });
+  /* Phones keep the real pack shot (no Three.js download, no WebGL on the main thread).
+     Desktops get the 3D bottle once the page is idle, so it never competes with the first paint. */
   useEffect(() => {
     const hero = document.getElementById("gh-hero"), host = document.getElementById("bottleHost");
     const still = document.getElementById("bottleStill") as HTMLImageElement | null;
-    if (!hero) return;
+    if (!hero || !host || !still) return;
+    if (matchMedia("(max-width: 900px), (pointer: coarse)").matches) return;
     const leaves = Array.from(hero.querySelectorAll<HTMLElement>(".leaf"));
-    if (!host || !still) return;
-    return startHero({
-      hero, host, still, leaves,
-      labelSrc: { fast: LABEL_FAST, big: "/hero/estrogene-label-4096.webp", small: "/hero/estrogene-label-2048.webp" },
-    });
+    let stop: (() => void) | undefined;
+    const go = () => {
+      stop = startHero({
+        hero, host, still, leaves,
+        labelSrc: { fast: LABEL_FAST, big: "/hero/estrogene-label-4096.webp", small: "/hero/estrogene-label-2048.webp" },
+      });
+    };
+    const w = window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number; cancelIdleCallback?: (id: number) => void };
+    const id = w.requestIdleCallback ? w.requestIdleCallback(go, { timeout: 2500 }) : window.setTimeout(go, 1200);
+    return () => {
+      if (w.cancelIdleCallback) w.cancelIdleCallback(id);
+      else clearTimeout(id);
+      stop?.();
+    };
   }, []);
   return null;
 }

@@ -8,7 +8,6 @@ import { directions, firstImage, greeting, lastPaidOrder, nextRefill, productTit
 import { formatPrice, reorderHref } from "@/lib/utils";
 import { getRatingMap } from "@/lib/reviews";
 import { parseNewReleaseCards } from "@/lib/new-release";
-import { EvergreenFx } from "@/components/evergreen/fx";
 import { ProductImg } from "@/components/night/pic";
 import { WishlistButton } from "@/components/wishlist-button";
 import { ComboDrift, Greeting, HeroMotion, Quiz, Routine, ScrollAmbient, type QuizData, type QuizProduct } from "@/components/gh/client";
@@ -106,9 +105,7 @@ export default async function HomePage() {
   const newCards = s.newReleaseEnabled === "1" ? parseNewReleaseCards(s.newReleaseCards).slice(0, 3) : [];
 
   return (
-    <div className="gh pre">
-      <noscript><style>{".gh .rv{opacity:1;transform:none}.gx-introbg,.gx-introword,.gx-skip{display:none}"}</style></noscript>
-      <EvergreenFx rootSelector=".gh" ambient={false} />
+    <div className="gh">
       <HeroMotion />
       <ComboDrift />
       <ScrollAmbient />
@@ -197,7 +194,6 @@ export default async function HomePage() {
                       {img && <ProductImg src={img} alt={t.name} sizes="(max-width: 640px) 45vw, 300px" />}
                     </Link>
                     <div className="card-body">
-                      <p className="brand">{p.brand || "GreenGene Pharma"}</p>
                       <h3><Link href={href(p)}>{t.name}</Link></h3>
                       {(t.tagline || p.shortDescription) && <p className="sub">{t.tagline || p.shortDescription}</p>}
                       {r?.count ? (

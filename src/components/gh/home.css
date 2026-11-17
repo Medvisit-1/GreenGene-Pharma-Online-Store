@@ -61,18 +61,9 @@ html[data-mode="light"] .gh {
 .gh :is(.btn-ghost,.btn-outline):hover{border-color:var(--accent)}
 .gh .btn-row{display:flex;flex-wrap:wrap;gap:14px}
 
-/* scroll rise (wired by the intro/reveal script: .rv -> .rv.in) */
-.gh .rv{opacity:0;transform:translateY(26px);transition:opacity 1.2s ease,transform 1.2s cubic-bezier(.2,.7,.2,1),translate .9s cubic-bezier(.2,.7,.2,1),box-shadow .9s}
-.gh .rv.in{opacity:1;transform:none}
-
-/* intro overlay (the store's own particle logo intro) */
-.gx-introbg{position:fixed;inset:0;z-index:59;background:#0A0E09;pointer-events:none}
-.gx-fx{position:fixed;inset:0;z-index:60;pointer-events:none}
-.gx-introword{position:fixed;left:0;right:0;top:calc(50% + min(20vw,160px));z-index:61;padding:0 16px;text-align:center;font:italic 400 clamp(20px,2.6vw,28px) var(--gh-serif),Georgia,serif;color:#C9D2C1;opacity:0;pointer-events:none}
-.gx-skip{position:fixed;right:max(24px,env(safe-area-inset-right,0px));bottom:calc(24px + env(safe-area-inset-bottom,0px));z-index:62;min-height:44px;padding:0 22px;border-radius:999px;border:1px solid rgba(244,246,240,.35);background:rgba(10,14,9,.4);color:#F4F6F0;font:600 11px var(--gh-sans),sans-serif;letter-spacing:.24em;text-transform:uppercase;cursor:pointer}
-.gx-skip:hover{border-color:#B8E356}
-.gg-theme:has(.gh.pre) :is(.gg-header,.gg-announce){opacity:0}
-.gg-theme:has(.gh) :is(.gg-header,.gg-announce){transition:opacity 1.6s ease}
+/* The intro overlay and scroll fade-ins were removed (2026-11): content is visible at first paint.
+   .rv stays as a harmless hook; nothing waits on a script to show it. */
+.gh .rv{opacity:1;transform:none}
 
 /* 1 hero */
 .gh .hero{position:relative;min-height:min(100vh,980px);display:flex;align-items:center;padding:150px 0 90px;overflow:hidden;isolation:isolate}
@@ -167,7 +158,6 @@ html[data-mode="light"] .gh {
 .gh .card .heart svg{width:18px;height:18px;margin:0;flex:none}
 .gh .card .heart[aria-pressed="true"]{color:#8A3B1E !important}
 .gh .card-body{padding:18px 10px 0;display:flex;flex-direction:column;gap:8px;flex:1}
-.gh .brand{font:600 10px/1 var(--sans);letter-spacing:.24em;text-transform:uppercase;color:var(--accent)}
 .gh .card h3{font-size:clamp(19px,1.7vw,24px);line-height:1.15}
 .gh .card .sub{font-size:13px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .gh .stars{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
