@@ -57,13 +57,14 @@ function useMode() {
   return { mode, choice };
 }
 
-/** Desktop header switch: flips light/dark and remembers it (the "System" option lives in the phone menu). */
+/** Desktop header switch: cycles System, Light, Dark (System is the default and follows the device). */
 export function ModeToggle({ className }: { className?: string }) {
-  const { mode } = useMode();
-  const next = mode === "dark" ? "light" : "dark";
+  const { choice } = useMode();
+  const next: ModeChoice = choice === "system" ? "light" : choice === "light" ? "dark" : "system";
+  const label = choice === "system" ? "Theme: system" : choice === "light" ? "Theme: light" : "Theme: dark";
   return (
-    <button type="button" onClick={() => setModeChoice(next)} className={className} aria-label={mode === "dark" ? "Switch to light mode" : "Switch to dark mode"} title={mode === "dark" ? "Light mode" : "Dark mode"}>
-      {mode === "dark" ? <Sun className="h-5 w-5" aria-hidden="true" /> : <Moon className="h-5 w-5" aria-hidden="true" />}
+    <button type="button" onClick={() => setModeChoice(next)} className={className} aria-label={label + ". Click to change"} title={label}>
+      {choice === "system" ? <Monitor className="h-5 w-5" aria-hidden="true" /> : choice === "light" ? <Sun className="h-5 w-5" aria-hidden="true" /> : <Moon className="h-5 w-5" aria-hidden="true" />}
     </button>
   );
 }
