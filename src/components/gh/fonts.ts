@@ -5,10 +5,9 @@ import localFont from "next/font/local";
 export const ghSerif = localFont({
   variable: "--gh-serif",
   display: "swap",
-  src: [
-    { path: "./fonts/playfair.woff2", weight: "400 700", style: "normal" },
-    { path: "./fonts/playfair-italic.woff2", weight: "400 700", style: "italic" },
-  ],
+  // One file only (site budget: two font files in total). Italic key words use the browser's
+  // slanted version of this face; ./fonts/playfair-italic.woff2 is kept on disk but no longer loaded.
+  src: [{ path: "./fonts/playfair.woff2", weight: "400 700", style: "normal" }],
   fallback: ["Georgia", "serif"],
 });
 

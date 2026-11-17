@@ -1,19 +1,8 @@
-import type { Metadata } from "next";
-import { Instrument_Sans, Syne } from "next/font/google";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
-// Body / UI — matches the GreenGene Shopify store
-const instrumentSans = Instrument_Sans({
-  variable: "--font-body",
-  subsets: ["latin"],
-});
-
-// Headings / display — matches the GreenGene Shopify store
-const syne = Syne({
-  variable: "--font-heading",
-  subsets: ["latin"],
-  weight: ["500", "600", "700", "800"],
-});
+// Fonts: the storefront loads its two self-hosted files (src/components/gh/fonts.ts) and the
+// admin panel loads its own, so the root layout no longer pulls extra Google font files onto every page.
 
 export const metadata: Metadata = {
   title: {
@@ -38,16 +27,21 @@ export const metadata: Metadata = {
   },
 };
 
+// One theme-color meta; the storefront's inline mode script updates it to match light/dark.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#F4F6F0",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${instrumentSans.variable} ${syne.variable} h-full antialiased`}
-    >
+    <html lang="en" className="h-full antialiased" suppressHydrationWarning>
       <body className="min-h-full">{children}</body>
     </html>
   );

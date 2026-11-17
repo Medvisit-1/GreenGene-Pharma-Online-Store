@@ -43,6 +43,9 @@
   --accent: #8cc63f;   /* lime green (logo "Pharma") */
   --teal: #1b8c8f;     /* teal (logo cross) */
   --ring: var(--brand-500);
+  /* system fallbacks; the storefront and admin layouts point these at their own fonts */
+  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-heading: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
 @theme inline {
