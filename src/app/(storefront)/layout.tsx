@@ -19,6 +19,7 @@ import "./garden.css";
 import "@/components/night/dark.css";
 import "@/components/night/polish.css";
 import "@/components/gh/store.css";
+import "@/components/gh/mobile.css";
 import { MODE_SCRIPT } from "@/components/night/mode";
 
 // Storefront reads live settings from the DB, so render at request time

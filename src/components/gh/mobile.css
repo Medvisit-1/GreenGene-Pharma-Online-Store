@@ -1,0 +1,133 @@
+/* ==========================================================================
+   Mobile polish (2026-11): slim top bar, one bottom tab bar, footer sign-up,
+   product card type, sticky buy bar, tap targets. Loaded LAST by the storefront
+   layout, so it refines gh/store.css and garden.css without editing them.
+   Desktop (1024px and up) keeps its existing header; only shared fixes apply there.
+   ========================================================================== */
+
+:root { --gg-nav-h: 64px; --gg-nav-gap: 10px; --gg-nav-space: calc(var(--gg-nav-h) + var(--gg-nav-gap) * 2 + env(safe-area-inset-bottom, 0px)); }
+
+.gg-theme { -webkit-tap-highlight-color: transparent; }
+.gg-theme :is(a, button, input, select, textarea, summary, label) { touch-action: manipulation; }
+
+/* desktop-only header icons (theme switch, account, wishlist move to the tab bar / More sheet) */
+@media (max-width: 1023px) { .gg-theme .gg-d-only { display: none !important; } }
+
+/* ---------- product names: Inter bold, the focus of every card ---------- */
+.gg-theme .gg-pcard-body h3.gg-pcard-name,
+.gh .card h3 {
+  font-family: var(--font-g-body) !important; font-weight: 700; font-style: normal;
+  font-size: 17px; line-height: 1.25; letter-spacing: -.012em; text-wrap: balance;
+  color: var(--g-ink) !important;
+}
+.gg-theme .gg-pcard-body h3.gg-pcard-name { min-height: 2.5em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.gh .card h3 { font-size: clamp(17px, 1.5vw, 20px); }
+.gh .card h3 a { display: block; }
+.gg-theme .gg-pdp-title { font-family: var(--font-g-body) !important; font-weight: 700; letter-spacing: -.02em; line-height: 1.12; font-size: clamp(26px, 3.2vw, 38px); }
+.gg-theme .gg-pcard-rating { font-variant-numeric: tabular-nums; }
+
+/* gallery: bottles shown whole on a calm square stage; thumbnails never crop */
+.gg-theme .gg-thumb { background: var(--g-card); }
+html[data-mode="dark"] .gg-theme .gg-thumb { background: #0E140C; }
+
+/* ---------- footer newsletter sign-up ---------- */
+.gg-theme .gg-footer form.gg-join-form { display: block; background: none; border: 0; padding: 0; margin: 18px 0 8px; border-radius: 0; }
+.gg-theme .gg-footer .gg-join-label { display: block; margin: 0 0 8px; font: 600 13px/1.3 var(--font-g-body); letter-spacing: .02em; color: #F4F6F0; }
+.gg-theme .gg-footer .gg-join-row { display: flex; gap: 6px; padding: 6px; border-radius: 999px; background: rgba(58,22,8,.5); border: 1px solid rgba(244,246,240,.32); transition: border-color .2s, box-shadow .2s; }
+.gg-theme .gg-footer .gg-join-row:focus-within { border-color: #FFD58A; box-shadow: 0 0 0 3px rgba(255,213,138,.45); }
+.gg-theme .gg-footer .gg-join-form input { flex: 1; min-width: 0; height: 48px; font: 400 16px var(--font-g-body); padding: 0 18px; border-radius: 999px; }
+.gg-theme .gg-footer .gg-join-form input::placeholder { color: #E3C9B6 !important; opacity: 1; }
+.gg-theme .gg-footer .gg-join-form input:focus-visible { outline: none; }
+.gg-theme .gg-footer .gg-join-form button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-width: 120px; height: 48px; font: 700 16px var(--font-g-body); cursor: pointer; transition: background-color .2s, transform .15s; }
+.gg-theme .gg-footer .gg-join-form button:hover { background: #F0B455; }
+.gg-theme .gg-footer .gg-join-form button:active { transform: scale(.98); }
+.gg-theme .gg-footer .gg-join-form button:focus-visible { outline: 3px solid #FFD58A; outline-offset: 2px; }
+.gg-theme .gg-footer .gg-join-form button:disabled { opacity: .75; cursor: progress; }
+@media (max-width: 640px) {
+  /* stacked: full-width field, full-width button, both 48px */
+  .gg-theme .gg-footer .gg-join-row { flex-direction: column; gap: 10px; padding: 0; background: none; border: 0; border-radius: 0; box-shadow: none !important; }
+  .gg-theme .gg-footer .gg-join-form input { width: 100%; background: rgba(58,22,8,.5) !important; border: 1px solid rgba(244,246,240,.4); }
+  .gg-theme .gg-footer .gg-join-form input:focus-visible { border-color: #FFD58A; box-shadow: 0 0 0 3px rgba(255,213,138,.45) !important; }
+  .gg-theme .gg-footer .gg-join-form button { width: 100%; padding: 0 18px; }
+}
+
+/* footer links: comfortable tap rows */
+.gg-theme .gg-footer .cols ul { gap: 0; }
+.gg-theme .gg-footer .cols ul a { display: inline-flex; align-items: center; min-height: 44px; }
+.gg-theme .gg-footer :is(.fine, .legal) a { display: inline-block; padding: 6px 0; }
+
+/* ---------- phones and tablets ---------- */
+@media (max-width: 1023px) {
+  /* slim top bar: logo + search + cart, no nav panel */
+  .gg-theme .gg-header { top: calc(8px + env(safe-area-inset-top, 0px)); margin: 8px 0 4px; padding: 0 12px; }
+  .gg-theme .gg-header-row { gap: 8px; padding: 4px 4px 4px 14px; min-height: 52px; }
+  .gg-theme .gg-header .gg-logo { width: 78px !important; height: 38px !important; }
+  .gg-theme .gg-hicons { gap: 0; }
+  .gg-theme .gg-announce { font-size: 11px; padding: 7px 12px; letter-spacing: .04em; }
+
+  /* room for the tab bar so it never covers the end of the page */
+  .gg-theme { padding-bottom: var(--gg-nav-space) !important; }
+
+  /* the one bottom tab bar */
+  .gg-theme .gg-bottomnav {
+    left: max(var(--gg-nav-gap), env(safe-area-inset-left, 0px)); right: max(var(--gg-nav-gap), env(safe-area-inset-right, 0px));
+    bottom: calc(var(--gg-nav-gap) + env(safe-area-inset-bottom, 0px));
+    height: var(--gg-nav-h); padding: 6px; gap: 2px; z-index: 40;
+    justify-content: stretch; align-items: stretch;
+    font: 600 11px/1 var(--font-g-body); letter-spacing: .01em;
+  }
+  .gg-theme .gg-bottomnav > :is(a, button) {
+    flex: 1 1 0; min-width: 0; min-height: 48px; justify-content: center; gap: 4px;
+    border-radius: 999px; color: #C3CCBC; transition: color .2s, background-color .2s;
+  }
+  .gg-theme .gg-bottomnav > :is(a, button):hover { color: #F4F6F0; }
+  .gg-theme .gg-bottomnav > :is(a, button).on { color: var(--gh-lime); background: rgba(184,227,86,.12); }
+  .gg-theme .gg-bottomnav > :is(a, button):focus-visible { outline: 2px solid var(--gh-lime); outline-offset: -2px; }
+  .gg-theme .gg-bottomnav > :is(a, button):active { transform: scale(.96); }
+  .gg-theme .gg-bottomnav .gg-dot { position: absolute; top: 4px; right: calc(50% - 22px); }
+
+  /* "More" sheet, above the tab bar */
+  .gg-sheet-scrim { position: fixed; inset: 0; z-index: 38; border: 0; padding: 0; background: rgba(6,9,5,.45); -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px); animation: gg-fade .18s ease both; }
+  .gg-sheet {
+    position: fixed; z-index: 39; left: max(var(--gg-nav-gap), env(safe-area-inset-left, 0px)); right: max(var(--gg-nav-gap), env(safe-area-inset-right, 0px));
+    bottom: calc(var(--gg-nav-h) + var(--gg-nav-gap) * 2 + env(safe-area-inset-bottom, 0px));
+    max-height: calc(100dvh - var(--gg-nav-space) - 80px); overflow: auto; overscroll-behavior: contain;
+    padding: 10px; border-radius: 26px; background: rgba(13,19,11,.96); color: #F4F6F0;
+    border: 1px solid rgba(244,246,240,.13); box-shadow: 0 20px 50px rgba(0,0,0,.35);
+    animation: gg-sheet-in .22s cubic-bezier(.2,.8,.2,1) both; font-family: var(--font-g-body);
+  }
+  .gg-sheet-links { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .gg-sheet-links a { display: flex; align-items: center; justify-content: space-between; min-height: 52px; padding: 0 16px; border-radius: 16px; background: rgba(244,246,240,.06); font: 600 15px var(--font-g-body); color: #F4F6F0; }
+  .gg-sheet-links a:hover { background: rgba(244,246,240,.1); }
+  .gg-sheet-links a:focus-visible { outline: 2px solid var(--gh-lime); outline-offset: 2px; }
+  .gg-sheet-count { min-width: 22px; height: 22px; padding: 0 6px; border-radius: 99px; display: inline-grid; place-items: center; background: var(--gh-lime); color: #0A0E09; font-size: 12px; }
+  .gg-sheet-theme { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 10px; padding: 8px 6px 2px 10px; font: 600 13px var(--font-g-body); color: #C3CCBC; }
+
+  /* sticky buy bar on the product page, above the tab bar */
+  .gg-theme .gg-buybar {
+    position: sticky; z-index: 20; bottom: calc(var(--gg-nav-h) + var(--gg-nav-gap) * 2 + env(safe-area-inset-bottom, 0px));
+    margin: 0 -10px; padding: 10px; border-radius: 22px;
+    background: color-mix(in srgb, var(--g-bg) 88%, transparent); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  }
+
+  /* tap targets */
+  .gg-theme main nav[class*="text-xs"] a { display: inline-block; padding: 12px 0; }
+  .gg-theme .gg-pcard .wishlist-btn, .gg-theme .gg-pcard [aria-label*="ishlist"] { min-width: 44px; min-height: 44px; }
+
+  /* sonner toasts sit above the tab bar */
+  [data-sonner-toaster][data-y-position="bottom"] { bottom: calc(var(--gg-nav-space) + 8px) !important; }
+}
+
+/* System / Light / Dark segmented control */
+.gg-modechooser { display: inline-flex; padding: 3px; gap: 2px; border-radius: 999px; background: rgba(244,246,240,.08); border: 1px solid rgba(244,246,240,.14); }
+.gg-modechooser button { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 12px; border-radius: 999px; border: 0; background: none; color: #C3CCBC; font: 600 13px var(--font-g-body); cursor: pointer; transition: background-color .2s, color .2s; }
+.gg-modechooser button:hover { color: #F4F6F0; }
+.gg-modechooser button[aria-checked="true"] { background: var(--gh-lime, #B8E356); color: #0A0E09; }
+.gg-modechooser button:focus-visible { outline: 2px solid var(--gh-lime, #B8E356); outline-offset: 2px; }
+
+@keyframes gg-fade { from { opacity: 0; } }
+@keyframes gg-sheet-in { from { opacity: 0; transform: translateY(12px); } }
+@media (prefers-reduced-motion: reduce) { .gg-sheet, .gg-sheet-scrim { animation: none; } }
+
+/* light theme: the lime accent is too pale for small text on cream, use the deeper green (WCAG AA) */
+html[data-mode="light"] .gg-theme .gg-pcard-body .text-brand-700 { color: #2F5A0E !important; }
