@@ -22,9 +22,9 @@ html[data-mode="dark"] .gg-logo .l-shine::before { background: linear-gradient(1
 
 @media (prefers-reduced-motion: no-preference) {
   /* plays on its own, forever: the mark grows in once, then breathes slowly; a light sweeps the lettering every ~7s */
-  .gg-logo.is-live .l-mark { animation: gg-logo-grow .9s cubic-bezier(.2,.8,.2,1) both, gg-logo-breathe 5.5s ease-in-out .9s infinite; }
-  .gg-logo.is-live .l-shine::before { animation: gg-logo-shine 7s cubic-bezier(.4,0,.2,1) 1.5s infinite; }
+  .gg-logo.is-live .l-mark { animation: gg-logo-grow .9s cubic-bezier(.2,.8,.2,1) both, gg-logo-breathe 3.6s ease-in-out .9s infinite; }
+  .gg-logo.is-live .l-shine::before { animation: gg-logo-shine 4.5s cubic-bezier(.4,0,.2,1) 1.2s infinite; }
 }
 @keyframes gg-logo-grow { from { opacity: 0; transform: translateY(6%) scale(.8) rotate(-8deg); } to { opacity: 1; transform: none; } }
-@keyframes gg-logo-breathe { 0%, 100% { transform: none; } 50% { transform: scale(1.055) rotate(1.8deg); } }
+@keyframes gg-logo-breathe { 0%, 100% { transform: none; } 50% { transform: translateY(-5%) scale(1.14) rotate(4deg); } }
 @keyframes gg-logo-shine { 0% { opacity: 1; transform: translateX(-120%); } 30%, 100% { opacity: 1; transform: translateX(260%); } }

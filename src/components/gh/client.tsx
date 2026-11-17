@@ -79,7 +79,7 @@ export function Greeting({ greeting, accountName, signedIn }: { greeting: string
           <span className="badge">Member</span>
         </>
       ) : (
-        <Link href="/account" className="greet-edit">Create an account for your own personalized greeting</Link>
+        <span>Welcome to GreenGene</span>
       )}
     </p>
   );
