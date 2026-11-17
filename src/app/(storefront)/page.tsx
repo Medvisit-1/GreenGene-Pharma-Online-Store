@@ -132,7 +132,7 @@ export default async function HomePage() {
             <p className="hero-intro">Premium supplements, made locally in South Africa. Have a look around, we are glad you are here.</p>
             <div className="btn-row">
               <Link className="btn btn-primary" href="/products">Shop all products</Link>
-              <Link className="btn btn-ghost" href="/account?tab=rewards">Join rewards</Link>
+              <Link className="btn btn-ghost" href="/account?tab=rewards">{customer ? "Member · View rewards" : "Join rewards"}</Link>
             </div>
           </div>
 
