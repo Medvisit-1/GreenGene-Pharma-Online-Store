@@ -63,7 +63,7 @@ html[data-mode="dark"] .gg-theme .gg-thumb { background: #0E140C; }
   .gg-theme .gg-header-row { gap: 8px; padding: 4px 4px 4px 14px; min-height: 52px; }
   .gg-theme .gg-header .gg-logo { width: 78px !important; height: 38px !important; }
   .gg-theme .gg-hicons { gap: 0; }
-  .gg-theme .gg-announce { font-size: 11px; padding: 7px 12px; letter-spacing: .04em; }
+  .gg-theme .gg-announce { display: none !important; }
 
   /* room for the tab bar so it never covers the end of the page */
   .gg-theme { padding-bottom: var(--gg-nav-space) !important; }
