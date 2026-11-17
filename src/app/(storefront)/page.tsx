@@ -10,7 +10,7 @@ import { getRatingMap } from "@/lib/reviews";
 import { parseNewReleaseCards } from "@/lib/new-release";
 import { ProductImg } from "@/components/night/pic";
 import { WishlistButton } from "@/components/wishlist-button";
-import { ComboDrift, Greeting, HeroMotion, Quiz, Routine, ScrollAmbient, type QuizData, type QuizProduct } from "@/components/gh/client";
+import { ComboDrift, Greeting, HeroMotion, Quiz, Routine, ScrollAmbient, ScrollReveal, type QuizData, type QuizProduct } from "@/components/gh/client";
 import "@/components/gh/home.css";
 import { preload } from "react-dom";
 
@@ -115,6 +115,7 @@ export default async function HomePage() {
       <HeroMotion />
       <ComboDrift />
       <ScrollAmbient />
+      <ScrollReveal />
 
       {/* 1. HERO */}
       <section className="hero" id="gh-hero">

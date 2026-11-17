@@ -9,13 +9,12 @@ const LABEL_FAST = "/hero/estrogene-label-1024.webp";
 
 /* ---------- hero: rotating Estrogene bottle + leaf parallax ---------- */
 export function HeroMotion() {
-  /* Phones keep the real pack shot (no Three.js download, no WebGL on the main thread).
-     Desktops get the 3D bottle once the page is idle, so it never competes with the first paint. */
+  /* The real pack shot shows first; the 3D bottle mounts once the page is idle (all devices, phones included).
+     bottle.js lowers pixel ratio and frame rate on weak devices and pauses off-screen or in a hidden tab. */
   useEffect(() => {
     const hero = document.getElementById("gh-hero"), host = document.getElementById("bottleHost");
     const still = document.getElementById("bottleStill") as HTMLImageElement | null;
     if (!hero || !host || !still) return;
-    if (matchMedia("(max-width: 900px), (pointer: coarse)").matches) return;
     const leaves = Array.from(hero.querySelectorAll<HTMLElement>(".leaf"));
     let stop: (() => void) | undefined;
     const go = () => {
@@ -31,6 +30,26 @@ export function HeroMotion() {
       else clearTimeout(id);
       stop?.();
     };
+  }, []);
+  return null;
+}
+
+/* ---------- scroll rise: blocks slide/fade in as they enter view (phones and desktop) ---------- */
+export function ScrollReveal() {
+  useEffect(() => {
+    const root = document.querySelector<HTMLElement>(".gh");
+    if (!root || matchMedia("(prefers-reduced-motion: reduce)").matches || !("IntersectionObserver" in window)) return;
+    const els = Array.from(root.querySelectorAll<HTMLElement>(".rv"));
+    const io = new IntersectionObserver(
+      (es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }),
+      { threshold: 0.12, rootMargin: "0px 0px -6% 0px" },
+    );
+    /* blocks already on screen stay put; the rest wait below the fold */
+    els.forEach((el, i) => { if (el.getBoundingClientRect().top < innerHeight * 0.92) el.classList.add("in"); else { el.style.transitionDelay = (i % 3) * 70 + "ms"; io.observe(el); } });
+    root.classList.add("rv-on");
+    /* safety net: never leave anything hidden */
+    const t = window.setTimeout(() => els.forEach((el) => { if (!el.classList.contains("in") && el.getBoundingClientRect().top < innerHeight) el.classList.add("in"); }), 4000);
+    return () => { io.disconnect(); clearTimeout(t); root.classList.remove("rv-on"); };
   }, []);
   return null;
 }

@@ -9,8 +9,8 @@ const W = 480;
 const H = 235;
 
 /**
- * Live logo: the helix mark grows in once and then breathes gently a few times, and a soft light
- * sweeps across the lettering. Transform/opacity only (GPU), fixed box (no layout shift), and
+ * Live logo: the helix mark grows in once and then breathes slowly on a loop, and a soft light
+ * sweeps across the lettering every few seconds. Transform/opacity only (GPU), fixed box (no layout shift), and
  * fully still under prefers-reduced-motion. Lettering turns light on dark grounds.
  */
 export function Logo({

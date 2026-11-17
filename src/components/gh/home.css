@@ -61,9 +61,12 @@ html[data-mode="light"] .gh {
 .gh :is(.btn-ghost,.btn-outline):hover{border-color:var(--accent)}
 .gh .btn-row{display:flex;flex-wrap:wrap;gap:14px}
 
-/* The intro overlay and scroll fade-ins were removed (2026-11): content is visible at first paint.
-   .rv stays as a harmless hook; nothing waits on a script to show it. */
+/* Scroll rise: content is visible at rest. ScrollReveal (client.tsx) adds .rv-on to .gh once JS runs
+   (and not under prefers-reduced-motion), then .rv.in as each block enters view. transform/opacity only. */
 .gh .rv{opacity:1;transform:none}
+.gh.rv-on .rv{transition:opacity 1.2s ease,transform 1.2s cubic-bezier(.2,.7,.2,1),translate .9s cubic-bezier(.2,.7,.2,1),box-shadow .9s}
+.gh.rv-on .rv:not(.in){opacity:0;transform:translateY(26px)}
+.gh.rv-on .rv.in{opacity:1;transform:none}
 
 /* 1 hero */
 .gh .hero{position:relative;min-height:min(100vh,980px);display:flex;align-items:center;padding:150px 0 90px;overflow:hidden;isolation:isolate}

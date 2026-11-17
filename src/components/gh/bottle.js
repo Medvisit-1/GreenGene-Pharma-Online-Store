@@ -22,7 +22,8 @@ export function startHero(o) {
   let renderBottle = null, heroOn = true, pageOn = true, lastT = 0, raf = 0, dead = false;
   const offs = [];
   const on = (t, ev, fn, opt) => { t.addEventListener(ev, fn, opt); offs.push(() => t.removeEventListener(ev, fn, opt)); };
-  const FRAME = small ? 32 : 0; /* phones render at about 30 fps to stay light */
+  const lowEnd = (navigator.hardwareConcurrency || 8) <= 4 || (navigator.deviceMemory || 8) <= 4; /* weak phones: lighter render */
+  const FRAME = small ? (lowEnd ? 40 : 32) : 0; /* phones render at about 30 fps to stay light */
 
   function loop(t) {
     raf = requestAnimationFrame(loop);
@@ -135,7 +136,7 @@ export function startHero(o) {
     rough.wrapS = rough.wrapT = T.RepeatWrapping; rough.repeat.set(2, 2);
 
     const lathe = (pts, seg) => new T.LatheGeometry(pts.map((p) => new T.Vector2(p[0], p[1])), seg);
-    const SEG = small ? 72 : 128;
+    const SEG = lowEnd ? 48 : small ? 72 : 128;
     let i, a;
     const bp = [[0, 0.07], [0.5, 0.06], [0.8, 0.02], [0.86, 0], [0.93, 0.012], [0.975, 0.045], [0.995, 0.09], [1, 0.15], [1, 0.26], [1, 1.4], [1, 2.56], [1, 2.61]];
     for (i = 1; i <= 8; i++) { a = i / 8 * 1.4; bp.push([0.8 + 0.2 * Math.cos(a), 2.61 + 0.335 * Math.sin(a)]); }
