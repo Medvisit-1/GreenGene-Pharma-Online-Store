@@ -75,11 +75,11 @@ export function Greeting({ greeting, accountName, signedIn }: { greeting: string
     <p className="greet">
       {signedIn ? (
         <>
-          <span>{greeting}{accountName ? `, ${accountName}` : ""}</span>
+          <span className="greet-script">{greeting}{accountName ? `, ${accountName}` : ""}</span>
           <span className="badge">Member</span>
         </>
       ) : (
-        <span>Welcome to GreenGene</span>
+        <span className="greet-script">Welcome to GreenGene</span>
       )}
     </p>
   );

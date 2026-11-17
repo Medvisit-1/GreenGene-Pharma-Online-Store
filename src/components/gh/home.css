@@ -77,6 +77,15 @@ html[data-mode="light"] .gh {
 .gh .greet{font:500 13px var(--sans);color:var(--body);display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:28px;min-height:26px}
 .gh .badge{font:700 10px/1 var(--sans);letter-spacing:.2em;text-transform:uppercase;color:#0A0E09;background:var(--lime);padding:6px 10px;border-radius:999px}
 .gh .greet-edit{font-size:13px;padding:10px 0;color:var(--muted);text-decoration:underline;text-underline-offset:3px}
+
+/* Handwritten greeting: a cursive face (self-hosted, /fonts/great-vibes.woff2) that is written out slowly left to right. */
+@font-face{font-family:"Great Vibes";src:url(/fonts/great-vibes.woff2) format("woff2");font-weight:400;font-style:normal;font-display:swap}
+.gh .greet{min-height:52px;margin-bottom:20px}
+.gh .greet-script{font:400 clamp(34px,6.4vw,50px)/1.25 "Great Vibes","Segoe Script","Brush Script MT",cursive;color:var(--text);padding:2px 10px 8px 2px;letter-spacing:.01em;display:inline-block}
+@media (prefers-reduced-motion:no-preference){
+  .gh .greet-script{-webkit-mask-image:linear-gradient(90deg,#000 0,#000 32%,transparent 38%);mask-image:linear-gradient(90deg,#000 0,#000 32%,transparent 38%);-webkit-mask-size:300% 100%;mask-size:300% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:100% 0;mask-position:100% 0;animation:gh-write 4.2s cubic-bezier(.45,.05,.35,1) .5s forwards}
+}
+@keyframes gh-write{to{-webkit-mask-position:0 0;mask-position:0 0}}
 .gh .greet form{display:inline-flex;gap:8px;align-items:center}
 .gh .greet input{height:34px;border-radius:999px;border:1px solid var(--line);background:var(--glass);color:var(--text);padding:0 14px;font:inherit;width:170px}
 .gh .greet .mini{height:34px;padding:0 14px;border-radius:999px;background:var(--btn-bg);color:var(--btn-fg);font:600 12px var(--sans)}
