@@ -3,6 +3,7 @@ import { formatPrice, parseImages } from "@/lib/utils";
 import { QuickAddButton } from "@/components/quick-add-button";
 import { Stars } from "@/components/stars";
 import { WishlistButton } from "@/components/wishlist-button";
+import { ProductImg } from "@/components/night/pic";
 
 export type ProductCardData = {
   id: string;
@@ -31,12 +32,10 @@ export function ProductCard({ product }: { product: ProductCardData }) {
       {/* Transparent image — sits directly on the page background */}
       <Link href={`/products/${product.slug}`} className="gg-pcard-stage relative block aspect-square">
         {cover ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <ProductImg
             src={cover}
             alt={product.name}
-            loading="lazy"
-            decoding="async"
+            sizes="(max-width: 640px) 46vw, (max-width: 1024px) 30vw, 280px"
             className="h-full w-full object-contain"
           />
         ) : (
@@ -61,28 +60,24 @@ export function ProductCard({ product }: { product: ProductCardData }) {
       </Link>
 
       <div className="gg-pcard-body flex flex-1 flex-col px-1 pt-3 text-center">
-        {product.brand && (
-          <span className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-brand-500">
-            {product.brand}
-          </span>
-        )}
         <Link href={`/products/${product.slug}`}>
-          <h3 className="line-clamp-2 min-h-[2.5rem] text-sm font-semibold leading-snug text-brand-800 group-hover:text-brand-600">
+          <h3 className="gg-pcard-name line-clamp-2 text-brand-800 group-hover:text-brand-600">
             {product.name}
           </h3>
         </Link>
-        {product.reviewCount ? (
-          <div className="mt-1.5 flex items-center justify-center gap-1.5">
-            <Stars rating={product.rating ?? 0} size={14} />
-            <span className="text-[11px] text-muted-foreground">
-              ({product.reviewCount})
-            </span>
-          </div>
-        ) : null}
+        {/* the rating row always keeps its height, so prices line up across cards */}
+        <div className="gg-pcard-rating mt-1.5 flex min-h-[18px] items-center justify-center gap-1.5">
+          {product.reviewCount ? (
+            <>
+              <Stars rating={product.rating ?? 0} size={14} />
+              <span className="text-[11px] text-muted-foreground">({product.reviewCount})</span>
+            </>
+          ) : null}
+        </div>
         {/* Price + button anchored to the bottom so they align across all cards */}
         <div className="mt-auto pt-3">
           <div className="flex items-baseline justify-center gap-2">
-            <span className="text-base font-bold text-brand-700">
+            <span className="text-base font-bold tabular-nums text-brand-700">
               {formatPrice(product.price)}
             </span>
             {onSale && (

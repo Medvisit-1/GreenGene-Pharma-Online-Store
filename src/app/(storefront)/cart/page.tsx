@@ -6,7 +6,8 @@ import { useCart } from "@/lib/cart-store";
 import { formatPrice } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { shippingFor, FLAT_SHIPPING, FREE_SHIPPING_THRESHOLD } from "@/lib/constants";
-import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { ProductImg } from "@/components/night/pic";
 
 export default function CartPage() {
   const [mounted, setMounted] = useState(false);
@@ -60,8 +61,7 @@ export default function CartPage() {
                 className="h-24 w-24 shrink-0 overflow-hidden rounded-xl bg-brand-50"
               >
                 {item.image ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
+                  <ProductImg src={item.image} alt={item.name} size={200} sizes="96px" className="h-full w-full object-contain" />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center text-2xl font-black text-brand-300">
                     {item.name.charAt(0)}

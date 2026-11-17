@@ -38,7 +38,8 @@ import { Button } from "@/components/ui/button";
 import { LoginForm } from "@/components/account/login-form";
 import { CopyCode } from "@/components/account/copy-code";
 import { WishlistButton } from "@/components/wishlist-button";
-import { claim, requestDeletion, saveDetails, signOut } from "./actions";
+import { claim, requestDeletion, saveDetails, signOut } from "./actions";
+import { ProductImg } from "@/components/night/pic";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "My Account" };
@@ -368,8 +369,7 @@ async function Wishlist({ customerId }: { customerId: string }) {
           return (
             <li key={p.id} className="flex items-center gap-3 rounded-xl border border-border p-3">
               <Link href={`/products/${p.slug}`} className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-surface">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                {img && <img src={img} alt="" className="h-full w-full object-contain" />}
+                {img && <ProductImg src={img} alt="" size={160} sizes="80px" className="h-full w-full object-contain" />}
               </Link>
               <div className="min-w-0 flex-1">
                 <Link href={`/products/${p.slug}`} className="block truncate font-semibold text-brand-800 hover:underline">{p.name}</Link>

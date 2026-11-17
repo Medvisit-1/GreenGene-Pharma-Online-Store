@@ -8,7 +8,8 @@ import { PaymentPoller } from "@/components/payment-poller";
 import { confirmPayment, getEnabledMethods } from "@/lib/payments";
 import { canViewOrder, orderToken } from "@/lib/order-access";
 import { PayNow } from "@/components/pay-now";
-import { OrderTimeline } from "@/components/order-timeline";
+import { OrderTimeline } from "@/components/order-timeline";
+import { ProductImg } from "@/components/night/pic";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Your order", robots: { index: false } };
@@ -170,8 +171,7 @@ export default async function OrderPage({
               <li key={i.id} className="flex items-center gap-3 py-3">
                 <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-brand-50">
                   {i.image && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={i.image} alt={i.name} className="h-full w-full object-cover" />
+                    <ProductImg src={i.image} alt={i.name} size={160} sizes="64px" className="h-full w-full object-contain" />
                   )}
                 </div>
                 <span className="flex-1 text-sm">{i.name}</span>

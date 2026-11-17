@@ -4,7 +4,8 @@ import { useRef } from "react";
 import Link from "next/link";
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { NewReleaseCard } from "@/lib/new-release";
+import type { NewReleaseCard } from "@/lib/new-release";
+import { ProductImg } from "@/components/night/pic";
 
 export function NewReleaseCarousel({
   heading,
@@ -58,8 +59,7 @@ export function NewReleaseCarousel({
             >
               <Link href={link} className="block aspect-[4/3] overflow-hidden bg-brand-50">
                 {c.image ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={c.image} alt={c.title} className="h-full w-full object-contain p-4 transition-transform duration-500 hover:scale-[1.04]" />
+                  <ProductImg src={c.image} alt={c.title} size={600} sizes="(max-width: 640px) 80vw, 360px" className="h-full w-full object-contain p-4 transition-transform duration-500 hover:scale-[1.04]" />
                 ) : (
                   <div className="h-full w-full bg-muted" />
                 )}

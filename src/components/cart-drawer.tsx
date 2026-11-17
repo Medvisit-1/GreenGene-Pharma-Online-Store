@@ -6,7 +6,8 @@ import { X, Minus, Plus, Trash2, ShoppingBag, ArrowRight } from "lucide-react";
 import { useCart } from "@/lib/cart-store";
 import { formatPrice } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { ProductImg } from "@/components/night/pic";
 
 export function CartDrawer() {
   const isOpen = useCart((s) => s.isOpen);
@@ -80,8 +81,7 @@ export function CartDrawer() {
                 <div key={item.productId} className="flex gap-3 rounded-xl border border-border bg-white p-3">
                   <Link href={`/products/${item.slug}`} onClick={close} className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-white">
                     {item.image && (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={item.image} alt={item.name} className="h-full w-full object-contain" />
+                      <ProductImg src={item.image} alt={item.name} size={160} sizes="80px" className="h-full w-full object-contain" />
                     )}
                   </Link>
                   <div className="flex flex-1 flex-col">

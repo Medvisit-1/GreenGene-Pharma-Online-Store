@@ -7,7 +7,8 @@ import { CheckCircle2, Gift, Loader2, Lock, Tag, Users, X } from "lucide-react";
 import { useCart } from "@/lib/cart-store";
 import { formatPrice } from "@/lib/utils";
 import { shippingFor, SA_PROVINCES, FLAT_SHIPPING, FREE_SHIPPING_THRESHOLD } from "@/lib/constants";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
+import { ProductImg } from "@/components/night/pic";
 
 type Discount = { valid: boolean; code?: string; amount: number; message?: string; freeShipping?: boolean };
 type RewardCode = { code: string; label: string };
@@ -383,8 +384,7 @@ export default function CheckoutPage() {
               <li key={i.productId} className="flex items-center gap-3">
                 <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-brand-50">
                   {i.image && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={i.image} alt={i.name} className="h-full w-full object-cover" />
+                    <ProductImg src={i.image} alt={i.name} size={160} sizes="64px" className="h-full w-full object-contain" />
                   )}
                   <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-600 px-1 text-[10px] font-bold text-white">
                     {i.quantity}
