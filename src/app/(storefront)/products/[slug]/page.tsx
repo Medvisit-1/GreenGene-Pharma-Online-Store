@@ -18,6 +18,7 @@ import { getSettings } from "@/lib/settings";
 import { getCurrentCustomer } from "@/lib/customer-auth";
 import { WishlistButton } from "@/components/wishlist-button";
 import { NotifyMe } from "@/components/notify-me";
+import { importantNote } from "@/lib/label-statements";
 
 export const dynamic = "force-dynamic";
 
@@ -72,6 +73,7 @@ export default async function ProductPage({ params }: { params: Params }) {
     orderBy: { createdAt: "desc" },
   });
   const { productDisclaimer } = await getSettings();
+  const note = importantNote(product.slug, productDisclaimer);
   const faqLabel = productFaqLabel(product.name);
   const customer = product.stock <= 0 ? await getCurrentCustomer() : null;
   const reviewCount = reviews.length;
@@ -104,12 +106,7 @@ export default async function ProductPage({ params }: { params: Params }) {
         <ProductGallery images={images} name={product.name} />
 
         <div>
-          {product.brand && (
-            <span className="text-sm font-semibold uppercase tracking-wide text-brand-500">
-              {product.brand}
-            </span>
-          )}
-          <h1 className="mt-1 text-3xl font-semibold tracking-tight">
+          <h1 className="gg-pdp-title text-3xl font-bold tracking-tight text-balance">
             {product.name}
           </h1>
 
@@ -232,13 +229,23 @@ export default async function ProductPage({ params }: { params: Params }) {
             <p className="mt-6 text-xs text-muted-foreground">SKU: {product.sku}</p>
           )}
 
-          {productDisclaimer && (
-            <div className="mt-6 flex gap-2.5 rounded-xl border border-border bg-surface/70 p-4 text-xs leading-relaxed text-muted-foreground">
-              <Info className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" />
-              <p>
-                <span className="font-semibold text-foreground">Important: </span>
-                {productDisclaimer}
-              </p>
+          {note && (
+            <div className="gg-important mt-6 flex gap-2.5 rounded-xl border border-border bg-surface/70 p-4 text-xs leading-relaxed text-muted-foreground">
+              <Info className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" aria-hidden="true" />
+              <div className="space-y-1.5">
+                {note.statement && (
+                  <p>
+                    <span className="font-semibold text-foreground">Important: </span>
+                    {note.statement}
+                  </p>
+                )}
+                {note.warning && (
+                  <p>
+                    <span className="font-semibold text-foreground">{note.statement ? "Warning: " : "Important: "}</span>
+                    {note.warning}
+                  </p>
+                )}
+              </div>
             </div>
           )}
         </div>
