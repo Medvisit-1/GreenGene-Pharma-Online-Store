@@ -12,6 +12,7 @@ import { ProductImg } from "@/components/night/pic";
 import { WishlistButton } from "@/components/wishlist-button";
 import { ComboDrift, Greeting, HeroMotion, Quiz, Routine, ScrollAmbient, type QuizData, type QuizProduct } from "@/components/gh/client";
 import "@/components/gh/home.css";
+import { preload } from "react-dom";
 
 export const dynamic = "force-dynamic";
 
@@ -103,6 +104,11 @@ export default async function HomePage() {
   const defaultDays = Math.max(7, parseInt(s.refillDefaultDays, 10) || 30);
   const refill = order ? nextRefill(order, defaultDays) : null;
   const newCards = s.newReleaseEnabled === "1" ? parseNewReleaseCards(s.newReleaseCards).slice(0, 3) : [];
+
+  // The hero background (a CSS image the browser finds late) is the largest paint on phones:
+  // fetch the one that matches the visitor's colour scheme straight away.
+  preload("/hero/hero-forest-dark.svg", { as: "image", media: "(prefers-color-scheme: dark)", fetchPriority: "high" });
+  preload("/hero/hero-forest-light.svg", { as: "image", media: "(prefers-color-scheme: light)", fetchPriority: "high" });
 
   return (
     <div className="gh">

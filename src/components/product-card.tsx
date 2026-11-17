@@ -19,7 +19,8 @@ export type ProductCardData = {
   reviewCount?: number;
 };
 
-export function ProductCard({ product }: { product: ProductCardData }) {
+/** above: the card is in the first screen (first row of a list), so its photo loads without waiting. */
+export function ProductCard({ product, above = false }: { product: ProductCardData; above?: boolean }) {
   const images = parseImages(product.images);
   const cover = images[0];
   const onSale =
@@ -36,6 +37,7 @@ export function ProductCard({ product }: { product: ProductCardData }) {
             src={cover}
             alt={product.name}
             sizes="(max-width: 640px) 46vw, (max-width: 1024px) 30vw, 280px"
+            above={above}
             className="h-full w-full object-contain"
           />
         ) : (
