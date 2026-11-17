@@ -58,7 +58,7 @@ export function FaqBrowser({ groups, contactEmail }: { groups: FaqGroup[]; conta
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search questions — e.g. delivery, refund, Estrogene"
           aria-label="Search the FAQs"
-          className="h-13 w-full rounded-full border border-border bg-white pl-12 pr-12 text-sm shadow-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+          className="h-13 w-full rounded-full border border-border bg-white pl-12 pr-12 text-base shadow-sm sm:text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
         />
         {query && (
           <button type="button" onClick={() => setQuery("")} aria-label="Clear search" className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted-foreground hover:bg-muted">
@@ -70,7 +70,7 @@ export function FaqBrowser({ groups, contactEmail }: { groups: FaqGroup[]; conta
       {!q && (
         <nav aria-label="FAQ sections" className="mt-5 flex flex-wrap gap-2">
           {groups.map((g) => (
-            <a key={g.anchor} href={`#${g.anchor}`} className="rounded-full border border-border bg-white px-3.5 py-1.5 text-xs font-semibold text-brand-800 hover:border-brand-300 hover:bg-brand-50">
+            <a key={g.anchor} href={`#${g.anchor}`} className="inline-flex min-h-11 items-center rounded-full border border-border bg-white px-4 text-xs font-semibold text-brand-800 hover:border-brand-300 hover:bg-brand-50 lg:min-h-0 lg:py-1.5">
               {g.name}
             </a>
           ))}

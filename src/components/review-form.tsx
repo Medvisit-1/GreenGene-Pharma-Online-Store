@@ -67,7 +67,7 @@ export function ReviewForm({ productId }: { productId: string }) {
             onMouseEnter={() => setHover(i)}
             onMouseLeave={() => setHover(0)}
             aria-label={`${i} star${i > 1 ? "s" : ""}`}
-            className="p-0.5"
+            className="grid h-11 w-11 place-items-center"
           >
             <Star
               className={cn(

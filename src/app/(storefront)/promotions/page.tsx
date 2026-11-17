@@ -76,7 +76,7 @@ export default async function PromotionsPage() {
           </div>
         )}
         <div className="mt-8 text-center">
-          <Link href="/products" className="text-sm font-semibold text-brand-700 hover:underline">
+          <Link href="/products" className="inline-flex min-h-11 items-center text-sm font-semibold text-brand-700 hover:underline">
             Browse all products →
           </Link>
         </div>

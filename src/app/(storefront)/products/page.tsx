@@ -97,29 +97,34 @@ export default async function ProductsPage({
         )}
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-[220px_1fr]">
+      {/* minmax(0,1fr): long rows (sort chips) can no longer push the column past the right edge on phones */}
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-8">
         {/* Sidebar */}
-        <aside className="space-y-6">
+        <aside className="min-w-0 space-y-5 lg:space-y-6">
           {/* Search */}
           <form action="/products" method="get" className="relative">
             {category && <input type="hidden" name="category" value={category} />}
             <input
+              type="search"
+              aria-label="Search products"
+              enterKeyHint="search"
               name="q"
               defaultValue={q ?? ""}
               placeholder="Search products…"
-              className="w-full rounded-full border border-border bg-white px-4 py-2.5 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+              className="h-12 w-full rounded-full border border-border bg-white px-4 text-base outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100 lg:h-11 lg:text-sm"
             />
           </form>
 
           <div>
-            <h3 className="mb-3 text-sm font-bold uppercase tracking-wide text-brand-800">
+            <h3 className="mb-3 text-sm font-bold uppercase tracking-wide text-brand-800 max-lg:sr-only">
               Categories
             </h3>
-            <ul className="space-y-1 text-sm">
+            {/* phones: one row of swipeable category chips; desktop: the sidebar list */}
+            <ul className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 text-sm [scrollbar-width:none] lg:mx-0 lg:block lg:space-y-1 lg:overflow-visible lg:px-0 lg:pb-0">
               <li>
                 <Link
                   href={buildQuery({ category: undefined })}
-                  className={`block rounded-lg px-3 py-2 ${
+                  className={`flex min-h-11 items-center whitespace-nowrap rounded-full border border-border px-4 lg:block lg:min-h-0 lg:rounded-lg lg:border-0 lg:px-3 lg:py-2 ${
                     !category ? "bg-brand-50 font-semibold text-brand-700" : "hover:bg-muted"
                   }`}
                 >
@@ -130,7 +135,7 @@ export default async function ProductsPage({
                 <li key={c.id}>
                   <Link
                     href={buildQuery({ category: c.slug })}
-                    className={`block rounded-lg px-3 py-2 ${
+                    className={`flex min-h-11 items-center whitespace-nowrap rounded-full border border-border px-4 lg:block lg:min-h-0 lg:rounded-lg lg:border-0 lg:px-3 lg:py-2 ${
                       category === c.slug
                         ? "bg-brand-50 font-semibold text-brand-700"
                         : "hover:bg-muted"
@@ -146,11 +151,11 @@ export default async function ProductsPage({
 
         {/* Grid */}
         <div>
-          <div className="mb-5 flex items-center justify-between gap-4">
-            <p className="text-sm text-muted-foreground">
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+            <p className="whitespace-nowrap text-sm tabular-nums text-muted-foreground">
               {products.length} product{products.length === 1 ? "" : "s"}
             </p>
-            <div className="flex items-center gap-2 text-sm">
+            <div className="-mx-4 flex max-w-[calc(100%+2rem)] items-center gap-2 overflow-x-auto px-4 text-sm [scrollbar-width:none] sm:mx-0 sm:max-w-none sm:px-0">
               <span className="text-muted-foreground">Sort:</span>
               {[
                 { key: "", label: "Newest" },
@@ -161,7 +166,7 @@ export default async function ProductsPage({
                 <Link
                   key={s.key}
                   href={buildQuery({ sort: s.key || undefined })}
-                  className={`rounded-full px-3 py-1 ${
+                  className={`inline-flex min-h-11 items-center whitespace-nowrap rounded-full px-3.5 lg:min-h-9 ${
                     (sort ?? "") === s.key
                       ? "bg-brand-600 text-white"
                       : "border border-border hover:bg-muted"
@@ -179,8 +184,8 @@ export default async function ProductsPage({
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
-              {productsWithRatings.map((p) => (
-                <ProductCard key={p.id} product={p} />
+              {productsWithRatings.map((p, i) => (
+                <ProductCard key={p.id} product={p} above={i < 2} />
               ))}
             </div>
           )}
