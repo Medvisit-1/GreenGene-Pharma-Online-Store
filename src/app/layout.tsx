@@ -27,12 +27,11 @@ export const metadata: Metadata = {
   },
 };
 
-// One theme-color meta; the storefront's inline mode script updates it to match light/dark.
+// No static theme-color: the storefront's inline mode script updates it to match light/dark.
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#F4F6F0",
 };
 
 export default function RootLayout({

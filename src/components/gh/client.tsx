@@ -70,42 +70,18 @@ export function ComboDrift() {
   return null;
 }
 
-/* ---------- personalised greeting (signed-in name, or the name saved on this device) ---------- */
-const NAME_KEY = "gg-name";
-const cleanName = (v: string) => v.replace(/[^\p{L}\p{M}' -]/gu, "").trim().split(/\s+/)[0]?.slice(0, 24) ?? "";
-
+/* ---------- greeting: only for signed-in customers; visitors get a sign-up link ---------- */
 export function Greeting({ greeting, accountName, signedIn }: { greeting: string; accountName?: string; signedIn: boolean }) {
-  const [name, setName] = useState(accountName ?? "");
-  const [editing, setEditing] = useState(false);
-  const [ready, setReady] = useState(signedIn);
-  useEffect(() => {
-    if (signedIn) return;
-    let saved = "";
-    try { saved = localStorage.getItem(NAME_KEY) ?? ""; } catch {}
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- read the name saved on this device after hydration
-    if (saved) setName(saved);
-    setReady(true);
-  }, [signedIn]);
-  function save(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const v = cleanName(String(new FormData(e.currentTarget).get("name") ?? ""));
-    try { if (v) localStorage.setItem(NAME_KEY, v); else localStorage.removeItem(NAME_KEY); } catch {}
-    setName(v);
-    setEditing(false);
-  }
   return (
     <p className="greet">
-      <span>{greeting}{name ? `, ${name}` : ""}</span>
-      {signedIn && <span className="badge">Member</span>}
-      {!signedIn && ready && (editing ? (
-        <form onSubmit={save}>
-          <label className="sr" htmlFor="gh-name">Your first name</label>
-          <input id="gh-name" name="name" defaultValue={name} placeholder="Your first name" autoComplete="given-name" maxLength={24} autoFocus />
-          <button type="submit" className="mini">Save</button>
-        </form>
+      {signedIn ? (
+        <>
+          <span>{greeting}{accountName ? `, ${accountName}` : ""}</span>
+          <span className="badge">Member</span>
+        </>
       ) : (
-        <button type="button" className="greet-edit" onClick={() => setEditing(true)}>{name ? `Not ${name}? Change name` : "What should we call you?"}</button>
-      ))}
+        <Link href="/account" className="greet-edit">Create an account for your own personalized greeting</Link>
+      )}
     </p>
   );
 }

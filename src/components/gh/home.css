@@ -76,7 +76,7 @@ html[data-mode="light"] .gh {
 .gh .hero-copy{min-width:0}
 .gh .greet{font:500 13px var(--sans);color:var(--body);display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:28px;min-height:26px}
 .gh .badge{font:700 10px/1 var(--sans);letter-spacing:.2em;text-transform:uppercase;color:#0A0E09;background:var(--lime);padding:6px 10px;border-radius:999px}
-.gh .greet-edit{font-size:12px;color:var(--muted);text-decoration:underline;text-underline-offset:3px}
+.gh .greet-edit{font-size:13px;padding:10px 0;color:var(--muted);text-decoration:underline;text-underline-offset:3px}
 .gh .greet form{display:inline-flex;gap:8px;align-items:center}
 .gh .greet input{height:34px;border-radius:999px;border:1px solid var(--line);background:var(--glass);color:var(--text);padding:0 14px;font:inherit;width:170px}
 .gh .greet .mini{height:34px;padding:0 14px;border-radius:999px;background:var(--btn-bg);color:var(--btn-fg);font:600 12px var(--sans)}

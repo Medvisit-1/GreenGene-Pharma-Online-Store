@@ -14,7 +14,7 @@ const BG = { light: "#F4F6F0", dark: "#0A0E09" };
  * A saved "light" / "dark" is a manual override remembered on this device.
  */
 export const MODE_SCRIPT =
-  "(function(){var d=document.documentElement,q;function a(){var m=null;try{m=localStorage.getItem('gg-mode')}catch(e){}var s=m==='light'||m==='dark'?m:(q&&q.matches?'dark':'light');d.dataset.mode=s;d.dataset.modeChoice=m==='light'||m==='dark'?m:'system';d.style.colorScheme=s;var t=document.querySelector('meta[name=theme-color]');if(t)t.setAttribute('content',s==='dark'?'" +
+  "(function(){var d=document.documentElement,q;function a(){var m=null;try{m=localStorage.getItem('gg-mode')}catch(e){}var s=m==='light'||m==='dark'?m:(q&&q.matches?'dark':'light');d.dataset.mode=s;d.dataset.theme=s;d.dataset.modeChoice=m==='light'||m==='dark'?m:'system';d.style.colorScheme=s;var t=document.querySelector('meta[name=theme-color]');if(!t){t=document.createElement('meta');t.name='theme-color';document.head.appendChild(t)}t.setAttribute('content',s==='dark'?'" +
   BG.dark +
   "':'" +
   BG.light +
@@ -33,7 +33,7 @@ export function setModeChoice(choice: ModeChoice) {
   } catch {}
   const apply = (window as unknown as { __ggMode?: () => void }).__ggMode;
   if (apply) apply();
-  else document.documentElement.dataset.mode = choice === "system" ? (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light") : choice;
+  else { const m = choice === "system" ? (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light") : choice; document.documentElement.dataset.mode = m; document.documentElement.dataset.theme = m; document.documentElement.style.colorScheme = m; }
   window.dispatchEvent(new Event("gg-mode"));
 }
 
